@@ -1,0 +1,481 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Withdraw Money - NeoVault Bank{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    {% include 'partials/dashboard_sidebar.html' %}
+    
+    <div class="dashboard-main">
+        <div class="page-header">
+            <h1><i class="fas fa-hand-holding-usd me-2"></i>Withdraw Money</h1>
+            <p class="text-muted">Withdraw funds from your account securely</p>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="operation-card">
+                    <h3 class="mb-4">Make a Withdrawal</h3>
+                    
+                    <form id="withdrawForm">
+                        {% csrf_token %}
+                        
+                        <div class="mb-4">
+                            <label for="accountSelect" class="form-label">Select Account</label>
+                            <select class="form-select" id="accountSelect" required>
+                                <option value="">Choose account...</option>
+                                {% for account in user_accounts %}
+                                <option value="{{ account.id }}" data-balance="{{ account.balance }}">
+                                    {{ account.get_account_type_display }} - {{ account.account_number }} (Balance: ${{ account.balance|floatformat:2 }})
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="amount" class="form-label">Amount</label>
+                            <div class="input-group">
+                                <span class="input-group-text">$</span>
+                                <input type="number" class="form-control" id="amount" 
+                                       placeholder="0.00" min="0.01" step="0.01" required>
+                            </div>
+                            <div class="form-text">Minimum withdrawal: $1.00</div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="description" class="form-label">Description</label>
+                            <textarea class="form-control" id="description" rows="3" 
+                                      placeholder="Add a note for this withdrawal (optional)"></textarea>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label class="form-label">Withdrawal Method</label>
+                            <div class="withdrawal-methods">
+                                <div class="method-option active" data-method="atm">
+                                    <i class="fas fa-money-bill-wave"></i>
+                                    <span>ATM Withdrawal</span>
+                                </div>
+                                <div class="method-option" data-method="bank-transfer">
+                                    <i class="fas fa-university"></i>
+                                    <span>Bank Transfer</span>
+                                </div>
+                                <div class="method-option" data-method="check">
+                                    <i class="fas fa-file-invoice-dollar"></i>
+                                    <span>Check</span>
+                                </div>
+                                <div class="method-option" data-method="branch">
+                                    <i class="fas fa-building"></i>
+                                    <span>Branch Withdrawal</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- ATM Withdrawal Details -->
+                        <div class="method-details active" id="atm-details">
+                            <h5 class="mb-3">ATM Withdrawal</h5>
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle me-2"></i>
+                                You can withdraw cash from any of our 500+ ATMs nationwide. Maximum daily limit: $1,000
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Select ATM Location</label>
+                                <select class="form-select">
+                                    <option>Nearest ATM to you</option>
+                                    <option>Main Branch ATM</option>
+                                    <option>Downtown ATM</option>
+                                    <option>Shopping Mall ATM</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <!-- Bank Transfer Details -->
+                        <div class="method-details" id="bank-transfer-details">
+                            <h5 class="mb-3">Transfer to Another Bank</h5>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Bank Name</label>
+                                    <input type="text" class="form-control" placeholder="Enter bank name">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Account Number</label>
+                                    <input type="text" class="form-control" placeholder="Enter account number">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Routing Number</label>
+                                    <input type="text" class="form-control" placeholder="Enter routing number">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Account Holder Name</label>
+                                    <input type="text" class="form-control" placeholder="Enter account holder name">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Check Details -->
+                        <div class="method-details" id="check-details">
+                            <h5 class="mb-3">Check Request</h5>
+                            <div class="alert alert-warning">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                Checks will be mailed to your registered address within 3-5 business days
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Payable To</label>
+                                <input type="text" class="form-control" value="{{ user.get_full_name }}" readonly>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Delivery Address</label>
+                                <textarea class="form-control" rows="3" readonly>{{ user.address|default:"123 Main St, City, State 12345" }}</textarea>
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-paper-plane me-2"></i>Process Withdrawal
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="col-lg-4">
+                <!-- Withdrawal Summary -->
+                <div class="summary-card">
+                    <h4 class="mb-4">Withdrawal Summary</h4>
+                    
+                    <div class="summary-item">
+                        <span>Selected Account:</span>
+                        <strong id="selectedAccount">-</strong>
+                    </div>
+                    
+                    <div class="summary-item">
+                        <span>Current Balance:</span>
+                        <strong id="currentBalance">-</strong>
+                    </div>
+                    
+                    <div class="summary-item">
+                        <span>Withdrawal Amount:</span>
+                        <strong id="withdrawalAmount">$0.00</strong>
+                    </div>
+                    
+                    <div class="summary-item">
+                        <span>Service Fee:</span>
+                        <strong id="serviceFee">$0.00</strong>
+                    </div>
+                    
+                    <div class="summary-item">
+                        <span>New Balance:</span>
+                        <strong id="newBalance">-</strong>
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="summary-item total">
+                        <span>Total to Withdraw:</span>
+                        <strong id="totalAmount">$0.00</strong>
+                    </div>
+                </div>
+                
+                <!-- Quick Tips -->
+                <div class="tips-card">
+                    <h5><i class="fas fa-lightbulb me-2"></i>Withdrawal Limits</h5>
+                    <ul class="tips-list">
+                        <li>Daily ATM limit: $1,000</li>
+                        <li>Daily transfer limit: $5,000</li>
+                        <li>Check requests: No limit</li>
+                        <li>Branch withdrawals: No limit with ID</li>
+                    </ul>
+                </div>
+                
+                <!-- Recent Withdrawals -->
+                <div class="recent-card">
+                    <h5>Recent Withdrawals</h5>
+                    <div class="recent-list">
+                        {% for transaction in recent_withdrawals %}
+                        <div class="recent-item">
+                            <div class="recent-info">
+                                <strong>${{ transaction.amount|floatformat:2 }}</strong>
+                                <small>{{ transaction.timestamp|date:"M d" }}</small>
+                            </div>
+                            <span class="status completed">Completed</span>
+                        </div>
+                        {% empty %}
+                        <p class="text-muted text-center">No recent withdrawals</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Success Modal -->
+<div class="modal fade" id="successModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-body text-center p-5">
+                <div class="success-icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <h3 class="mt-4 mb-3">Withdrawal Successful!</h3>
+                <p class="text-muted mb-4">Your withdrawal request has been processed successfully.</p>
+                <div class="withdrawal-details mb-4">
+                    <p><strong>Amount:</strong> <span id="successAmount"></span></p>
+                    <p><strong>Method:</strong> <span id="successMethod"></span></p>
+                    <p><strong>New Balance:</strong> <span id="successBalance"></span></p>
+                    <p><strong>Reference:</strong> <span id="successReference"></span></p>
+                </div>
+                <div class="d-grid gap-2">
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Continue</button>
+                    <button type="button" class="btn btn-outline-primary" onclick="generateReceipt()">
+                        <i class="fas fa-print me-2"></i>Print Receipt
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Insufficient Funds Modal -->
+<div class="modal fade" id="errorModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-body text-center p-5">
+                <div class="error-icon">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <h3 class="mt-4 mb-3">Insufficient Funds</h3>
+                <p class="text-muted mb-4">Your account balance is not sufficient for this withdrawal.</p>
+                <div class="d-grid gap-2">
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">OK</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .withdrawal-methods {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 15px;
+        margin-top: 10px;
+    }
+    
+    .method-option {
+        background: var(--light-color);
+        padding: 20px 15px;
+        border-radius: 10px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border: 2px solid transparent;
+    }
+    
+    .method-option.active {
+        border-color: var(--accent-color);
+        background: rgba(255, 107, 53, 0.1);
+    }
+    
+    .method-option:hover {
+        transform: translateY(-2px);
+    }
+    
+    .method-option i {
+        font-size: 1.5rem;
+        color: var(--primary-color);
+        margin-bottom: 10px;
+        display: block;
+    }
+    
+    .method-details {
+        display: none;
+        background: var(--light-color);
+        padding: 20px;
+        border-radius: 10px;
+        margin-top: 20px;
+    }
+    
+    .method-details.active {
+        display: block;
+    }
+    
+    .error-icon {
+        font-size: 4rem;
+        color: var(--danger-color);
+    }
+    
+    .withdrawal-details {
+        background: var(--light-color);
+        padding: 20px;
+        border-radius: 10px;
+        text-align: left;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const accountSelect = document.getElementById('accountSelect');
+        const amountInput = document.getElementById('amount');
+        const withdrawForm = document.getElementById('withdrawForm');
+        const methodOptions = document.querySelectorAll('.method-option');
+        
+        let currentMethod = 'atm';
+        let serviceFee = 0;
+        
+        // Update summary when account or amount changes
+        accountSelect.addEventListener('change', updateSummary);
+        amountInput.addEventListener('input', updateSummary);
+        
+        // Withdrawal method selection
+        methodOptions.forEach(option => {
+            option.addEventListener('click', function() {
+                methodOptions.forEach(opt => opt.classList.remove('active'));
+                this.classList.add('active');
+                
+                // Show corresponding method details
+                currentMethod = this.getAttribute('data-method');
+                document.querySelectorAll('.method-details').forEach(detail => {
+                    detail.classList.remove('active');
+                });
+                document.getElementById(`${currentMethod}-details`).classList.add('active');
+                
+                // Update service fee based on method
+                updateServiceFee();
+                updateSummary();
+            });
+        });
+        
+        function updateServiceFee() {
+            switch(currentMethod) {
+                case 'atm':
+                    serviceFee = 0;
+                    break;
+                case 'bank-transfer':
+                    serviceFee = 2.50;
+                    break;
+                case 'check':
+                    serviceFee = 1.50;
+                    break;
+                case 'branch':
+                    serviceFee = 0;
+                    break;
+            }
+        }
+        
+        function updateSummary() {
+            const selectedOption = accountSelect.options[accountSelect.selectedIndex];
+            const currentBalance = selectedOption ? parseFloat(selectedOption.getAttribute('data-balance')) : 0;
+            const withdrawalAmount = parseFloat(amountInput.value) || 0;
+            const totalAmount = withdrawalAmount + serviceFee;
+            
+            document.getElementById('selectedAccount').textContent = 
+                selectedOption ? selectedOption.text.split('(')[0] : '-';
+            document.getElementById('currentBalance').textContent = 
+                currentBalance ? `$${currentBalance.toFixed(2)}` : '-';
+            document.getElementById('withdrawalAmount').textContent = `$${withdrawalAmount.toFixed(2)}`;
+            document.getElementById('serviceFee').textContent = `$${serviceFee.toFixed(2)}`;
+            document.getElementById('totalAmount').textContent = `$${totalAmount.toFixed(2)}`;
+            
+            if (currentBalance) {
+                const newBalance = currentBalance - totalAmount;
+                document.getElementById('newBalance').textContent = `$${newBalance.toFixed(2)}`;
+                
+                // Highlight if insufficient funds
+                if (newBalance < 0) {
+                    document.getElementById('newBalance').style.color = 'var(--danger-color)';
+                } else {
+                    document.getElementById('newBalance').style.color = '';
+                }
+            }
+        }
+        
+        // Form submission
+        withdrawForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const selectedOption = accountSelect.options[accountSelect.selectedIndex];
+            const currentBalance = selectedOption ? parseFloat(selectedOption.getAttribute('data-balance')) : 0;
+            const withdrawalAmount = parseFloat(amountInput.value) || 0;
+            const totalAmount = withdrawalAmount + serviceFee;
+            
+            // Check for sufficient funds
+            if (currentBalance < totalAmount) {
+                const errorModal = new bootstrap.Modal(document.getElementById('errorModal'));
+                errorModal.show();
+                return;
+            }
+            
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            
+            submitBtn.innerHTML = '<div class="spinner-border spinner-border-sm me-2"></div> Processing...';
+            submitBtn.disabled = true;
+            
+            // Simulate API call
+            setTimeout(() => {
+                // Show success modal
+                const successModal = new bootstrap.Modal(document.getElementById('successModal'));
+                document.getElementById('successAmount').textContent = `$${withdrawalAmount.toFixed(2)}`;
+                document.getElementById('successMethod').textContent = currentMethod.toUpperCase();
+                document.getElementById('successBalance').textContent = `$${(currentBalance - totalAmount).toFixed(2)}`;
+                document.getElementById('successReference').textContent = 'NVW' + Date.now();
+                
+                successModal.show();
+                
+                // Reset form and button
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+                this.reset();
+                updateSummary();
+            }, 2000);
+        });
+        
+        function generateReceipt() {
+            const receiptContent = `
+                NEOVAULT BANK - WITHDRAWAL RECEIPT
+                ==================================
+                Date: ${new Date().toLocaleString()}
+                Account: ${document.getElementById('selectedAccount').textContent}
+                Amount: ${document.getElementById('successAmount').textContent}
+                Method: ${document.getElementById('successMethod').textContent}
+                Reference: ${document.getElementById('successReference').textContent}
+                New Balance: ${document.getElementById('successBalance').textContent}
+                
+                Thank you for banking with us!
+            `;
+            
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(`
+                <html>
+                    <head>
+                        <title>Withdrawal Receipt</title>
+                        <style>
+                            body { font-family: monospace; padding: 20px; }
+                            .receipt { max-width: 300px; margin: 0 auto; }
+                        </style>
+                    </head>
+                    <body>
+                        <div class="receipt">
+                            <pre>${receiptContent}</pre>
+                        </div>
+                        <script>
+                            window.print();
+                            setTimeout(() => window.close(), 1000);
+                        <\/script>
+                    </body>
+                </html>
+            `);
+            printWindow.document.close();
+        }
+        
+        // Initialize
+        updateServiceFee();
+        updateSummary();
+    });
+</script>
+{% endblock %}

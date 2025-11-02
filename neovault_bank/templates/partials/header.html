@@ -1,0 +1,193 @@
+<!-- First Navigation Bar -->
+<nav class="navbar navbar-expand-lg navbar-dark first-navbar">
+    <div class="container">
+        <a class="navbar-brand" href="{% url 'home' %}"><i class="fas fa-university"></i>NeoVault Bank</a>
+        
+        <!-- Search Bar -->
+        <div class="search-container">
+            <input type="text" class="search-input" placeholder="Search services, accounts, help..." id="searchInput">
+            <button class="search-btn" id="searchBtn"><i class="fas fa-search"></i></button>
+            <div class="search-results" id="searchResults">
+                <!-- Search results will be populated here -->
+            </div>
+        </div>
+        
+        <div class="navbar-actions">
+            <!-- Notification Bell -->
+            <div class="notification-bell" id="notificationBell">
+                <i class="far fa-bell"></i>
+                <span class="notification-count">3</span>
+                <div class="notification-dropdown" id="notificationDropdown">
+                    <div class="notification-header">
+                        <h5>Notifications</h5>
+                        <span class="badge bg-primary">3 New</span>
+                    </div>
+                    <div class="notification-list">
+                        <div class="notification-item unread">
+                            <div class="notification-title">Security Alert</div>
+                            <div class="notification-text">New login detected from unknown device</div>
+                            <div class="notification-time">2 hours ago</div>
+                        </div>
+                        <div class="notification-item unread">
+                            <div class="notification-title">Payment Received</div>
+                            <div class="notification-text">You've received a payment of $500</div>
+                            <div class="notification-time">5 hours ago</div>
+                        </div>
+                        <div class="notification-item unread">
+                            <div class="notification-title">Account Update</div>
+                            <div class="notification-text">Your account statement is ready</div>
+                            <div class="notification-time">1 day ago</div>
+                        </div>
+                        <div class="notification-item">
+                            <div class="notification-title">Promotional Offer</div>
+                            <div class="notification-text">Special interest rates on savings accounts</div>
+                            <div class="notification-time">3 days ago</div>
+                        </div>
+                    </div>
+                    <div class="notification-actions">
+                        <a href="#" class="btn btn-sm btn-outline-primary">View All</a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Dark Mode Toggle -->
+            <button class="dark-mode-toggle" id="darkModeToggle">
+                <i class="fas fa-moon"></i>
+            </button>
+            
+            <!-- User Dropdown -->
+            <div class="user-dropdown">
+                {% if user.is_authenticated %}
+                <button class="user-dropdown-toggle" id="userDropdownToggle">
+                    {% if user.profile_picture %}
+                    <img src="{{ user.profile_picture.url }}" alt="Profile" class="user-avatar">
+                    {% else %}
+                    <div class="user-avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    {% endif %}
+                    <span>{{ user.username }}</span>
+                    <i class="fas fa-chevron-down"></i>
+                </button>
+                {% else %}
+                <button class="user-dropdown-toggle" id="userDropdownToggle">
+                    <div class="user-avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <span>Account</span>
+                    <i class="fas fa-chevron-down"></i>
+                </button>
+                {% endif %}
+                <div class="user-dropdown-menu" id="userDropdownMenu">
+                    {% if user.is_authenticated %}
+                    <div class="user-dropdown-header">
+                        <strong>Welcome, {{ user.first_name|default:user.username }}</strong>
+                        <p class="mb-0 small">{{ user.email }}</p>
+                    </div>
+                    <a href="{% url 'dashboard' %}" class="user-dropdown-item">
+                        <i class="fas fa-tachometer-alt"></i>
+                        <span>Dashboard</span>
+                    </a>
+                    <a href="{% url 'profile' %}" class="user-dropdown-item">
+                        <i class="fas fa-user-circle"></i>
+                        <span>Profile</span>
+                    </a>
+                    <div class="user-dropdown-divider"></div>
+                    <a href="{% url 'logout' %}" class="user-dropdown-item">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>Logout</span>
+                    </a>
+                    {% else %}
+                    <div class="user-dropdown-header">
+                        <strong>Welcome to NeoVault</strong>
+                        <p class="mb-0 small">Access your account</p>
+                    </div>
+                    <a href="{% url 'login' %}" class="user-dropdown-item" id="loginDropdownBtn">
+                        <i class="fas fa-sign-in-alt"></i>
+                        <span>Login</span>
+                    </a>
+                    <a href="{% url 'register' %}" class="user-dropdown-item" id="registerDropdownBtn">
+                        <i class="fas fa-user-plus"></i>
+                        <span>Register</span>
+                    </a>
+                    <div class="user-dropdown-divider"></div>
+                    <div class="p-3">
+                        <p class="small mb-2">Or sign in with:</p>
+                        <div class="social-login">
+                            <button class="social-btn facebook">
+                                <i class="fab fa-facebook-f"></i>
+                                <span>Facebook</span>
+                            </button>
+                            <button class="social-btn google">
+                                <i class="fab fa-google"></i>
+                                <span>Google</span>
+                            </button>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<!-- Second Navigation Bar -->
+<nav class="navbar navbar-expand-lg navbar-light second-navbar">
+    <div class="container">
+        <div class="navbar-nav">
+            <a class="nav-link active" href="{% url 'home' %}">Home</a>
+            <a class="nav-link" href="{% url 'about' %}">About</a>
+            <a class="nav-link" href="#employees">Employees</a>
+            <a class="nav-link" href="#goals">Bank Goals</a>
+            <a class="nav-link" href="#future-plans">Future Plan</a>
+            <a class="nav-link" href="#services">Services</a>
+            <a class="nav-link" href="{% url 'gallery' %}">Gallery</a>
+            <a class="nav-link" href="#how-it-works">How It Works</a>
+            <a class="nav-link" href="#pricing-section">Pricing</a>
+            <a class="nav-link" href="{% url 'contact' %}">Contact Us</a>
+            <a class="nav-link" href="#notices">Notice</a>
+        </div>
+    </div>
+</nav>
+
+<!-- Enhanced Navigation Bar -->
+<div class="navbar-enhanced">
+    <ul>
+        <li class="active">
+            <a href="{% url 'home' %}">
+                <ion-icon name="home-outline"></ion-icon>
+            </a>
+        </li>
+        <li>
+            <a href="{% url 'about' %}">
+                <ion-icon name="information-circle-outline"></ion-icon>
+            </a>
+        </li>
+        <li>
+            <a href="#employees">
+                <ion-icon name="people-outline"></ion-icon>
+            </a>
+        </li>
+        <li>
+            <a href="#goals">
+                <ion-icon name="flag-outline"></ion-icon>
+            </a>
+        </li>
+        <li>
+            <a href="#future-plans">
+                <ion-icon name="rocket-outline"></ion-icon>
+            </a>
+        </li>
+        <li>
+            <a href="#services">
+                <ion-icon name="card-outline"></ion-icon>
+            </a>
+        </li>
+        <li>
+            <a href="#notices">
+                <ion-icon name="notifications-outline"></ion-icon>
+            </a>
+        </li>
+        <div id="marker"></div>
+    </ul>
+</div>

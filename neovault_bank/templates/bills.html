@@ -1,0 +1,432 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Pay Bills - NeoVault Bank{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    {% include 'partials/dashboard_sidebar.html' %}
+    
+    <div class="dashboard-main">
+        <div class="page-header">
+            <h1><i class="fas fa-file-invoice-dollar me-2"></i>Pay Bills</h1>
+            <p class="text-muted">Manage and pay your bills securely</p>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-8">
+                <!-- Add New Bill -->
+                <div class="operation-card mb-4">
+                    <h3 class="mb-4">Add New Bill</h3>
+                    
+                    <form id="addBillForm">
+                        {% csrf_token %}
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="billType" class="form-label">Bill Type</label>
+                                <select class="form-select" id="billType" required>
+                                    <option value="">Select bill type...</option>
+                                    <option value="electricity">Electricity</option>
+                                    <option value="water">Water</option>
+                                    <option value="gas">Gas</option>
+                                    <option value="internet">Internet</option>
+                                    <option value="phone">Phone</option>
+                                    <option value="credit-card">Credit Card</option>
+                                    <option value="loan">Loan Payment</option>
+                                    <option value="rent">Rent</option>
+                                    <option value="mortgage">Mortgage</option>
+                                    <option value="insurance">Insurance</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="billProvider" class="form-label">Provider Name</label>
+                                <input type="text" class="form-control" id="billProvider" 
+                                       placeholder="Enter provider name" required>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="billAmount" class="form-label">Amount</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input type="number" class="form-control" id="billAmount" 
+                                           placeholder="0.00" min="0.01" step="0.01" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="dueDate" class="form-label">Due Date</label>
+                                <input type="date" class="form-control" id="dueDate" required>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="billAccount" class="form-label">Account Number</label>
+                            <input type="text" class="form-control" id="billAccount" 
+                                   placeholder="Enter your account number with provider">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="billDescription" class="form-label">Description</label>
+                            <textarea class="form-control" id="billDescription" rows="2" 
+                                      placeholder="Additional notes (optional)"></textarea>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-plus me-2"></i>Add Bill
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Pay Bills -->
+                <div class="operation-card">
+                    <h3 class="mb-4">Pay Bills</h3>
+                    
+                    <div class="bills-list">
+                        {% for bill in bills %}
+                        <div class="bill-item {% if bill.is_paid %}paid{% else %}pending{% endif %}">
+                            <div class="bill-info">
+                                <div class="bill-header">
+                                    <h5>{{ bill.get_bill_type_display }} - {{ bill.bill_provider|default:bill.bill_type }}</h5>
+                                    <span class="bill-amount">${{ bill.amount|floatformat:2 }}</span>
+                                </div>
+                                <div class="bill-details">
+                                    <span class="due-date">
+                                        <i class="fas fa-calendar me-1"></i>
+                                        Due: {{ bill.due_date|date:"M d, Y" }}
+                                    </span>
+                                    {% if bill.bill_account %}
+                                    <span class="account-number">
+                                        <i class="fas fa-hashtag me-1"></i>
+                                        {{ bill.bill_account }}
+                                    </span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div class="bill-actions">
+                                {% if not bill.is_paid %}
+                                <button class="btn btn-success btn-sm pay-bill-btn" data-bill-id="{{ bill.id }}">
+                                    <i class="fas fa-check me-1"></i>Pay Now
+                                </button>
+                                {% else %}
+                                <span class="badge bg-success">Paid</span>
+                                {% endif %}
+                                <button class="btn btn-outline-secondary btn-sm">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-outline-danger btn-sm">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-file-invoice-dollar fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">No bills added yet</p>
+                            <p class="text-muted small">Add your first bill using the form above</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-4">
+                <!-- Bill Summary -->
+                <div class="summary-card">
+                    <h4 class="mb-4">Bill Summary</h4>
+                    
+                    <div class="summary-item">
+                        <span>Total Bills:</span>
+                        <strong>{{ bills.count }}</strong>
+                    </div>
+                    
+                    <div class="summary-item">
+                        <span>Pending Bills:</span>
+                        <strong>{{ pending_bills.count }}</strong>
+                    </div>
+                    
+                    <div class="summary-item">
+                        <span>Total Due:</span>
+                        <strong>${{ total_due|floatformat:2 }}</strong>
+                    </div>
+                    
+                    <div class="summary-item">
+                        <span>Paid This Month:</span>
+                        <strong>${{ paid_this_month|floatformat:2 }}</strong>
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="progress mb-3">
+                        <div class="progress-bar bg-success" style="width: {{ paid_percentage }}%">
+                            {{ paid_percentage }}% Paid
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-primary" id="payAllBills">
+                            <i class="fas fa-bolt me-2"></i>Pay All Bills
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Upcoming Bills -->
+                <div class="recent-card">
+                    <h5>Upcoming Bills</h5>
+                    <div class="recent-list">
+                        {% for bill in upcoming_bills %}
+                        <div class="recent-item {% if bill.due_soon %}due-soon{% endif %}">
+                            <div class="recent-info">
+                                <strong>{{ bill.get_bill_type_display }}</strong>
+                                <small>Due: {{ bill.due_date|date:"M d" }}</small>
+                            </div>
+                            <span class="amount">${{ bill.amount|floatformat:2 }}</span>
+                        </div>
+                        {% empty %}
+                        <p class="text-muted text-center">No upcoming bills</p>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <!-- Quick Pay -->
+                <div class="tips-card">
+                    <h5><i class="fas fa-bolt me-2"></i>Quick Pay</h5>
+                    <div class="quick-pay-buttons">
+                        <button class="btn btn-outline-primary btn-sm">Electricity</button>
+                        <button class="btn btn-outline-primary btn-sm">Water</button>
+                        <button class="btn btn-outline-primary btn-sm">Internet</button>
+                        <button class="btn btn-outline-primary btn-sm">Phone</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Payment Modal -->
+<div class="modal fade" id="paymentModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm Payment</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="payment-details">
+                    <p><strong>Bill:</strong> <span id="paymentBillName"></span></p>
+                    <p><strong>Amount:</strong> <span id="paymentAmount"></span></p>
+                    <p><strong>Due Date:</strong> <span id="paymentDueDate"></span></p>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="paymentAccount" class="form-label">Pay From Account</label>
+                    <select class="form-select" id="paymentAccount">
+                        {% for account in user_accounts %}
+                        <option value="{{ account.id }}" data-balance="{{ account.balance }}">
+                            {{ account.get_account_type_display }} - {{ account.account_number }} (${{ account.balance|floatformat:2 }})
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="form-check mb-3">
+                    <input class="form-check-input" type="checkbox" id="savePayment">
+                    <label class="form-check-label" for="savePayment">
+                        Save this payment method for future bills
+                    </label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="confirmPayment">Confirm Payment</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .bills-list {
+        max-height: 500px;
+        overflow-y: auto;
+    }
+    
+    .bill-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 20px;
+        background: var(--light-color);
+        border-radius: 10px;
+        margin-bottom: 15px;
+        border-left: 4px solid var(--success-color);
+        transition: all 0.3s ease;
+    }
+    
+    .bill-item.pending {
+        border-left-color: var(--warning-color);
+    }
+    
+    .bill-item.paid {
+        opacity: 0.7;
+        background: #f8f9fa;
+    }
+    
+    .bill-item:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px var(--shadow-color);
+    }
+    
+    .bill-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
+    }
+    
+    .bill-header h5 {
+        margin: 0;
+        color: var(--primary-color);
+    }
+    
+    .bill-amount {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: var(--primary-color);
+    }
+    
+    .bill-details {
+        display: flex;
+        gap: 20px;
+        font-size: 0.9rem;
+        color: var(--text-color);
+        opacity: 0.8;
+    }
+    
+    .bill-actions {
+        display: flex;
+        gap: 8px;
+    }
+    
+    .recent-item.due-soon {
+        border-left: 3px solid var(--danger-color);
+        background: rgba(220, 53, 69, 0.05);
+    }
+    
+    .quick-pay-buttons {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-top: 15px;
+    }
+    
+    .payment-details {
+        background: var(--light-color);
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+    }
+    
+    .payment-details p {
+        margin-bottom: 8px;
+        display: flex;
+        justify-content: space-between;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const addBillForm = document.getElementById('addBillForm');
+        const payAllBillsBtn = document.getElementById('payAllBills');
+        const paymentModal = new bootstrap.Modal(document.getElementById('paymentModal'));
+        const confirmPaymentBtn = document.getElementById('confirmPayment');
+        
+        let currentBillId = null;
+        
+        // Add new bill
+        addBillForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            
+            submitBtn.innerHTML = '<div class="spinner-border spinner-border-sm me-2"></div> Adding...';
+            submitBtn.disabled = true;
+            
+            // Simulate API call
+            setTimeout(() => {
+                showNotification('Bill added successfully!', 'success');
+                this.reset();
+                
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+                
+                // In a real app, you would refresh the bills list
+                location.reload();
+            }, 1500);
+        });
+        
+        // Pay individual bill
+        document.querySelectorAll('.pay-bill-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                currentBillId = this.getAttribute('data-bill-id');
+                const billItem = this.closest('.bill-item');
+                const billName = billItem.querySelector('h5').textContent;
+                const billAmount = billItem.querySelector('.bill-amount').textContent;
+                const dueDate = billItem.querySelector('.due-date').textContent.replace('Due: ', '');
+                
+                document.getElementById('paymentBillName').textContent = billName;
+                document.getElementById('paymentAmount').textContent = billAmount;
+                document.getElementById('paymentDueDate').textContent = dueDate;
+                
+                paymentModal.show();
+            });
+        });
+        
+        // Pay all bills
+        payAllBillsBtn.addEventListener('click', function() {
+            if (confirm('Are you sure you want to pay all pending bills?')) {
+                const originalText = this.innerHTML;
+                this.innerHTML = '<div class="spinner-border spinner-border-sm me-2"></div> Processing...';
+                this.disabled = true;
+                
+                setTimeout(() => {
+                    showNotification('All bills paid successfully!', 'success');
+                    this.innerHTML = originalText;
+                    this.disabled = false;
+                    location.reload();
+                }, 2000);
+            }
+        });
+        
+        // Confirm payment
+        confirmPaymentBtn.addEventListener('click', function() {
+            const originalText = this.innerHTML;
+            this.innerHTML = '<div class="spinner-border spinner-border-sm me-2"></div> Processing...';
+            this.disabled = true;
+            
+            setTimeout(() => {
+                showNotification('Payment processed successfully!', 'success');
+                paymentModal.hide();
+                this.innerHTML = originalText;
+                this.disabled = false;
+                location.reload();
+            }, 1500);
+        });
+        
+        // Set due date to today + 7 days by default
+        const dueDateInput = document.getElementById('dueDate');
+        const nextWeek = new Date();
+        nextWeek.setDate(nextWeek.getDate() + 7);
+        dueDateInput.valueAsDate = nextWeek;
+    });
+</script>
+{% endblock %}

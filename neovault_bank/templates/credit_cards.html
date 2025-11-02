@@ -1,0 +1,569 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Credit Cards - NeoVault Bank{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    {% include 'partials/dashboard_sidebar.html' %}
+    
+    <div class="dashboard-main">
+        <div class="page-header">
+            <h1><i class="fas fa-credit-card me-2"></i>Credit Cards</h1>
+            <p class="text-muted">Manage your credit cards and apply for new ones</p>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-8">
+                <!-- Your Credit Cards -->
+                <div class="operation-card mb-4">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h3>Your Credit Cards</h3>
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#applyCardModal">
+                            <i class="fas fa-plus me-2"></i>Apply for New Card
+                        </button>
+                    </div>
+                    
+                    <div class="credit-cards-grid">
+                        {% for card in credit_cards %}
+                        <div class="credit-card {% if card.card_type == 'visa' %}visa{% elif card.card_type == 'mastercard' %}mastercard{% else %}amex{% endif %}">
+                            <div class="card-header">
+                                <div class="card-logo">
+                                    {% if card.card_type == 'visa' %}
+                                    <i class="fab fa-cc-visa"></i>
+                                    {% elif card.card_type == 'mastercard' %}
+                                    <i class="fab fa-cc-mastercard"></i>
+                                    {% else %}
+                                    <i class="fab fa-cc-amex"></i>
+                                    {% endif %}
+                                </div>
+                                <div class="card-status">
+                                    <span class="badge bg-success">Active</span>
+                                </div>
+                            </div>
+                            
+                            <div class="card-number">
+                                <span>**** **** **** {{ card.card_number|slice:"-4:" }}</span>
+                            </div>
+                            
+                            <div class="card-details">
+                                <div class="card-holder">
+                                    <small>Card Holder</small>
+                                    <div>{{ user.get_full_name|default:user.username }}</div>
+                                </div>
+                                <div class="card-expiry">
+                                    <small>Expires</small>
+                                    <div>{{ card.expiry_date|date:"m/y" }}</div>
+                                </div>
+                            </div>
+                            
+                            <div class="card-balance">
+                                <small>Available Credit</small>
+                                <div class="balance">${{ card.available_credit|floatformat:2 }}</div>
+                                <div class="limit">of ${{ card.credit_limit|floatformat:2 }}</div>
+                            </div>
+                            
+                            <div class="card-actions">
+                                <button class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#cardDetailsModal{{ card.id }}">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="btn btn-outline-success btn-sm">
+                                    <i class="fas fa-sync"></i>
+                                </button>
+                                <button class="btn btn-outline-danger btn-sm">
+                                    <i class="fas fa-lock"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Card Details Modal -->
+                        <div class="modal fade" id="cardDetailsModal{{ card.id }}" tabindex="-1">
+                            <div class="modal-dialog modal-dialog-centered">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">Card Details</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="card-detail-item">
+                                            <span>Card Type:</span>
+                                            <strong>{{ card.get_card_type_display }}</strong>
+                                        </div>
+                                        <div class="card-detail-item">
+                                            <span>Card Number:</span>
+                                            <strong>**** **** **** {{ card.card_number|slice:"-4:" }}</strong>
+                                        </div>
+                                        <div class="card-detail-item">
+                                            <span>Expiry Date:</span>
+                                            <strong>{{ card.expiry_date|date:"F Y" }}</strong>
+                                        </div>
+                                        <div class="card-detail-item">
+                                            <span>Credit Limit:</span>
+                                            <strong>${{ card.credit_limit|floatformat:2 }}</strong>
+                                        </div>
+                                        <div class="card-detail-item">
+                                            <span>Available Credit:</span>
+                                            <strong>${{ card.available_credit|floatformat:2 }}</strong>
+                                        </div>
+                                        <div class="card-detail-item">
+                                            <span>Used Credit:</span>
+                                            <strong>${{ card.used_credit|floatformat:2 }}</strong>
+                                        </div>
+                                        <div class="progress mb-3">
+                                            <div class="progress-bar {% if card.usage_percentage < 50 %}bg-success{% elif card.usage_percentage < 80 %}bg-warning{% else %}bg-danger{% endif %}" 
+                                                 style="width: {{ card.usage_percentage }}%">
+                                                {{ card.usage_percentage }}%
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="col-12 text-center py-5">
+                            <i class="fas fa-credit-card fa-4x text-muted mb-3"></i>
+                            <h4 class="text-muted">No Credit Cards</h4>
+                            <p class="text-muted">You don't have any credit cards yet.</p>
+                            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#applyCardModal">
+                                Apply for Your First Card
+                            </button>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Recent Transactions -->
+                <div class="operation-card">
+                    <h3 class="mb-4">Recent Transactions</h3>
+                    <div class="transactions-list">
+                        {% for transaction in recent_transactions %}
+                        <div class="transaction-item">
+                            <div class="transaction-icon">
+                                <i class="fas fa-shopping-cart"></i>
+                            </div>
+                            <div class="transaction-info">
+                                <h6>{{ transaction.merchant|default:"Unknown Merchant" }}</h6>
+                                <small class="text-muted">{{ transaction.date|date:"M d, Y" }} • {{ transaction.category }}</small>
+                            </div>
+                            <div class="transaction-amount {% if transaction.type == 'credit' %}text-success{% else %}text-danger{% endif %}">
+                                {% if transaction.type == 'credit' %}+{% else %}-{% endif %}${{ transaction.amount|floatformat:2 }}
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-receipt fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">No recent transactions</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-4">
+                <!-- Credit Summary -->
+                <div class="summary-card">
+                    <h4 class="mb-4">Credit Summary</h4>
+                    
+                    <div class="summary-item">
+                        <span>Total Credit Limit:</span>
+                        <strong>${{ total_credit_limit|floatformat:2 }}</strong>
+                    </div>
+                    
+                    <div class="summary-item">
+                        <span>Available Credit:</span>
+                        <strong>${{ total_available_credit|floatformat:2 }}</strong>
+                    </div>
+                    
+                    <div class="summary-item">
+                        <span>Used Credit:</span>
+                        <strong>${{ total_used_credit|floatformat:2 }}</strong>
+                    </div>
+                    
+                    <div class="summary-item">
+                        <span>Credit Utilization:</span>
+                        <strong>{{ credit_utilization }}%</strong>
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="progress mb-3">
+                        <div class="progress-bar {% if credit_utilization < 30 %}bg-success{% elif credit_utilization < 50 %}bg-warning{% else %}bg-danger{% endif %}" 
+                             style="width: {{ credit_utilization }}%">
+                            {{ credit_utilization }}%
+                        </div>
+                    </div>
+                    
+                    <small class="text-muted">
+                        <i class="fas fa-info-circle me-1"></i>
+                        Keep utilization below 30% for better credit score
+                    </small>
+                </div>
+                
+                <!-- Quick Actions -->
+                <div class="tips-card">
+                    <h5><i class="fas fa-bolt me-2"></i>Quick Actions</h5>
+                    <div class="quick-actions-grid">
+                        <button class="quick-action-btn">
+                            <i class="fas fa-money-bill-wave"></i>
+                            <span>Make Payment</span>
+                        </button>
+                        <button class="quick-action-btn">
+                            <i class="fas fa-file-invoice"></i>
+                            <span>View Statement</span>
+                        </button>
+                        <button class="quick-action-btn">
+                            <i class="fas fa-lock"></i>
+                            <span>Security Settings</span>
+                        </button>
+                        <button class="quick-action-btn">
+                            <i class="fas fa-bell"></i>
+                            <span>Alerts</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Credit Score -->
+                <div class="recent-card">
+                    <h5>Credit Score</h5>
+                    <div class="credit-score-display">
+                        <div class="score-circle">
+                            <div class="score-value">750</div>
+                            <div class="score-label">Good</div>
+                        </div>
+                        <div class="score-details">
+                            <p><strong>Last Updated:</strong> {{ current_date|date:"M d, Y" }}</p>
+                            <p><strong>Factors:</strong> Payment History, Credit Usage</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Apply for New Card Modal -->
+<div class="modal fade" id="applyCardModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Apply for Credit Card</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="card-options">
+                    <div class="card-option active" data-card-type="visa">
+                        <div class="card-preview visa">
+                            <i class="fab fa-cc-visa"></i>
+                            <h6>Visa Signature</h6>
+                            <p>5% cashback on groceries</p>
+                        </div>
+                    </div>
+                    <div class="card-option" data-card-type="mastercard">
+                        <div class="card-preview mastercard">
+                            <i class="fab fa-cc-mastercard"></i>
+                            <h6>MasterCard Gold</h6>
+                            <p>Travel rewards & insurance</p>
+                        </div>
+                    </div>
+                    <div class="card-option" data-card-type="amex">
+                        <div class="card-preview amex">
+                            <i class="fab fa-cc-amex"></i>
+                            <h6>American Express</h6>
+                            <p>Premium benefits & concierge</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <form id="cardApplicationForm" class="mt-4">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Desired Credit Limit</label>
+                            <select class="form-select" id="creditLimit" required>
+                                <option value="">Select limit...</option>
+                                <option value="1000">$1,000</option>
+                                <option value="3000">$3,000</option>
+                                <option value="5000">$5,000</option>
+                                <option value="10000">$10,000</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Employment Status</label>
+                            <select class="form-select" required>
+                                <option value="">Select status...</option>
+                                <option value="employed">Employed</option>
+                                <option value="self-employed">Self-Employed</option>
+                                <option value="student">Student</option>
+                                <option value="retired">Retired</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Annual Income</label>
+                            <input type="number" class="form-control" placeholder="Enter annual income" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Monthly Rent/Mortgage</label>
+                            <input type="number" class="form-control" placeholder="Enter housing payment">
+                        </div>
+                    </div>
+                    
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="termsAccept" required>
+                        <label class="form-check-label" for="termsAccept">
+                            I agree to the terms and conditions and credit card agreement
+                        </label>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" form="cardApplicationForm" class="btn btn-primary">Submit Application</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .credit-cards-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 20px;
+    }
+    
+    .credit-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 25px;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        position: relative;
+        overflow: hidden;
+        min-height: 200px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+    
+    .credit-card.visa {
+        background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+    }
+    
+    .credit-card.mastercard {
+        background: linear-gradient(135deg, #f46b45, #eea849);
+    }
+    
+    .credit-card.amex {
+        background: linear-gradient(135deg, #0077b6, #00b4d8);
+    }
+    
+    .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+    
+    .card-logo i {
+        font-size: 2rem;
+    }
+    
+    .card-number {
+        font-size: 1.3rem;
+        letter-spacing: 2px;
+        margin-bottom: 20px;
+        font-family: monospace;
+    }
+    
+    .card-details {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 20px;
+    }
+    
+    .card-details small {
+        opacity: 0.8;
+        font-size: 0.8rem;
+    }
+    
+    .card-balance {
+        text-align: center;
+        margin-bottom: 15px;
+    }
+    
+    .balance {
+        font-size: 1.5rem;
+        font-weight: 700;
+    }
+    
+    .limit {
+        opacity: 0.8;
+        font-size: 0.9rem;
+    }
+    
+    .card-actions {
+        display: flex;
+        gap: 8px;
+        justify-content: center;
+    }
+    
+    .card-options {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+    
+    .card-option {
+        cursor: pointer;
+    }
+    
+    .card-preview {
+        background: var(--light-color);
+        padding: 20px;
+        border-radius: 10px;
+        text-align: center;
+        border: 2px solid transparent;
+        transition: all 0.3s ease;
+    }
+    
+    .card-option.active .card-preview {
+        border-color: var(--accent-color);
+        background: rgba(255, 107, 53, 0.1);
+    }
+    
+    .card-preview i {
+        font-size: 2rem;
+        margin-bottom: 10px;
+    }
+    
+    .card-preview.visa i { color: #1a2a6c; }
+    .card-preview.mastercard i { color: #f46b45; }
+    .card-preview.amex i { color: #0077b6; }
+    
+    .quick-actions-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-top: 15px;
+    }
+    
+    .quick-action-btn {
+        background: var(--light-color);
+        border: none;
+        padding: 15px 10px;
+        border-radius: 8px;
+        text-align: center;
+        transition: all 0.3s ease;
+    }
+    
+    .quick-action-btn:hover {
+        background: var(--primary-color);
+        color: white;
+        transform: translateY(-2px);
+    }
+    
+    .quick-action-btn i {
+        font-size: 1.2rem;
+        margin-bottom: 5px;
+        display: block;
+    }
+    
+    .credit-score-display {
+        text-align: center;
+        padding: 20px 0;
+    }
+    
+    .score-circle {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        background: conic-gradient(#28a745 0% 75%, #dee2e6 75% 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 15px;
+        position: relative;
+    }
+    
+    .score-circle::before {
+        content: '';
+        position: absolute;
+        width: 80px;
+        height: 80px;
+        background: white;
+        border-radius: 50%;
+    }
+    
+    .score-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        position: relative;
+        z-index: 1;
+    }
+    
+    .score-label {
+        color: var(--success-color);
+        font-weight: 600;
+    }
+    
+    .card-detail-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 10px 0;
+        border-bottom: 1px solid #eee;
+    }
+    
+    .card-detail-item:last-child {
+        border-bottom: none;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Card selection
+        const cardOptions = document.querySelectorAll('.card-option');
+        cardOptions.forEach(option => {
+            option.addEventListener('click', function() {
+                cardOptions.forEach(opt => opt.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+        
+        // Card application form
+        const cardApplicationForm = document.getElementById('cardApplicationForm');
+        cardApplicationForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            
+            submitBtn.innerHTML = '<div class="spinner-border spinner-border-sm me-2"></div> Processing...';
+            submitBtn.disabled = true;
+            
+            // Simulate application processing
+            setTimeout(() => {
+                showNotification('Credit card application submitted successfully!', 'success');
+                bootstrap.Modal.getInstance(document.getElementById('applyCardModal')).hide();
+                
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+                this.reset();
+            }, 2000);
+        });
+        
+        // Quick action buttons
+        document.querySelectorAll('.quick-action-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const action = this.querySelector('span').textContent;
+                showNotification(`${action} feature would be implemented here`, 'info');
+            });
+        });
+    });
+</script>
+{% endblock %}

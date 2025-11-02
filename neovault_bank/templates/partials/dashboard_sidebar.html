@@ -1,0 +1,81 @@
+<div class="dashboard-sidebar" id="dashboardSidebar">
+    <div class="sidebar-header">
+        <div class="user-avatar">
+            {% if user.profile_picture %}
+            <img src="{{ user.profile_picture.url }}" alt="{{ user.username }}">
+            {% else %}
+            <i class="fas fa-user fa-2x"></i>
+            {% endif %}
+        </div>
+        <h5 class="mb-1">{{ user.get_full_name|default:user.username }}</h5>
+        <p class="small mb-0">{{ user.email }}</p>
+        <div class="mt-2">
+            <span class="badge bg-success">Verified</span>
+        </div>
+    </div>
+    
+    <div class="sidebar-nav">
+        <div class="nav-item">
+            <a href="{% url 'dashboard' %}" class="nav-link active">
+                <i class="fas fa-tachometer-alt"></i>
+                <span>Dashboard</span>
+            </a>
+        </div>
+        
+        <div class="nav-item">
+            <a href="{% url 'deposit' %}" class="nav-link">
+                <i class="fas fa-money-bill-wave"></i>
+                <span>Deposit Money</span>
+            </a>
+        </div>
+        
+        <div class="nav-item">
+            <a href="{% url 'withdraw' %}" class="nav-link">
+                <i class="fas fa-hand-holding-usd"></i>
+                <span>Withdraw Money</span>
+            </a>
+        </div>
+        
+        <div class="nav-item">
+            <a href="{% url 'transfer' %}" class="nav-link">
+                <i class="fas fa-exchange-alt"></i>
+                <span>Transfer Funds</span>
+            </a>
+        </div>
+        
+        <div class="nav-item">
+            <a href="{% url 'bills' %}" class="nav-link">
+                <i class="fas fa-file-invoice-dollar"></i>
+                <span>Pay Bills</span>
+            </a>
+        </div>
+        
+        <div class="nav-item">
+            <a href="{% url 'credit_cards' %}" class="nav-link">
+                <i class="fas fa-credit-card"></i>
+                <span>Credit Cards</span>
+            </a>
+        </div>
+        
+        <div class="nav-item">
+            <a href="{% url 'savings_goals' %}" class="nav-link">
+                <i class="fas fa-bullseye"></i>
+                <span>Savings Goals</span>
+            </a>
+        </div>
+        
+        <div class="nav-item">
+            <a href="{% url 'profile' %}" class="nav-link">
+                <i class="fas fa-user-cog"></i>
+                <span>Profile Settings</span>
+            </a>
+        </div>
+        
+        <div class="nav-item mt-4">
+            <a href="{% url 'logout' %}" class="nav-link text-danger">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </a>
+        </div>
+    </div>
+</div>

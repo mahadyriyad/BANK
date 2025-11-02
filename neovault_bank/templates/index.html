@@ -1,0 +1,1043 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<!-- Hero Section -->
+<section id="home" class="hero-section">
+    <div class="floating-shapes">
+        <div class="shape"></div>
+        <div class="shape"></div>
+        <div class="shape"></div>
+        <div class="shape"></div>
+        <div class="shape"></div>
+    </div>
+    <div class="container hero-content">
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <h1 class="display-4 fw-bold">Welcome to NeoVault Bank</h1>
+                <p class="lead">Your trusted financial partner for over 50 years</p>
+                <p>We serve more than 2 million customers worldwide with innovative banking solutions tailored to your needs.</p>
+                <div class="d-flex gap-3 mt-4">
+                    <a href="#about" class="btn btn-hero btn-animated">Learn More About Us</a>
+                    {% if user.is_authenticated %}
+                    <a href="{% url 'dashboard' %}" class="btn btn-outline-light btn-animated">Go to Dashboard</a>
+                    {% else %}
+                    <a href="{% url 'register' %}" class="btn btn-outline-light btn-animated">Get Started</a>
+                    {% endif %}
+                </div>
+                <div class="mt-4">
+                    <div class="row">
+                        <div class="col-4">
+                            <div class="text-center">
+                                <h3 class="text-warning">500+</h3>
+                                <small>Branches</small>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="text-center">
+                                <h3 class="text-warning">2M+</h3>
+                                <small>Customers</small>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="text-center">
+                                <h3 class="text-warning">50+</h3>
+                                <small>Years</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6 text-center">
+                <div class="banking-illustration">
+                    <img src="{% static 'images/banking-illustration.svg' %}" 
+                         alt="Banking Illustration" class="img-fluid hover-zoom">
+                </div>
+                <div class="mt-4">
+                    <div class="security-badge">
+                        <i class="fas fa-shield-alt me-2"></i>
+                        <span>256-bit SSL Encryption</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- About Section -->
+<section id="about" class="section-padding">
+    <div class="container">
+        <h2 class="section-title">About NeoVault Bank</h2>
+        <div class="row">
+            <div class="col-lg-6">
+                <p class="lead">NeoVault Bank is one of the leading financial institutions in the country, established in 1972. With over 500 branches nationwide and a strong digital presence, we provide comprehensive banking services to individuals and businesses.</p>
+                <p>Our mission is to empower our customers to achieve their financial goals through innovative products, personalized service, and cutting-edge technology. We believe in building long-term relationships based on trust, transparency, and mutual success.</p>
+                <p>We are committed to maintaining the highest standards of integrity, transparency, and customer satisfaction. Our team of over 5,000 dedicated professionals works tirelessly to deliver exceptional banking experiences.</p>
+                
+                <div class="mt-4">
+                    <h4 class="mb-3">Our History</h4>
+                    <div class="timeline">
+                        <div class="timeline-item">
+                            <h5>1972 - Foundation</h5>
+                            <p>NeoVault Bank was established with a vision to provide accessible banking services to everyone.</p>
+                        </div>
+                        <div class="timeline-item">
+                            <h5>1985 - Expansion</h5>
+                            <p>We expanded to 50 branches across the country, becoming a national bank.</p>
+                        </div>
+                        <div class="timeline-item">
+                            <h5>2000 - Digital Innovation</h5>
+                            <p>Launched our first online banking platform, revolutionizing customer experience.</p>
+                        </div>
+                        <div class="timeline-item">
+                            <h5>2015 - International Presence</h5>
+                            <p>Expanded our services internationally with branches in 5 countries.</p>
+                        </div>
+                        <div class="timeline-item">
+                            <h5>2023 - Future Ready</h5>
+                            <p>Continuing to innovate with AI-powered banking and blockchain technology.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="row">
+                    <div class="col-md-6 mb-4">
+                        <div class="stat-card hover-lift">
+                            <div class="stat-number">500+</div>
+                            <div class="stat-label">Branches</div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-4">
+                        <div class="stat-card hover-lift">
+                            <div class="stat-number">5,000+</div>
+                            <div class="stat-label">Employees</div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-4">
+                        <div class="stat-card hover-lift">
+                            <div class="stat-number">2M+</div>
+                            <div class="stat-label">Customers</div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-4">
+                        <div class="stat-card hover-lift">
+                            <div class="stat-number">$50B+</div>
+                            <div class="stat-label">Assets</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="chart-container hover-glow">
+                    <h5 class="mb-4">Customer Satisfaction Rate</h5>
+                    <div class="progress mb-2">
+                        <div class="progress-bar bg-success" style="width: 94%">94%</div>
+                    </div>
+                    <small>Based on 2023 customer feedback surveys</small>
+                </div>
+                
+                <div class="security-tip mt-4 hover-zoom">
+                    <h5><i class="fas fa-shield-alt me-2"></i>Security First</h5>
+                    <p class="mb-0">We use advanced encryption and multi-factor authentication to protect your financial data.</p>
+                </div>
+
+                <div class="awards-section mt-4">
+                    <h5><i class="fas fa-trophy me-2"></i>Awards & Recognition</h5>
+                    <div class="row mt-3">
+                        <div class="col-6">
+                            <div class="award-item text-center">
+                                <i class="fas fa-award text-warning fa-2x"></i>
+                                <p class="mb-0 small">Best Digital Bank 2023</p>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="award-item text-center">
+                                <i class="fas fa-medal text-info fa-2x"></i>
+                                <p class="mb-0 small">Customer Service Excellence</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Gallery Section -->
+<section id="gallery-section" class="site-section">
+    <div class="container">
+        <div class="row mb-5">
+            <div class="col-12 text-center">
+                <h2 class="section-title mb-3">Our Gallery</h2>
+                <p class="lead">Explore moments from our banking journey and community events</p>
+            </div>
+        </div>
+
+        <div class="gallery-filters">
+            <button class="btn btn-primary active" data-filter="*">All</button>
+            <button class="btn btn-outline-primary" data-filter="events">Events</button>
+            <button class="btn btn-outline-primary" data-filter="party">Party</button>
+            <button class="btn btn-outline-primary" data-filter="holidays">Holidays</button>
+            <button class="btn btn-outline-primary" data-filter="branches">Branches</button>
+        </div>
+
+        <div class="gallery-grid">
+            {% for image in gallery_images %}
+            <div class="gallery-item" data-category="{{ image.category }}">
+                <img src="{{ image.image.url }}" alt="{{ image.title }}">
+                <div class="gallery-overlay">
+                    <div class="gallery-caption">
+                        <h4>{{ image.title }}</h4>
+                        <p>{{ image.description }}</p>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12 text-center">
+                <p>No gallery images available at the moment.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- How It Works Section -->
+<section id="how-it-works" class="site-section">
+    <div class="container">
+        <div class="row mb-5">
+            <div class="col-12 text-center">
+                <h2 class="section-title mb-3">How It Works</h2>
+                <p class="lead">Simple steps to start banking with NeoVault</p>
+            </div>
+        </div>
+
+        <div class="how-it-works-container">
+            <div class="how-it-works-timeline">
+                <!-- Step 1 -->
+                <div class="works-step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <div class="step-icon">
+                            <i class="fas fa-user-plus"></i>
+                        </div>
+                        <h4>Create Account</h4>
+                        <p>Sign up online or visit any branch with your identification documents. Our digital onboarding takes less than 10 minutes.</p>
+                        <ul>
+                            <li>Digital verification</li>
+                            <li>Instant account number</li>
+                            <li>Mobile banking access</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Step 2 -->
+                <div class="works-step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <div class="step-icon">
+                            <i class="fas fa-mobile-alt"></i>
+                        </div>
+                        <h4>Download App</h4>
+                        <p>Get our mobile banking app from App Store or Google Play. Access your accounts anytime, anywhere with full security.</p>
+                        <ul>
+                            <li>Biometric login</li>
+                            <li>24/7 access</li>
+                            <li>Secure transactions</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Step 3 -->
+                <div class="works-step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <div class="step-icon">
+                            <i class="fas fa-credit-card"></i>
+                        </div>
+                        <h4>Get Your Card</h4>
+                        <p>Receive your personalized debit card within 3-5 business days. Activate it instantly through our mobile app.</p>
+                        <ul>
+                            <li>Contactless payments</li>
+                            <li>ATM access worldwide</li>
+                            <li>Rewards program</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Step 4 -->
+                <div class="works-step">
+                    <div class="step-number">4</div>
+                    <div class="step-content">
+                        <div class="step-icon">
+                            <i class="fas fa-rocket"></i>
+                        </div>
+                        <h4>Start Banking</h4>
+                        <p>Begin managing your finances with our complete suite of banking services and personalized financial advice.</p>
+                        <ul>
+                            <li>Smart savings</li>
+                            <li>Investment options</li>
+                            <li>Loan facilities</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Pricing Section -->
+<section id="pricing-section" class="site-section bg-light">
+    <div class="container">
+        <div class="row mb-5">
+            <div class="col-12 text-center">
+                <h2 class="section-title mb-3">Our Pricing Plans</h2>
+                <p class="lead">Choose the perfect plan for your banking needs</p>
+            </div>
+        </div>
+
+        <div class="pricing-toggle text-center mb-5">
+            <div class="btn-group" role="group">
+                <input type="radio" class="btn-check" name="pricing-period" id="monthly" autocomplete="off" checked>
+                <label class="btn btn-outline-primary" for="monthly">Monthly</label>
+                
+                <input type="radio" class="btn-check" name="pricing-period" id="yearly" autocomplete="off">
+                <label class="btn btn-outline-primary" for="yearly">Yearly (Save 20%)</label>
+            </div>
+        </div>
+
+        <div class="pricing-container">
+            <div class="row">
+                <!-- Basic Plan -->
+                <div class="col-md-4 mb-4">
+                    <div class="pricing-card">
+                        <div class="pricing-header">
+                            <div class="pricing-icon">
+                                <i class="fas fa-piggy-bank"></i>
+                            </div>
+                            <h3 class="pricing-title">Basic</h3>
+                            <div class="pricing-price">
+                                <span class="pricing-amount" data-monthly="500">৳500</span>
+                                <span class="pricing-period">/month</span>
+                            </div>
+                        </div>
+                        <ul class="pricing-features">
+                            <li><i class="fas fa-check"></i> Free Online Banking</li>
+                            <li><i class="fas fa-check"></i> Mobile Banking App</li>
+                            <li><i class="fas fa-check"></i> Debit Card</li>
+                            <li><i class="fas fa-check"></i> 5 Free ATM Withdrawals</li>
+                            <li><i class="fas fa-times"></i> Premium Rewards</li>
+                            <li><i class="fas fa-times"></i> Investment Advice</li>
+                            <li><i class="fas fa-times"></i> Priority Support</li>
+                        </ul>
+                        <div class="pricing-cta">
+                            {% if user.is_authenticated %}
+                            <a href="{% url 'dashboard' %}" class="btn btn-outline-primary w-100">Get Started</a>
+                            {% else %}
+                            <a href="{% url 'register' %}" class="btn btn-outline-primary w-100">Get Started</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Premium Plan (Most Popular) -->
+                <div class="col-md-4 mb-4">
+                    <div class="pricing-card popular">
+                        <div class="pricing-header">
+                            <div class="pricing-icon">
+                                <i class="fas fa-crown"></i>
+                            </div>
+                            <h3 class="pricing-title">Premium</h3>
+                            <div class="pricing-price">
+                                <span class="pricing-amount" data-monthly="1200">৳1,200</span>
+                                <span class="pricing-period">/month</span>
+                            </div>
+                        </div>
+                        <ul class="pricing-features">
+                            <li><i class="fas fa-check"></i> All Basic Features</li>
+                            <li><i class="fas fa-check"></i> Unlimited ATM Withdrawals</li>
+                            <li><i class="fas fa-check"></i> Premium Rewards Program</li>
+                            <li><i class="fas fa-check"></i> Travel Insurance</li>
+                            <li><i class="fas fa-check"></i> Investment Portfolio</li>
+                            <li><i class="fas fa-check"></i> Financial Advisor</li>
+                            <li><i class="fas fa-times"></i> Business Banking</li>
+                        </ul>
+                        <div class="pricing-cta">
+                            {% if user.is_authenticated %}
+                            <a href="{% url 'dashboard' %}" class="btn btn-primary w-100">Get Started</a>
+                            {% else %}
+                            <a href="{% url 'register' %}" class="btn btn-primary w-100">Get Started</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Business Plan -->
+                <div class="col-md-4 mb-4">
+                    <div class="pricing-card">
+                        <div class="pricing-header">
+                            <div class="pricing-icon">
+                                <i class="fas fa-briefcase"></i>
+                            </div>
+                            <h3 class="pricing-title">Business</h3>
+                            <div class="pricing-price">
+                                <span class="pricing-amount" data-monthly="2500">৳2,500</span>
+                                <span class="pricing-period">/month</span>
+                            </div>
+                        </div>
+                        <ul class="pricing-features">
+                            <li><i class="fas fa-check"></i> All Premium Features</li>
+                            <li><i class="fas fa-check"></i> Business Accounts</li>
+                            <li><i class="fas fa-check"></i> Merchant Services</li>
+                            <li><i class="fas fa-check"></i> Payroll Management</li>
+                            <li><i class="fas fa-check"></i> Tax Advisory</li>
+                            <li><i class="fas fa-check"></i> Dedicated Manager</li>
+                            <li><i class="fas fa-check"></i> 24/7 Priority Support</li>
+                        </ul>
+                        <div class="pricing-cta">
+                            {% if user.is_authenticated %}
+                            <a href="{% url 'dashboard' %}" class="btn btn-outline-primary w-100">Get Started</a>
+                            {% else %}
+                            <a href="{% url 'register' %}" class="btn btn-outline-primary w-100">Get Started</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section id="employees" class="section-padding bg-light">
+    <div class="container">
+        <h2 class="section-title text-center">Meet Our Team</h2>
+        <p class="text-center mb-5">Our dedicated professionals committed to your financial success</p>
+        
+        <div class="row">
+            {% for employee in employees %}
+            <div class="col-md-4 mb-4">
+                <div class="business-card-container">
+                    <div class="business-card">
+                        <!-- Front of the card -->
+                        <div class="card-face card-front">
+                            {% if employee.profile_picture %}
+                            <img src="{{ employee.profile_picture.url }}" alt="{{ employee.name }}" class="profile-pic">
+                            {% else %}
+                            <img src="{% static 'images/default-avatar.png' %}" alt="{{ employee.name }}" class="profile-pic">
+                            {% endif %}
+                            <div class="card-name">{{ employee.name }}</div>
+                            <div class="card-title">{{ employee.position }}</div>
+                            <div class="card-divider"></div>
+                            <div class="contact-info">
+                                <div class="contact-item">
+                                    <i class="fas fa-phone"></i>
+                                    <span>{{ employee.phone }}</span>
+                                </div>
+                                <div class="contact-item">
+                                    <i class="fas fa-envelope"></i>
+                                    <span>{{ employee.email }}</span>
+                                </div>
+                                <div class="contact-item">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                    <span>Dhaka, Bangladesh</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Back of the card -->
+                        <div class="card-face card-back">
+                            <div class="back-title">Let's Connect</div>
+                            <div class="back-subtitle">{{ employee.bio|truncatewords:20 }}</div>
+                            <div class="social-icons">
+                                {% if employee.facebook %}
+                                <a href="{{ employee.facebook }}" class="social-icon facebook" target="_blank">
+                                    <i class="fab fa-facebook-f"></i>
+                                </a>
+                                {% endif %}
+                                {% if employee.instagram %}
+                                <a href="{{ employee.instagram }}" class="social-icon instagram" target="_blank">
+                                    <i class="fab fa-instagram"></i>
+                                </a>
+                                {% endif %}
+                                {% if employee.github %}
+                                <a href="{{ employee.github }}" class="social-icon github" target="_blank">
+                                    <i class="fab fa-github"></i>
+                                </a>
+                                {% endif %}
+                                {% if employee.linkedin %}
+                                <a href="{{ employee.linkedin }}" class="social-icon linkedin" target="_blank">
+                                    <i class="fab fa-linkedin-in"></i>
+                                </a>
+                                {% endif %}
+                                <a href="mailto:{{ employee.email }}" class="social-icon gmail">
+                                    <i class="fas fa-envelope"></i>
+                                </a>
+                            </div>
+                            <div class="contact-text">Hover to flip back to front</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12 text-center">
+                <p>No team members available at the moment.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Bank Goals Section -->
+<section id="goals" class="section-padding">
+    <div class="container">
+        <h2 class="section-title text-center">Our Strategic Goals</h2>
+        <p class="text-center mb-5">We are committed to achieving excellence in banking through these strategic goals</p>
+        
+        <div class="row">
+            {% for goal in bank_goals %}
+            <div class="col-md-4">
+                <div class="bank-goal">
+                    <i class="fas fa-shield-alt goal-icon"></i>
+                    <h4>{{ goal.title }}</h4>
+                    <p>{{ goal.description }}</p>
+                    <div class="progress mt-3">
+                        <div class="progress-bar bg-success" style="width: {{ goal.progress }}%">{{ goal.progress }}%</div>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12 text-center">
+                <p>No strategic goals available at the moment.</p>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <div class="row mt-4">
+            <div class="col-md-4">
+                <div class="bank-goal">
+                    <i class="fas fa-mobile-alt goal-icon"></i>
+                    <h4>Digital Transformation</h4>
+                    <p>Enhancing our digital platforms to provide seamless, personalized banking experiences.</p>
+                    <div class="progress mt-3">
+                        <div class="progress-bar bg-primary" style="width: 85%">85%</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="bank-goal">
+                    <i class="fas fa-users goal-icon"></i>
+                    <h4>Customer Centricity</h4>
+                    <p>Putting customers at the center of everything we do through personalized service and support.</p>
+                    <div class="progress mt-3">
+                        <div class="progress-bar bg-warning" style="width: 88%">88%</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="bank-goal">
+                    <i class="fas fa-chart-line goal-icon"></i>
+                    <h4>Sustainable Growth</h4>
+                    <p>Achieving balanced growth while maintaining financial stability and shareholder value.</p>
+                    <div class="progress mt-3">
+                        <div class="progress-bar bg-info" style="width: 82%">82%</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Services Section -->
+<section id="services" class="section-padding bg-light">
+    <div class="container">
+        <h2 class="section-title text-center">Our Banking Services</h2>
+        <p class="text-center mb-5">Comprehensive financial solutions tailored to meet your unique needs</p>
+        
+        <div class="row">
+            <div class="col-md-4">
+                <div class="service-card">
+                    <i class="fas fa-piggy-bank service-icon"></i>
+                    <h4>Savings Accounts</h4>
+                    <p>High-interest savings accounts with flexible terms to help you grow your money securely.</p>
+                    <div class="service-features">
+                        <span class="badge bg-primary">4.5% APY</span>
+                        <span class="badge bg-success">No Fees</span>
+                    </div>
+                    {% if user.is_authenticated %}
+                    <a href="{% url 'dashboard' %}" class="btn btn-outline-primary mt-3 btn-animated">Open Account</a>
+                    {% else %}
+                    <a href="{% url 'register' %}" class="btn btn-outline-primary mt-3 btn-animated">Open Account</a>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="service-card">
+                    <i class="fas fa-home service-icon"></i>
+                    <h4>Home Loans</h4>
+                    <p>Competitive mortgage rates with flexible repayment options to make your dream home a reality.</p>
+                    <div class="service-features">
+                        <span class="badge bg-primary">3.2% Rate</span>
+                        <span class="badge bg-success">30 Years</span>
+                    </div>
+                    <a href="#home-loan-form" class="btn btn-outline-primary mt-3 btn-animated">Apply Now</a>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="service-card">
+                    <i class="fas fa-credit-card service-icon"></i>
+                    <h4>Credit Cards</h4>
+                    <p>Rewards, cashback, and low-interest credit cards with advanced security features.</p>
+                    <div class="service-features">
+                        <span class="badge bg-primary">5% Cashback</span>
+                        <span class="badge bg-success">0% APR</span>
+                    </div>
+                    {% if user.is_authenticated %}
+                    <a href="{% url 'credit_cards' %}" class="btn btn-outline-primary mt-3 btn-animated">Get Card</a>
+                    {% else %}
+                    <a href="{% url 'register' %}" class="btn btn-outline-primary mt-3 btn-animated">Get Card</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="row mt-4">
+            <div class="col-md-4">
+                <div class="service-card">
+                    <i class="fas fa-chart-pie service-icon"></i>
+                    <h4>Investment Services</h4>
+                    <p>Expert guidance and diverse investment options to help you build wealth over time.</p>
+                    <div class="service-features">
+                        <span class="badge bg-primary">Stocks</span>
+                        <span class="badge bg-success">Bonds</span>
+                    </div>
+                    {% if user.is_authenticated %}
+                    <a href="{% url 'dashboard' %}" class="btn btn-outline-primary mt-3 btn-animated">Invest Now</a>
+                    {% else %}
+                    <a href="{% url 'register' %}" class="btn btn-outline-primary mt-3 btn-animated">Invest Now</a>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="service-card">
+                    <i class="fas fa-university service-icon"></i>
+                    <h4>Business Banking</h4>
+                    <p>Tailored solutions for businesses of all sizes, from startups to established corporations.</p>
+                    <div class="service-features">
+                        <span class="badge bg-primary">Loans</span>
+                        <span class="badge bg-success">Merchant</span>
+                    </div>
+                    {% if user.is_authenticated %}
+                    <a href="{% url 'dashboard' %}" class="btn btn-outline-primary mt-3 btn-animated">Learn More</a>
+                    {% else %}
+                    <a href="{% url 'register' %}" class="btn btn-outline-primary mt-3 btn-animated">Learn More</a>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="service-card">
+                    <i class="fas fa-shield-alt service-icon"></i>
+                    <h4>Insurance</h4>
+                    <p>Comprehensive insurance products to protect what matters most to you and your family.</p>
+                    <div class="service-features">
+                        <span class="badge bg-primary">Life</span>
+                        <span class="badge bg-success">Health</span>
+                    </div>
+                    {% if user.is_authenticated %}
+                    <a href="{% url 'dashboard' %}" class="btn btn-outline-primary mt-3 btn-animated">Get Quote</a>
+                    {% else %}
+                    <a href="{% url 'register' %}" class="btn btn-outline-primary mt-3 btn-animated">Get Quote</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Notices Section -->
+<section id="notices" class="section-padding">
+    <div class="container">
+        <h2 class="section-title">Notices & Announcements</h2>
+        
+        <div class="notice-board">
+            {% for notice in notices %}
+            <div class="notice-item">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h5><i class="fas fa-bullhorn text-warning me-2"></i>{{ notice.title }}</h5>
+                    <span class="badge bg-{% if notice.priority == 'critical' %}danger{% elif notice.priority == 'high' %}warning{% elif notice.priority == 'medium' %}info{% else %}primary{% endif %}">{{ notice.get_priority_display }}</span>
+                </div>
+                <p class="mb-1">{{ notice.content }}</p>
+                <small class="text-muted">Posted: {{ notice.publish_date|date:"F d, Y" }}</small>
+            </div>
+            {% empty %}
+            <div class="text-center">
+                <p>No notices available at the moment.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Future Plans Section -->
+<section id="future-plans" class="section-padding bg-light">
+    <div class="container">
+        <h2 class="section-title text-center">Future Plans & Innovations</h2>
+        <p class="text-center mb-5">Discover what's next for NeoVault Bank and how we're shaping the future of banking</p>
+        
+        <div class="row">
+            <div class="col-lg-6 mb-4">
+                <div class="future-plan-card">
+                    <div class="plan-icon">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <h4>AI-Powered Banking</h4>
+                    <p>Implementing advanced artificial intelligence to provide personalized financial advice, fraud detection, and automated customer service.</p>
+                    <div class="plan-timeline">
+                        <span class="badge bg-primary">Q2 2024</span>
+                        <span class="plan-status">In Development</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-6 mb-4">
+                <div class="future-plan-card">
+                    <div class="plan-icon">
+                        <i class="fas fa-link"></i>
+                    </div>
+                    <h4>Blockchain Integration</h4>
+                    <p>Exploring blockchain technology for secure transactions, smart contracts, and decentralized financial services.</p>
+                    <div class="plan-timeline">
+                        <span class="badge bg-info">Q4 2024</span>
+                        <span class="plan-status">Research Phase</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-6 mb-4">
+                <div class="future-plan-card">
+                    <div class="plan-icon">
+                        <i class="fas fa-globe-americas"></i>
+                    </div>
+                    <h4>Global Expansion</h4>
+                    <p>Expanding our services to 10 new countries across Europe and Asia to serve our growing international customer base.</p>
+                    <div class="plan-timeline">
+                        <span class="badge bg-success">2025</span>
+                        <span class="plan-status">Planning Phase</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-6 mb-4">
+                <div class="future-plan-card">
+                    <div class="plan-icon">
+                        <i class="fas fa-leaf"></i>
+                    </div>
+                    <h4>Sustainable Banking</h4>
+                    <p>Committing to carbon-neutral operations and green investment options to support environmental sustainability.</p>
+                    <div class="plan-timeline">
+                        <span class="badge bg-success">Q3 2024</span>
+                        <span class="plan-status">Implementation</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Contact Us Section -->
+<section id="contact-section" class="site-section">
+    <div class="container">
+        <div class="row mb-5">
+            <div class="col-12 text-center">
+                <h2 class="section-title mb-3">Contact Us</h2>
+                <p class="lead">Get in touch with our banking experts</p>
+            </div>
+        </div>
+
+        <div class="contact-container">
+            <div class="row">
+                <div class="col-lg-4 mb-4">
+                    <div class="contact-info">
+                        <h4 class="mb-4">Get in Touch</h4>
+                        
+                        <div class="contact-method" data-type="phone">
+                            <div class="contact-icon">
+                                <i class="fas fa-phone"></i>
+                            </div>
+                            <div class="contact-details">
+                                <h5>Phone</h5>
+                                <p>+880 1XXX-XXXXXX</p>
+                                <small>Available 24/7</small>
+                            </div>
+                        </div>
+
+                        <div class="contact-method" data-type="email">
+                            <div class="contact-icon">
+                                <i class="fas fa-envelope"></i>
+                            </div>
+                            <div class="contact-details">
+                                <h5>Email</h5>
+                                <p>support@neovault.com</p>
+                                <small>Quick response guaranteed</small>
+                            </div>
+                        </div>
+
+                        <div class="contact-method" data-type="address">
+                            <div class="contact-icon">
+                                <i class="fas fa-map-marker-alt"></i>
+                            </div>
+                            <div class="contact-details">
+                                <h5>Head Office</h5>
+                                <p>123 Finance Street, Banking District<br>Dhaka 1212, Bangladesh</p>
+                                <small>Open 9AM - 5PM</small>
+                            </div>
+                        </div>
+
+                        <div class="contact-method" data-type="chat">
+                            <div class="contact-icon">
+                                <i class="fas fa-comments"></i>
+                            </div>
+                            <div class="contact-details">
+                                <h5>Live Chat</h5>
+                                <p>Available on website</p>
+                                <small>Instant support</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-8">
+                    <div class="contact-form-container">
+                        <h4 class="mb-4">Send us a Message</h4>
+                        <form class="contact-form" id="contactForm">
+                            {% csrf_token %}
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="name" class="form-label">Full Name *</label>
+                                        <input type="text" class="form-control" id="name" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="email" class="form-label">Email Address *</label>
+                                        <input type="email" class="form-control" id="email" required>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="phone" class="form-label">Phone Number</label>
+                                        <input type="tel" class="form-control" id="phone">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="subject" class="form-label">Subject *</label>
+                                        <input type="text" class="form-control" id="subject" required>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="message" class="form-label">Message *</label>
+                                <textarea class="form-control" id="message" rows="5" required></textarea>
+                            </div>
+
+                            <div class="form-group">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="newsletter">
+                                    <label class="form-check-label" for="newsletter">
+                                        Subscribe to our newsletter for updates
+                                    </label>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary btn-lg w-100">
+                                <i class="fas fa-paper-plane me-2"></i> Send Message
+                            </button>
+                        </form>
+                    </div>
+
+                    <div class="map-container">
+                        <div class="map-placeholder">
+                            <div class="loading-spinner"></div>
+                            <p>Loading map...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Contact form submission
+    document.getElementById('contactForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(this);
+        const submitButton = this.querySelector('button[type="submit"]');
+        
+        // Show loading state
+        const originalText = submitButton.innerHTML;
+        submitButton.innerHTML = '<div class="loading-spinner"></div> Sending...';
+        submitButton.disabled = true;
+        
+        // Simulate form submission
+        setTimeout(() => {
+            showNotification('Thank you for your message! We will get back to you soon.', 'success');
+            this.reset();
+            
+            // Reset button
+            submitButton.innerHTML = originalText;
+            submitButton.disabled = false;
+        }, 2000);
+    });
+
+    // Gallery filtering functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        const filterButtons = document.querySelectorAll('.gallery-filters .btn');
+        const galleryItems = document.querySelectorAll('.gallery-item');
+        
+        filterButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                // Remove active class from all buttons
+                filterButtons.forEach(btn => btn.classList.remove('active'));
+                
+                // Add active class to clicked button
+                this.classList.add('active');
+                
+                const filterValue = this.getAttribute('data-filter');
+                
+                // Filter gallery items
+                galleryItems.forEach(item => {
+                    if (filterValue === '*' || item.getAttribute('data-category') === filterValue) {
+                        item.style.display = 'block';
+                        setTimeout(() => {
+                            item.style.opacity = '1';
+                            item.style.transform = 'scale(1)';
+                        }, 100);
+                    } else {
+                        item.style.opacity = '0';
+                        item.style.transform = 'scale(0.8)';
+                        setTimeout(() => {
+                            item.style.display = 'none';
+                        }, 300);
+                    }
+                });
+            });
+        });
+
+        // Pricing toggle functionality
+        const monthlyRadio = document.getElementById('monthly');
+        const yearlyRadio = document.getElementById('yearly');
+        
+        monthlyRadio.addEventListener('change', updatePricing);
+        yearlyRadio.addEventListener('change', updatePricing);
+        
+        function updatePricing() {
+            const isYearly = yearlyRadio.checked;
+            const pricingAmounts = document.querySelectorAll('.pricing-amount');
+            const pricingPeriods = document.querySelectorAll('.pricing-period');
+            
+            pricingAmounts.forEach(amount => {
+                const monthlyPrice = parseFloat(amount.getAttribute('data-monthly'));
+                if (isYearly) {
+                    const yearlyPrice = monthlyPrice * 12 * 0.8; // 20% discount
+                    amount.textContent = `৳${yearlyPrice.toLocaleString('en-BD')}`;
+                } else {
+                    amount.textContent = `৳${monthlyPrice.toLocaleString('en-BD')}`;
+                }
+            });
+            
+            pricingPeriods.forEach(period => {
+                period.textContent = isYearly ? '/year' : '/month';
+            });
+        }
+        
+        // Initialize pricing data
+        document.querySelectorAll('.pricing-amount').forEach(amount => {
+            const priceText = amount.textContent.replace('৳', '').replace(',', '');
+            amount.setAttribute('data-monthly', parseFloat(priceText));
+        });
+
+        // Business card flip animation
+        const businessCards = document.querySelectorAll('.business-card');
+        businessCards.forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.transform = 'rotateY(180deg)';
+            });
+            
+            card.addEventListener('mouseleave', function() {
+                this.style.transform = 'rotateY(0deg)';
+            });
+        });
+
+        // Map initialization (simulated)
+        setTimeout(() => {
+            const mapPlaceholder = document.querySelector('.map-placeholder');
+            if (mapPlaceholder) {
+                mapPlaceholder.innerHTML = `
+                    <div style="text-align: center;">
+                        <i class="fas fa-map-marker-alt" style="font-size: 3rem; margin-bottom: 15px;"></i>
+                        <h4>NeoVault Bank Headquarters</h4>
+                        <p>123 Finance Street, Banking District</p>
+                        <p>Dhaka 1212, Bangladesh</p>
+                        <button class="btn btn-light mt-3" onclick="showNotification('Opening in Google Maps...', 'info')">
+                            <i class="fas fa-directions"></i> Get Directions
+                        </button>
+                    </div>
+                `;
+            }
+        }, 1000);
+    });
+</script>
+
+<style>
+    /* Future Plans Styles */
+    .future-plan-card {
+        background: var(--card-bg);
+        padding: 30px;
+        border-radius: 15px;
+        box-shadow: 0 5px 15px var(--shadow-color);
+        text-align: center;
+        height: 100%;
+        transition: transform 0.3s ease;
+        border-top: 4px solid var(--primary-color);
+    }
+    
+    .future-plan-card:hover {
+        transform: translateY(-5px);
+    }
+    
+    .plan-icon {
+        font-size: 3rem;
+        color: var(--accent-color);
+        margin-bottom: 20px;
+    }
+    
+    .plan-timeline {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 20px;
+        padding-top: 15px;
+        border-top: 1px solid #eee;
+    }
+    
+    .plan-status {
+        font-size: 0.9rem;
+        color: var(--success-color);
+        font-weight: 600;
+    }
+</style>
+{% endblock %}

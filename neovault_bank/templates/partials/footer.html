@@ -1,0 +1,83 @@
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-4 mb-4">
+                <h5 class="mb-3"><i class="fas fa-university me-2"></i>NeoVault Bank</h5>
+                <p>Your trusted financial partner for over 50 years. We're committed to providing exceptional banking services with integrity and innovation.</p>
+                <div class="social-links mt-3">
+                    <a href="#" class="text-white me-3"><i class="fab fa-facebook-f fa-lg"></i></a>
+                    <a href="#" class="text-white me-3"><i class="fab fa-twitter fa-lg"></i></a>
+                    <a href="#" class="text-white me-3"><i class="fab fa-linkedin-in fa-lg"></i></a>
+                    <a href="#" class="text-white"><i class="fab fa-instagram fa-lg"></i></a>
+                </div>
+            </div>
+            
+            <div class="col-lg-2 col-md-6 mb-4">
+                <h5 class="mb-3">Quick Links</h5>
+                <ul class="list-unstyled">
+                    <li class="mb-2"><a href="{% url 'home' %}" class="text-white text-decoration-none">Home</a></li>
+                    <li class="mb-2"><a href="{% url 'about' %}" class="text-white text-decoration-none">About Us</a></li>
+                    <li class="mb-2"><a href="#employees" class="text-white text-decoration-none">Our Team</a></li>
+                    <li class="mb-2"><a href="#services" class="text-white text-decoration-none">Services</a></li>
+                    <li class="mb-2"><a href="#notices" class="text-white text-decoration-none">Notices</a></li>
+                </ul>
+            </div>
+            
+            <div class="col-lg-3 col-md-6 mb-4">
+                <h5 class="mb-3">Services</h5>
+                <ul class="list-unstyled">
+                    <li class="mb-2"><a href="#" class="text-white text-decoration-none">Personal Banking</a></li>
+                    <li class="mb-2"><a href="#" class="text-white text-decoration-none">Business Banking</a></li>
+                    <li class="mb-2"><a href="#" class="text-white text-decoration-none">Loans & Mortgages</a></li>
+                    <li class="mb-2"><a href="#" class="text-white text-decoration-none">Investment Services</a></li>
+                    <li class="mb-2"><a href="#" class="text-white text-decoration-none">Insurance</a></li>
+                </ul>
+            </div>
+            
+            <div class="col-lg-3 mb-4">
+                <h5 class="mb-3">Contact Us</h5>
+                <ul class="list-unstyled">
+                    <li class="mb-2"><i class="fas fa-map-marker-alt me-2"></i> 123 Finance Street, City, State 12345</li>
+                    <li class="mb-2"><i class="fas fa-phone me-2"></i> 1-800-NEOVAULT</li>
+                    <li class="mb-2"><i class="fas fa-envelope me-2"></i> info@neovault.com</li>
+                    <li class="mb-2"><i class="fas fa-clock me-2"></i> Mon-Fri: 9am-5pm, Sat: 10am-2pm</li>
+                </ul>
+            </div>
+        </div>
+        
+        <hr class="my-4">
+        
+        <div class="row">
+            <div class="col-md-6">
+                <p>&copy; 2023 NeoVault Bank. All rights reserved.</p>
+            </div>
+            <div class="col-md-6 text-end">
+                <a href="#" class="text-white text-decoration-none me-3">Privacy Policy</a>
+                <a href="#" class="text-white text-decoration-none me-3">Terms of Service</a>
+                <a href="#" class="text-white text-decoration-none">Security</a>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- Chatbot Button -->
+<button class="chatbot-btn pulse" id="chatbotToggle">
+    <i class="fas fa-robot"></i>
+</button>
+
+<!-- Chatbot Container -->
+<div class="chatbot-container" id="chatbotContainer">
+    <div class="chatbot-header">
+        <h5><i class="fas fa-robot"></i> Mr. Bank - Your Banking Assistant</h5>
+        <button class="chatbot-close" id="chatbotClose"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="chatbot-messages" id="chatbotMessages">
+        <div class="message bot-message">
+            Hello! I'm Mr. Bank, your virtual banking assistant. How can I help you today?
+        </div>
+    </div>
+    <div class="chatbot-input">
+        <input type="text" id="chatbotInput" placeholder="Type your message here...">
+        <button id="chatbotSend"><i class="fas fa-paper-plane"></i></button>
+    </div>
+</div>

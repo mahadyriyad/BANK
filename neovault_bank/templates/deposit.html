@@ -1,0 +1,451 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Deposit Money - NeoVault Bank{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    {% include 'partials/dashboard_sidebar.html' %}
+    
+    <div class="dashboard-main">
+        <div class="page-header">
+            <h1><i class="fas fa-money-bill-wave me-2"></i>Deposit Money</h1>
+            <p class="text-muted">Add funds to your account securely</p>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="operation-card">
+                    <h3 class="mb-4">Make a Deposit</h3>
+                    
+                    <form id="depositForm">
+                        {% csrf_token %}
+                        
+                        <div class="mb-4">
+                            <label for="accountSelect" class="form-label">Select Account</label>
+                            <select class="form-select" id="accountSelect" required>
+                                <option value="">Choose account...</option>
+                                {% for account in user_accounts %}
+                                <option value="{{ account.id }}" data-balance="{{ account.balance }}">
+                                    {{ account.get_account_type_display }} - {{ account.account_number }} (Balance: ${{ account.balance|floatformat:2 }})
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="amount" class="form-label">Amount</label>
+                            <div class="input-group">
+                                <span class="input-group-text">$</span>
+                                <input type="number" class="form-control" id="amount" 
+                                       placeholder="0.00" min="0.01" step="0.01" required>
+                            </div>
+                            <div class="form-text">Minimum deposit: $1.00</div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="description" class="form-label">Description</label>
+                            <textarea class="form-control" id="description" rows="3" 
+                                      placeholder="Add a note for this deposit (optional)"></textarea>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label class="form-label">Deposit Method</label>
+                            <div class="deposit-methods">
+                                <div class="method-option active" data-method="bank-transfer">
+                                    <i class="fas fa-university"></i>
+                                    <span>Bank Transfer</span>
+                                </div>
+                                <div class="method-option" data-method="debit-card">
+                                    <i class="fas fa-credit-card"></i>
+                                    <span>Debit Card</span>
+                                </div>
+                                <div class="method-option" data-method="mobile-wallet">
+                                    <i class="fas fa-mobile-alt"></i>
+                                    <span>Mobile Wallet</span>
+                                </div>
+                                <div class="method-option" data-method="cash">
+                                    <i class="fas fa-money-bill"></i>
+                                    <span>Cash Deposit</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Bank Transfer Details -->
+                        <div class="method-details active" id="bank-transfer-details">
+                            <h5 class="mb-3">Bank Transfer Instructions</h5>
+                            <div class="bank-details">
+                                <div class="detail-item">
+                                    <span>Bank Name:</span>
+                                    <strong>NeoVault Bank</strong>
+                                </div>
+                                <div class="detail-item">
+                                    <span>Account Number:</span>
+                                    <strong>NV123456789</strong>
+                                </div>
+                                <div class="detail-item">
+                                    <span>Routing Number:</span>
+                                    <strong>021000021</strong>
+                                </div>
+                                <div class="detail-item">
+                                    <span>SWIFT Code:</span>
+                                    <strong>NVBDUS33</strong>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Debit Card Details -->
+                        <div class="method-details" id="debit-card-details">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Card Number</label>
+                                    <input type="text" class="form-control" placeholder="1234 5678 9012 3456">
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <label class="form-label">Expiry Date</label>
+                                    <input type="text" class="form-control" placeholder="MM/YY">
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <label class="form-label">CVV</label>
+                                    <input type="text" class="form-control" placeholder="123">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-paper-plane me-2"></i>Process Deposit
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="col-lg-4">
+                <!-- Deposit Summary -->
+                <div class="summary-card">
+                    <h4 class="mb-4">Deposit Summary</h4>
+                    
+                    <div class="summary-item">
+                        <span>Selected Account:</span>
+                        <strong id="selectedAccount">-</strong>
+                    </div>
+                    
+                    <div class="summary-item">
+                        <span>Current Balance:</span>
+                        <strong id="currentBalance">-</strong>
+                    </div>
+                    
+                    <div class="summary-item">
+                        <span>Deposit Amount:</span>
+                        <strong id="depositAmount">$0.00</strong>
+                    </div>
+                    
+                    <div class="summary-item">
+                        <span>New Balance:</span>
+                        <strong id="newBalance">-</strong>
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="summary-item total">
+                        <span>Total to Deposit:</span>
+                        <strong id="totalAmount">$0.00</strong>
+                    </div>
+                </div>
+                
+                <!-- Quick Tips -->
+                <div class="tips-card">
+                    <h5><i class="fas fa-lightbulb me-2"></i>Quick Tips</h5>
+                    <ul class="tips-list">
+                        <li>Deposits are processed within 1-2 business days</li>
+                        <li>Keep your deposit receipts for reference</li>
+                        <li>Contact support for large deposits</li>
+                        <li>Verify account details before transferring</li>
+                    </ul>
+                </div>
+                
+                <!-- Recent Deposits -->
+                <div class="recent-card">
+                    <h5>Recent Deposits</h5>
+                    <div class="recent-list">
+                        {% for transaction in recent_deposits %}
+                        <div class="recent-item">
+                            <div class="recent-info">
+                                <strong>${{ transaction.amount|floatformat:2 }}</strong>
+                                <small>{{ transaction.timestamp|date:"M d" }}</small>
+                            </div>
+                            <span class="status completed">Completed</span>
+                        </div>
+                        {% empty %}
+                        <p class="text-muted text-center">No recent deposits</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Success Modal -->
+<div class="modal fade" id="successModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-body text-center p-5">
+                <div class="success-icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <h3 class="mt-4 mb-3">Deposit Successful!</h3>
+                <p class="text-muted mb-4">Your deposit has been processed successfully.</p>
+                <div class="deposit-details mb-4">
+                    <p><strong>Amount:</strong> <span id="successAmount"></span></p>
+                    <p><strong>New Balance:</strong> <span id="successBalance"></span></p>
+                    <p><strong>Reference:</strong> <span id="successReference"></span></p>
+                </div>
+                <div class="d-grid gap-2">
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Continue</button>
+                    <button type="button" class="btn btn-outline-primary">Print Receipt</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .page-header {
+        background: var(--card-bg);
+        padding: 30px;
+        border-radius: 15px;
+        box-shadow: 0 5px 15px var(--shadow-color);
+        margin-bottom: 30px;
+    }
+    
+    .operation-card {
+        background: var(--card-bg);
+        padding: 30px;
+        border-radius: 15px;
+        box-shadow: 0 5px 15px var(--shadow-color);
+        margin-bottom: 30px;
+    }
+    
+    .deposit-methods {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 15px;
+        margin-top: 10px;
+    }
+    
+    .method-option {
+        background: var(--light-color);
+        padding: 20px 15px;
+        border-radius: 10px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border: 2px solid transparent;
+    }
+    
+    .method-option.active {
+        border-color: var(--accent-color);
+        background: rgba(255, 107, 53, 0.1);
+    }
+    
+    .method-option:hover {
+        transform: translateY(-2px);
+    }
+    
+    .method-option i {
+        font-size: 1.5rem;
+        color: var(--primary-color);
+        margin-bottom: 10px;
+        display: block;
+    }
+    
+    .method-details {
+        display: none;
+        background: var(--light-color);
+        padding: 20px;
+        border-radius: 10px;
+        margin-top: 20px;
+    }
+    
+    .method-details.active {
+        display: block;
+    }
+    
+    .bank-details {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        border-left: 4px solid var(--primary-color);
+    }
+    
+    .detail-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 0;
+        border-bottom: 1px solid #eee;
+    }
+    
+    .detail-item:last-child {
+        border-bottom: none;
+    }
+    
+    .summary-card, .tips-card, .recent-card {
+        background: var(--card-bg);
+        padding: 25px;
+        border-radius: 15px;
+        box-shadow: 0 5px 15px var(--shadow-color);
+        margin-bottom: 25px;
+    }
+    
+    .summary-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 12px 0;
+        border-bottom: 1px solid #eee;
+    }
+    
+    .summary-item.total {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--primary-color);
+        border-bottom: none;
+    }
+    
+    .tips-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+    
+    .tips-list li {
+        padding: 8px 0;
+        border-bottom: 1px solid #eee;
+        position: relative;
+        padding-left: 20px;
+    }
+    
+    .tips-list li:before {
+        content: '✓';
+        position: absolute;
+        left: 0;
+        color: var(--success-color);
+        font-weight: bold;
+    }
+    
+    .tips-list li:last-child {
+        border-bottom: none;
+    }
+    
+    .recent-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 0;
+        border-bottom: 1px solid #eee;
+    }
+    
+    .recent-item:last-child {
+        border-bottom: none;
+    }
+    
+    .status.completed {
+        color: var(--success-color);
+        font-weight: 600;
+    }
+    
+    .success-icon {
+        font-size: 4rem;
+        color: var(--success-color);
+    }
+    
+    .deposit-details {
+        background: var(--light-color);
+        padding: 20px;
+        border-radius: 10px;
+        text-align: left;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const accountSelect = document.getElementById('accountSelect');
+        const amountInput = document.getElementById('amount');
+        const depositForm = document.getElementById('depositForm');
+        const methodOptions = document.querySelectorAll('.method-option');
+        
+        // Update summary when account is selected
+        accountSelect.addEventListener('change', updateSummary);
+        amountInput.addEventListener('input', updateSummary);
+        
+        // Deposit method selection
+        methodOptions.forEach(option => {
+            option.addEventListener('click', function() {
+                methodOptions.forEach(opt => opt.classList.remove('active'));
+                this.classList.add('active');
+                
+                // Show corresponding method details
+                const method = this.getAttribute('data-method');
+                document.querySelectorAll('.method-details').forEach(detail => {
+                    detail.classList.remove('active');
+                });
+                document.getElementById(`${method}-details`).classList.add('active');
+            });
+        });
+        
+        function updateSummary() {
+            const selectedOption = accountSelect.options[accountSelect.selectedIndex];
+            const currentBalance = selectedOption ? selectedOption.getAttribute('data-balance') : 0;
+            const depositAmount = parseFloat(amountInput.value) || 0;
+            
+            document.getElementById('selectedAccount').textContent = 
+                selectedOption ? selectedOption.text.split('(')[0] : '-';
+            document.getElementById('currentBalance').textContent = 
+                currentBalance ? `$${parseFloat(currentBalance).toFixed(2)}` : '-';
+            document.getElementById('depositAmount').textContent = `$${depositAmount.toFixed(2)}`;
+            document.getElementById('totalAmount').textContent = `$${depositAmount.toFixed(2)}`;
+            
+            if (currentBalance) {
+                const newBalance = parseFloat(currentBalance) + depositAmount;
+                document.getElementById('newBalance').textContent = `$${newBalance.toFixed(2)}`;
+            }
+        }
+        
+        // Form submission
+        depositForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            
+            submitBtn.innerHTML = '<div class="spinner-border spinner-border-sm me-2"></div> Processing...';
+            submitBtn.disabled = true;
+            
+            // Simulate API call
+            setTimeout(() => {
+                // Show success modal
+                const successModal = new bootstrap.Modal(document.getElementById('successModal'));
+                document.getElementById('successAmount').textContent = `$${amountInput.value}`;
+                document.getElementById('successBalance').textContent = document.getElementById('newBalance').textContent;
+                document.getElementById('successReference').textContent = 'NV' + Date.now();
+                
+                successModal.show();
+                
+                // Reset form and button
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+                this.reset();
+                updateSummary();
+            }, 2000);
+        });
+        
+        // Initialize summary
+        updateSummary();
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,519 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Savings Goals - NeoVault Bank{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    {% include 'partials/dashboard_sidebar.html' %}
+    
+    <div class="dashboard-main">
+        <div class="page-header">
+            <h1><i class="fas fa-bullseye me-2"></i>Savings Goals</h1>
+            <p class="text-muted">Plan and track your financial goals</p>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-8">
+                <!-- Create New Goal -->
+                <div class="operation-card mb-4">
+                    <h3 class="mb-4">Create New Savings Goal</h3>
+                    
+                    <form id="createGoalForm">
+                        {% csrf_token %}
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="goalName" class="form-label">Goal Name</label>
+                                <input type="text" class="form-control" id="goalName" 
+                                       placeholder="e.g., New Car, Vacation, Emergency Fund" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="goalCategory" class="form-label">Category</label>
+                                <select class="form-select" id="goalCategory" required>
+                                    <option value="">Select category...</option>
+                                    <option value="emergency">Emergency Fund</option>
+                                    <option value="vacation">Vacation</option>
+                                    <option value="vehicle">Vehicle</option>
+                                    <option value="home">Home</option>
+                                    <option value="education">Education</option>
+                                    <option value="retirement">Retirement</option>
+                                    <option value="wedding">Wedding</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="targetAmount" class="form-label">Target Amount</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input type="number" class="form-control" id="targetAmount" 
+                                           placeholder="0.00" min="0.01" step="0.01" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="targetDate" class="form-label">Target Date</label>
+                                <input type="date" class="form-control" id="targetDate" required>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="goalDescription" class="form-label">Description</label>
+                            <textarea class="form-control" id="goalDescription" rows="3" 
+                                      placeholder="Describe your goal and motivation..."></textarea>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-plus me-2"></i>Create Goal
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Your Goals -->
+                <div class="operation-card">
+                    <h3 class="mb-4">Your Savings Goals</h3>
+                    
+                    <div class="goals-list">
+                        {% for goal in savings_goals %}
+                        <div class="goal-item">
+                            <div class="goal-icon">
+                                <i class="fas fa-{% if goal.category == 'emergency' %}shield-alt{% elif goal.category == 'vacation' %}umbrella-beach{% elif goal.category == 'vehicle' %}car{% elif goal.category == 'home' %}home{% elif goal.category == 'education' %}graduation-cap{% elif goal.category == 'retirement' %}piggy-bank{% else %}star{% endif %}"></i>
+                            </div>
+                            
+                            <div class="goal-info">
+                                <div class="goal-header">
+                                    <h5>{{ goal.name }}</h5>
+                                    <div class="goal-amounts">
+                                        <span class="current-amount">${{ goal.current_amount|floatformat:2 }}</span>
+                                        <span class="target-amount">of ${{ goal.target_amount|floatformat:2 }}</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="goal-progress">
+                                    <div class="progress">
+                                        <div class="progress-bar" style="width: {{ goal.progress_percentage }}%">
+                                            {{ goal.progress_percentage|floatformat:0 }}%
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="goal-details">
+                                    <div class="detail-item">
+                                        <small>Target Date</small>
+                                        <strong>{{ goal.target_date|date:"M d, Y" }}</strong>
+                                    </div>
+                                    <div class="detail-item">
+                                        <small>Time Left</small>
+                                        <strong>{{ goal.time_left }}</strong>
+                                    </div>
+                                    <div class="detail-item">
+                                        <small>Monthly Saving</small>
+                                        <strong>${{ goal.monthly_saving|floatformat:2 }}</strong>
+                                    </div>
+                                </div>
+                                
+                                {% if goal.description %}
+                                <div class="goal-description">
+                                    <p class="text-muted mb-0">{{ goal.description }}</p>
+                                </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="goal-actions">
+                                <button class="btn btn-success btn-sm add-funds-btn" data-goal-id="{{ goal.id }}">
+                                    <i class="fas fa-plus me-1"></i>Add Funds
+                                </button>
+                                <button class="btn btn-outline-primary btn-sm">
+                                    <i class="fas fa-chart-line"></i>
+                                </button>
+                                <button class="btn btn-outline-danger btn-sm">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-bullseye fa-4x text-muted mb-3"></i>
+                            <h4 class="text-muted">No Savings Goals Yet</h4>
+                            <p class="text-muted">Start by creating your first savings goal above!</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-4">
+                <!-- Savings Summary -->
+                <div class="summary-card">
+                    <h4 class="mb-4">Savings Summary</h4>
+                    
+                    <div class="summary-item">
+                        <span>Total Goals:</span>
+                        <strong>{{ savings_goals.count }}</strong>
+                    </div>
+                    
+                    <div class="summary-item">
+                        <span>Total Target:</span>
+                        <strong>${{ total_target|floatformat:2 }}</strong>
+                    </div>
+                    
+                    <div class="summary-item">
+                        <span>Total Saved:</span>
+                        <strong>${{ total_saved|floatformat:2 }}</strong>
+                    </div>
+                    
+                    <div class="summary-item">
+                        <span>Overall Progress:</span>
+                        <strong>{{ overall_progress }}%</strong>
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="progress mb-3">
+                        <div class="progress-bar bg-success" style="width: {{ overall_progress }}%">
+                            {{ overall_progress }}%
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-primary" id="quickSaveBtn">
+                            <i class="fas fa-piggy-bank me-2"></i>Quick Save $50
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Savings Tips -->
+                <div class="tips-card">
+                    <h5><i class="fas fa-lightbulb me-2"></i>Savings Tips</h5>
+                    <ul class="tips-list">
+                        <li>Set realistic and specific goals</li>
+                        <li>Automate your savings transfers</li>
+                        <li>Review and adjust goals regularly</li>
+                        <li>Celebrate small milestones</li>
+                        <li>Consider high-yield savings accounts</li>
+                    </ul>
+                </div>
+                
+                <!-- Recent Contributions -->
+                <div class="recent-card">
+                    <h5>Recent Contributions</h5>
+                    <div class="recent-list">
+                        {% for contribution in recent_contributions %}
+                        <div class="recent-item">
+                            <div class="recent-info">
+                                <strong>{{ contribution.goal.name }}</strong>
+                                <small>{{ contribution.date|date:"M d" }}</small>
+                            </div>
+                            <span class="amount text-success">+${{ contribution.amount|floatformat:2 }}</span>
+                        </div>
+                        {% empty %}
+                        <p class="text-muted text-center">No recent contributions</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Funds Modal -->
+<div class="modal fade" id="addFundsModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add Funds to Goal</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="goal-summary mb-4">
+                    <h6 id="modalGoalName"></h6>
+                    <div class="progress mb-2">
+                        <div class="progress-bar" id="modalProgressBar"></div>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <small>Saved: <strong id="modalCurrentAmount"></strong></small>
+                        <small>Target: <strong id="modalTargetAmount"></strong></small>
+                    </div>
+                </div>
+                
+                <form id="addFundsForm">
+                    <div class="mb-3">
+                        <label for="contributionAmount" class="form-label">Amount to Add</label>
+                        <div class="input-group">
+                            <span class="input-group-text">$</span>
+                            <input type="number" class="form-control" id="contributionAmount" 
+                                   placeholder="0.00" min="0.01" step="0.01" required>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="sourceAccount" class="form-label">From Account</label>
+                        <select class="form-select" id="sourceAccount" required>
+                            <option value="">Select account...</option>
+                            {% for account in user_accounts %}
+                            <option value="{{ account.id }}" data-balance="{{ account.balance }}">
+                                {{ account.get_account_type_display }} - ${{ account.balance|floatformat:2 }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="contributionDate" class="form-label">Date</label>
+                        <input type="date" class="form-control" id="contributionDate" 
+                               value="{{ current_date|date:'Y-m-d' }}" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="contributionNote" class="form-label">Note (Optional)</label>
+                        <textarea class="form-control" id="contributionNote" rows="2" 
+                                  placeholder="Add a note about this contribution..."></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" form="addFundsForm" class="btn btn-primary">Add Funds</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .goals-list {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+    
+    .goal-item {
+        display: flex;
+        gap: 20px;
+        padding: 25px;
+        background: var(--light-color);
+        border-radius: 15px;
+        border-left: 4px solid var(--primary-color);
+        transition: all 0.3s ease;
+    }
+    
+    .goal-item:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px var(--shadow-color);
+    }
+    
+    .goal-icon {
+        width: 60px;
+        height: 60px;
+        background: var(--primary-color);
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        flex-shrink: 0;
+    }
+    
+    .goal-info {
+        flex: 1;
+    }
+    
+    .goal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 15px;
+    }
+    
+    .goal-header h5 {
+        margin: 0;
+        color: var(--primary-color);
+    }
+    
+    .goal-amounts {
+        text-align: right;
+    }
+    
+    .current-amount {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: var(--success-color);
+        display: block;
+    }
+    
+    .target-amount {
+        font-size: 0.9rem;
+        color: var(--text-color);
+        opacity: 0.7;
+    }
+    
+    .goal-progress {
+        margin-bottom: 15px;
+    }
+    
+    .goal-progress .progress {
+        height: 10px;
+        border-radius: 5px;
+    }
+    
+    .goal-details {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 15px;
+        margin-bottom: 15px;
+    }
+    
+    .detail-item {
+        text-align: center;
+    }
+    
+    .detail-item small {
+        display: block;
+        color: var(--text-color);
+        opacity: 0.7;
+        font-size: 0.8rem;
+    }
+    
+    .detail-item strong {
+        color: var(--primary-color);
+    }
+    
+    .goal-description {
+        padding-top: 15px;
+        border-top: 1px solid #eee;
+    }
+    
+    .goal-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        flex-shrink: 0;
+    }
+    
+    .goal-summary {
+        background: var(--light-color);
+        padding: 15px;
+        border-radius: 10px;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const createGoalForm = document.getElementById('createGoalForm');
+        const addFundsModal = new bootstrap.Modal(document.getElementById('addFundsModal'));
+        const addFundsForm = document.getElementById('addFundsForm');
+        const quickSaveBtn = document.getElementById('quickSaveBtn');
+        
+        let currentGoalId = null;
+        
+        // Set target date to 1 year from now by default
+        const targetDateInput = document.getElementById('targetDate');
+        const oneYearFromNow = new Date();
+        oneYearFromNow.setFullYear(oneYearFromNow.getFullYear() + 1);
+        targetDateInput.valueAsDate = oneYearFromNow;
+        
+        // Create new goal
+        createGoalForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            
+            submitBtn.innerHTML = '<div class="spinner-border spinner-border-sm me-2"></div> Creating...';
+            submitBtn.disabled = true;
+            
+            setTimeout(() => {
+                showNotification('Savings goal created successfully!', 'success');
+                this.reset();
+                targetDateInput.valueAsDate = oneYearFromNow;
+                
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+                
+                // In real app, refresh the goals list
+                location.reload();
+            }, 1500);
+        });
+        
+        // Add funds to goal
+        document.querySelectorAll('.add-funds-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                currentGoalId = this.getAttribute('data-goal-id');
+                const goalItem = this.closest('.goal-item');
+                const goalName = goalItem.querySelector('h5').textContent;
+                const currentAmount = goalItem.querySelector('.current-amount').textContent;
+                const targetAmount = goalItem.querySelector('.target-amount').textContent.replace('of ', '');
+                const progress = goalItem.querySelector('.progress-bar').style.width;
+                
+                document.getElementById('modalGoalName').textContent = goalName;
+                document.getElementById('modalCurrentAmount').textContent = currentAmount;
+                document.getElementById('modalTargetAmount').textContent = targetAmount;
+                document.getElementById('modalProgressBar').style.width = progress;
+                document.getElementById('modalProgressBar').textContent = progress;
+                document.getElementById('modalProgressBar').className = 'progress-bar';
+                
+                addFundsModal.show();
+            });
+        });
+        
+        // Add funds form submission
+        addFundsForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            
+            submitBtn.innerHTML = '<div class="spinner-border spinner-border-sm me-2"></div> Adding...';
+            submitBtn.disabled = true;
+            
+            setTimeout(() => {
+                showNotification('Funds added to goal successfully!', 'success');
+                addFundsModal.hide();
+                this.reset();
+                
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+                
+                // In real app, refresh the goals list
+                location.reload();
+            }, 1500);
+        });
+        
+        // Quick save
+        quickSaveBtn.addEventListener('click', function() {
+            if (confirm('Add $50 to your savings goals?')) {
+                const originalText = this.innerHTML;
+                this.innerHTML = '<div class="spinner-border spinner-border-sm me-2"></div> Saving...';
+                this.disabled = true;
+                
+                setTimeout(() => {
+                    showNotification('$50 added to your savings goals!', 'success');
+                    this.innerHTML = originalText;
+                    this.disabled = false;
+                    location.reload();
+                }, 1500);
+            }
+        });
+        
+        // Update progress bar color based on progress
+        document.querySelectorAll('.progress-bar').forEach(bar => {
+            const progress = parseInt(bar.style.width);
+            if (progress < 30) {
+                bar.classList.add('bg-danger');
+            } else if (progress < 70) {
+                bar.classList.add('bg-warning');
+            } else {
+                bar.classList.add('bg-success');
+            }
+        });
+    });
+</script>
+{% endblock %}

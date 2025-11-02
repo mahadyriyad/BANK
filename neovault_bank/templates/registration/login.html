@@ -1,0 +1,222 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block title %}Login - NeoVault Bank{% endblock %}
+
+{% block content %}
+<section class="login-section section-padding">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-5 col-md-7">
+                <div class="login-container">
+                    <div class="login-header text-center mb-5">
+                        <h2><i class="fas fa-university me-2"></i>NeoVault Bank</h2>
+                        <p class="text-muted">Sign in to your account</p>
+                    </div>
+                    
+                    {% if error %}
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        {{ error }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                    {% endif %}
+                    
+                    <form method="post" id="loginForm">
+                        {% csrf_token %}
+                        <div class="mb-4">
+                            <label for="username" class="form-label">Username or Email</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-user"></i></span>
+                                <input type="text" class="form-control" id="username" name="username" 
+                                       placeholder="Enter your username or email" required>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="password" class="form-label">Password</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                                <input type="password" class="form-control" id="password" name="password" 
+                                       placeholder="Enter your password" required>
+                                <button type="button" class="input-group-text toggle-password">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="rememberMe" name="remember_me">
+                                <label class="form-check-label" for="rememberMe">
+                                    Remember me
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary btn-lg w-100 mb-4">
+                            <i class="fas fa-sign-in-alt me-2"></i>Sign In
+                        </button>
+                        
+                        <div class="text-center mb-4">
+                            <a href="#" class="text-decoration-none" id="forgotPasswordLink">
+                                Forgot your password?
+                            </a>
+                        </div>
+                    </form>
+                    
+                    <div class="separator mb-4">
+                        <span class="bg-light px-3 text-muted">or continue with</span>
+                    </div>
+                    
+                    <div class="social-login-buttons">
+                        <button class="btn btn-outline-dark w-100 mb-3 social-login-btn" data-provider="google">
+                            <i class="fab fa-google me-2"></i>Continue with Google
+                        </button>
+                        <button class="btn btn-outline-primary w-100 social-login-btn" data-provider="facebook">
+                            <i class="fab fa-facebook-f me-2"></i>Continue with Facebook
+                        </button>
+                    </div>
+                    
+                    <div class="text-center mt-4">
+                        <p class="mb-0">
+                            Don't have an account? 
+                            <a href="{% url 'register' %}" class="text-decoration-none fw-bold">Sign up here</a>
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="security-notice mt-4 text-center">
+                    <small class="text-muted">
+                        <i class="fas fa-shield-alt me-1"></i>
+                        Your security is our priority. We use bank-level encryption to protect your data.
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .login-section {
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+    }
+    
+    .login-container {
+        background: var(--card-bg);
+        padding: 40px 30px;
+        border-radius: 20px;
+        box-shadow: 0 20px 60px var(--shadow-color);
+        border-top: 5px solid var(--accent-color);
+    }
+    
+    .login-header h2 {
+        color: var(--primary-color);
+        font-weight: 800;
+    }
+    
+    .input-group-text {
+        background: var(--light-color);
+        border: 1px solid #dee2e6;
+    }
+    
+    .toggle-password {
+        cursor: pointer;
+        transition: color 0.3s ease;
+    }
+    
+    .toggle-password:hover {
+        color: var(--primary-color);
+    }
+    
+    .separator {
+        position: relative;
+        text-align: center;
+    }
+    
+    .separator::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background: #dee2e6;
+        z-index: 1;
+    }
+    
+    .social-login-btn {
+        padding: 12px;
+        border-radius: 10px;
+        transition: all 0.3s ease;
+    }
+    
+    .social-login-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px var(--shadow-color);
+    }
+    
+    .security-notice {
+        padding: 15px;
+        background: var(--card-bg);
+        border-radius: 10px;
+        border-left: 4px solid var(--success-color);
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Toggle password visibility
+        const togglePassword = document.querySelector('.toggle-password');
+        const passwordInput = document.getElementById('password');
+        
+        togglePassword.addEventListener('click', function() {
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+            this.querySelector('i').classList.toggle('fa-eye');
+            this.querySelector('i').classList.toggle('fa-eye-slash');
+        });
+        
+        // Social login buttons
+        document.querySelectorAll('.social-login-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const provider = this.getAttribute('data-provider');
+                showNotification(`${provider.charAt(0).toUpperCase() + provider.slice(1)} login would be implemented here`, 'info');
+            });
+        });
+        
+        // Forgot password link
+        document.getElementById('forgotPasswordLink').addEventListener('click', function(e) {
+            e.preventDefault();
+            showNotification('Password reset feature would be implemented here', 'info');
+        });
+        
+        // Form submission animation
+        const loginForm = document.getElementById('loginForm');
+        loginForm.addEventListener('submit', function(e) {
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            
+            submitBtn.innerHTML = '<div class="spinner-border spinner-border-sm me-2"></div> Signing in...';
+            submitBtn.disabled = true;
+            
+            // Re-enable after 2 seconds (for demo)
+            setTimeout(() => {
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            }, 2000);
+        });
+    });
+</script>
+{% endblock %}
+
+
+
