@@ -33,99 +33,104 @@ function initMobileMenu() {
 // ===================== DASHBOARD CHARTS =====================
 function initializeDashboardCharts() {
     // Balance Trend Chart
-    const balanceCtx = document.getElementById('balanceChart').getContext('2d');
-    new Chart(balanceCtx, {
-        type: 'line',
-        data: {
-            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-            datasets: [{
-                label: 'Account Balance',
-                data: [5000, 6500, 7200, 6800, 8500, 9200, 8800, 9500, 10200, 11000, 11500, 12000],
-                borderColor: '#2563eb',
-                backgroundColor: 'rgba(37, 99, 235, 0.1)',
-                borderWidth: 3,
-                fill: true,
-                tension: 0.4
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                legend: {
-                    display: false
-                },
-                tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            return 'Balance: ৳' + context.parsed.y.toLocaleString();
-                        }
-                    }
-                }
+    const balanceChart = document.getElementById('balanceChart');
+    if (balanceChart) {
+        const balanceCtx = balanceChart.getContext('2d');
+        new Chart(balanceCtx, {
+            type: 'line',
+            data: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                datasets: [{
+                    label: 'Account Balance',
+                    data: [5000, 6500, 7200, 6800, 8500, 9200, 8800, 9500, 10200, 11000, 11500, 12000],
+                    borderColor: '#2563eb',
+                    backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.4
+                }]
             },
-            scales: {
-                y: {
-                    beginAtZero: false,
-                    grid: {
-                        color: 'rgba(0, 0, 0, 0.1)'
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        display: false
                     },
-                    ticks: {
-                        callback: function(value) {
-                            return '৳' + value.toLocaleString();
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return 'Balance: ৳' + context.parsed.y.toLocaleString();
+                            }
                         }
                     }
                 },
-                x: {
-                    grid: {
-                        display: false
+                scales: {
+                    y: {
+                        beginAtZero: false,
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.1)'
+                        },
+                        ticks: {
+                            callback: function(value) {
+                                return '৳' + value.toLocaleString();
+                            }
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        }
                     }
                 }
             }
-        }
-    });
+        });
+    }
 
     // Spending Chart
-    const spendingCtx = document.getElementById('spendingChart').getContext('2d');
-    new Chart(spendingCtx, {
-        type: 'doughnut',
-        data: {
-            labels: ['Shopping', 'Bills', 'Food', 'Entertainment', 'Transport', 'Others'],
-            datasets: [{
-                data: [25, 20, 18, 12, 10, 15],
-                backgroundColor: [
-                    '#2563eb',
-                    '#10b981',
-                    '#f59e0b',
-                    '#ef4444',
-                    '#8b5cf6',
-                    '#6b7280'
-                ],
-                borderWidth: 0,
-                hoverOffset: 15
-            }]
-        },
-        options: {
-            responsive: true,
-            cutout: '65%',
-            plugins: {
-                legend: {
-                    position: 'bottom',
-                    labels: {
-                        padding: 20,
-                        usePointStyle: true
-                    }
-                },
-                tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            return context.label + ': ' + context.parsed + '%';
+    const spendingChart = document.getElementById('spendingChart');
+    if (spendingChart) {
+        const spendingCtx = spendingChart.getContext('2d');
+        new Chart(spendingCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Shopping', 'Bills', 'Food', 'Entertainment', 'Transport', 'Others'],
+                datasets: [{
+                    data: [25, 20, 18, 12, 10, 15],
+                    backgroundColor: [
+                        '#2563eb',
+                        '#10b981',
+                        '#f59e0b',
+                        '#ef4444',
+                        '#8b5cf6',
+                        '#6b7280'
+                    ],
+                    borderWidth: 0,
+                    hoverOffset: 15
+                }]
+            },
+            options: {
+                responsive: true,
+                cutout: '65%',
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            padding: 20,
+                            usePointStyle: true
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.label + ': ' + context.parsed + '%';
+                            }
                         }
                     }
                 }
             }
-        }
-    });
+        });
+    }
 }
-
 
 // ===================== QUICK ACTIONS =====================
 function initQuickActions() {
@@ -139,7 +144,7 @@ function initQuickActions() {
 
             // Add loading state
             const originalHTML = this.innerHTML;
-            this.innerHTML = '<div class="loading-spinner"></div>';
+            this.innerHTML = '<div class="spinner-border spinner-border-sm"></div>';
 
             setTimeout(() => {
                 this.innerHTML = originalHTML;
@@ -223,38 +228,17 @@ function initAccountManagement() {
 
             balanceElements.forEach(element => {
                 if (isHidden) {
-                    // Show actual balance (in real app, this would come from backend)
-                    element.textContent = element.getAttribute('data-balance') || '$1,234.56';
+                    // Show actual balance
+                    element.textContent = element.getAttribute('data-balance') || '৳0.00';
                 } else {
                     // Hide balance
                     element.setAttribute('data-balance', element.textContent);
-                    element.textContent = '***';
+                    element.textContent = '৳***';
                 }
             });
 
             this.querySelector('i').classList.toggle('fa-eye');
             this.querySelector('i').classList.toggle('fa-eye-slash');
-        });
-    }
-
-    // Quick transfer between accounts
-    const quickTransferForm = document.getElementById('quickTransferForm');
-    if (quickTransferForm) {
-        quickTransferForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-
-            const submitBtn = this.querySelector('button[type="submit"]');
-            const originalHTML = submitBtn.innerHTML;
-            submitBtn.innerHTML = '<div class="loading-spinner"></div> Processing...';
-            submitBtn.disabled = true;
-
-            // Simulate transfer processing
-            setTimeout(() => {
-                showNotification('Transfer completed successfully!', 'success');
-                this.reset();
-                submitBtn.innerHTML = originalHTML;
-                submitBtn.disabled = false;
-            }, 2000);
         });
     }
 }
@@ -264,25 +248,52 @@ function initBillPayment() {
     const payBillButtons = document.querySelectorAll('.pay-bill-btn');
 
     payBillButtons.forEach(button => {
-        button.addEventListener('click', function() {
+        button.addEventListener('click', async function() {
             const billId = this.getAttribute('data-bill-id');
-            const billName = this.closest('.bill-item').querySelector('h5').textContent;
-            const billAmount = this.closest('.bill-item').querySelector('.bill-amount').textContent;
+            const billItem = this.closest('.bill-item');
+            const billName = billItem.querySelector('h5').textContent;
+            const billAmount = billItem.querySelector('.bill-amount').textContent;
 
             // Show payment confirmation
             if (confirm(`Pay ${billAmount} for ${billName}?`)) {
                 const originalHTML = this.innerHTML;
-                this.innerHTML = '<div class="loading-spinner"></div>';
+                this.innerHTML = '<div class="spinner-border spinner-border-sm"></div>';
                 this.disabled = true;
 
-                // Simulate payment processing
-                setTimeout(() => {
-                    showNotification(`Payment of ${billAmount} for ${billName} completed successfully!`, 'success');
-                    this.innerHTML = '<i class="fas fa-check"></i> Paid';
-                    this.classList.remove('btn-success');
-                    this.classList.add('btn-secondary');
-                    this.disabled = true;
-                }, 1500);
+                try {
+                    const formData = new FormData();
+                    formData.append('account_id', document.getElementById('paymentAccount')?.value || getFirstAccountId());
+
+                    const response = await fetch(`/pay-bill/${billId}/`, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': getCookie('csrftoken')
+                        },
+                        body: formData
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        showNotification(data.message, 'success');
+                        this.innerHTML = '<i class="fas fa-check"></i> Paid';
+                        this.classList.remove('btn-success');
+                        this.classList.add('btn-secondary');
+                        this.disabled = true;
+                        
+                        // Update dashboard with new data
+                        updateDashboardData(data);
+                    } else {
+                        showNotification(data.message, 'error');
+                        this.innerHTML = originalHTML;
+                        this.disabled = false;
+                    }
+                } catch (error) {
+                    console.error('Error during bill payment:', error);
+                    showNotification('An error occurred during bill payment.', 'error');
+                    this.innerHTML = originalHTML;
+                    this.disabled = false;
+                }
             }
         });
     });
@@ -293,45 +304,82 @@ function initSavingsGoals() {
     const addFundsButtons = document.querySelectorAll('.add-funds-btn');
 
     addFundsButtons.forEach(button => {
-        button.addEventListener('click', function() {
+        button.addEventListener('click', async function() {
             const goalId = this.getAttribute('data-goal-id');
-            const goalName = this.closest('.goal-item').querySelector('h5').textContent;
+            const goalItem = this.closest('.savings-goal');
+            const goalName = goalItem.querySelector('h4').textContent;
 
-            // Show add funds modal or prompt
-            const amount = prompt(`How much would you like to add to "${goalName}"?`);
+            // Show add funds modal
+            const addFundsModalEl = document.getElementById('addFundsModal');
+            if (addFundsModalEl) {
+                const addFundsModal = new bootstrap.Modal(addFundsModalEl);
+                
+                // Set goal details in modal
+                const currentAmount = goalItem.querySelector('.balance').textContent.split(' / ')[0];
+                const targetAmount = goalItem.querySelector('.balance').textContent.split(' / ')[1];
+                const progress = goalItem.querySelector('.progress-bar').style.width;
 
-            if (amount && !isNaN(parseFloat(amount))) {
-                const originalHTML = this.innerHTML;
-                this.innerHTML = '<div class="loading-spinner"></div>';
-                this.disabled = true;
+                document.getElementById('modalGoalName').value = goalName;
+                document.getElementById('modalCurrentAmount').textContent = currentAmount;
+                document.getElementById('modalTargetAmount').textContent = targetAmount;
+                document.getElementById('modalProgressBar').style.width = progress;
+                document.getElementById('modalProgressBar').textContent = progress;
+                document.getElementById('modalGoalId').value = goalId;
 
-                // Simulate adding funds
-                setTimeout(() => {
-                    showNotification(`Successfully added $${amount} to ${goalName}`, 'success');
-                    this.innerHTML = originalHTML;
-                    this.disabled = false;
-
-                    // In a real app, you would update the progress bar and amounts
-                    updateGoalProgress(goalId, parseFloat(amount));
-                }, 1000);
+                addFundsModal.show();
             }
         });
     });
 
-    function updateGoalProgress(goalId, amount) {
-        // This would update the UI to reflect the new progress
-        const goalItem = document.querySelector(`[data-goal-id="${goalId}"]`).closest('.goal-item');
-        const progressBar = goalItem.querySelector('.progress-bar');
-        const currentAmountElement = goalItem.querySelector('.current-amount');
+    // Add funds form submission
+    const addFundsForm = document.getElementById('addFundsForm');
+    if (addFundsForm) {
+        addFundsForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const goalId = document.getElementById('modalGoalId').value;
+            const amount = document.getElementById('fundAmount').value;
+            const accountId = document.getElementById('fundSource').value;
 
-        // Update current amount (in real app, this would come from backend)
-        const currentAmount = parseFloat(currentAmountElement.textContent.replace('$', '')) + amount;
-        currentAmountElement.textContent = `$${currentAmount.toFixed(2)}`;
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
 
-        // Update progress bar (in real app, calculate based on target)
-        const newWidth = Math.min(100, (currentAmount / 1000) * 100); // Example calculation
-        progressBar.style.width = `${newWidth}%`;
-        progressBar.textContent = `${Math.round(newWidth)}%`;
+            submitBtn.innerHTML = '<div class="spinner-border spinner-border-sm me-2"></div> Adding...';
+            submitBtn.disabled = true;
+
+            try {
+                const formData = new FormData();
+                formData.append('account_id', accountId);
+                formData.append('amount', amount);
+
+                const response = await fetch(`/add-savings-funds/${goalId}/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showNotification(data.message, 'success');
+                    bootstrap.Modal.getInstance(document.getElementById('addFundsModal')).hide();
+                    this.reset();
+                    
+                    // Update dashboard with new data
+                    updateDashboardData(data);
+                } else {
+                    showNotification(data.message, 'error');
+                }
+            } catch (error) {
+                console.error('Error adding funds to savings goal:', error);
+                showNotification('An error occurred while adding funds.', 'error');
+            } finally {
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            }
+        });
     }
 }
 
@@ -342,20 +390,22 @@ function initCreditCardManagement() {
 
     cardLockButtons.forEach(button => {
         button.addEventListener('click', function() {
-            const cardElement = this.closest('.credit-card');
-            const isLocked = cardElement.classList.contains('locked');
+            const cardId = this.getAttribute('data-card-id');
+            const isLocked = this.classList.contains('locked');
 
             if (isLocked) {
                 // Unlock card
-                cardElement.classList.remove('locked');
-                this.innerHTML = '<i class="fas fa-lock"></i>';
+                this.classList.remove('locked');
+                this.innerHTML = '<i class="fas fa-lock me-1"></i>Lock';
                 showNotification('Card unlocked successfully', 'success');
             } else {
                 // Lock card
-                cardElement.classList.add('locked');
-                this.innerHTML = '<i class="fas fa-lock-open"></i>';
+                this.classList.add('locked');
+                this.innerHTML = '<i class="fas fa-lock-open me-1"></i>Unlock';
                 showNotification('Card locked successfully', 'warning');
             }
+
+            // In a real app, you would make an API call here to update the card status
         });
     });
 
@@ -364,7 +414,7 @@ function initCreditCardManagement() {
     if (limitIncreaseBtn) {
         limitIncreaseBtn.addEventListener('click', function() {
             const originalHTML = this.innerHTML;
-            this.innerHTML = '<div class="loading-spinner"></div> Requesting...';
+            this.innerHTML = '<div class="spinner-border spinner-border-sm me-2"></div> Requesting...';
             this.disabled = true;
 
             setTimeout(() => {
@@ -374,6 +424,66 @@ function initCreditCardManagement() {
             }, 2000);
         });
     }
+
+    // Credit card payment
+    const makePaymentBtn = document.getElementById('makePaymentBtn');
+    if (makePaymentBtn) {
+        makePaymentBtn.addEventListener('click', function() {
+            const makePaymentModal = new bootstrap.Modal(document.getElementById('makePaymentModal'));
+            makePaymentModal.show();
+        });
+    }
+
+    // Credit card payment form
+    const makePaymentForm = document.getElementById('makePaymentForm');
+    if (makePaymentForm) {
+        makePaymentForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const cardId = document.getElementById('paymentCardSelect').value;
+            const amount = document.getElementById('paymentAmount').value;
+            const accountId = document.getElementById('paymentAccount').value;
+
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+
+            submitBtn.innerHTML = '<div class="spinner-border spinner-border-sm me-2"></div> Processing...';
+            submitBtn.disabled = true;
+
+            try {
+                const response = await fetch(`/credit-card-payment/${cardId}/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: JSON.stringify({
+                        account_id: accountId,
+                        amount: amount
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showNotification(data.message, 'success');
+                    bootstrap.Modal.getInstance(document.getElementById('makePaymentModal')).hide();
+                    this.reset();
+                    
+                    // Update dashboard with new data
+                    updateDashboardData(data);
+                } else {
+                    showNotification(data.message, 'error');
+                }
+            } catch (error) {
+                console.error('Error processing credit card payment:', error);
+                showNotification('An error occurred during payment.', 'error');
+            } finally {
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            }
+        });
+    }
 }
 
 // ===================== DASHBOARD WIDGETS =====================
@@ -381,90 +491,377 @@ function initDashboardWidgets() {
     // Refresh data button
     const refreshBtn = document.getElementById('refreshData');
     if (refreshBtn) {
-        refreshBtn.addEventListener('click', function() {
+        refreshBtn.addEventListener('click', async function() {
             const originalHTML = this.innerHTML;
-            this.innerHTML = '<div class="loading-spinner"></div>';
+            this.innerHTML = '<div class="spinner-border spinner-border-sm me-2"></div>';
             this.disabled = true;
 
-            // Simulate data refresh
-            setTimeout(() => {
-                showNotification('Dashboard data updated', 'success');
-                this.innerHTML = originalHTML;
-                this.disabled = false;
+            await fetchDashboardData();
 
-                // In real app, you would fetch new data and update widgets
-                updateDashboardData();
-            }, 1500);
+            showNotification('Dashboard data updated', 'success');
+            this.innerHTML = originalHTML;
+            this.disabled = false;
         });
     }
-
-    // Widget customization
-    const widgetSettings = document.querySelectorAll('.widget-settings');
-    widgetSettings.forEach(setting => {
-        setting.addEventListener('click', function(e) {
-            e.stopPropagation();
-            const widget = this.closest('.dashboard-widget');
-            // Show widget settings modal or menu
-            showNotification('Widget settings would open here', 'info');
-        });
-    });
 }
 
-function updateDashboardData() {
-    // This function would update all dashboard widgets with new data
-    console.log('Updating dashboard data...');
+// ===================== UTILITY FUNCTIONS =====================
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
 
-    // Update balance
-    const balanceElement = document.querySelector('.total-balance');
-    if (balanceElement) {
-        // In real app, this would come from an API call
-        balanceElement.textContent = '৳' + (12345.67).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+function getFirstAccountId() {
+    const accountSelect = document.querySelector('select[id*="account"]');
+    if (accountSelect && accountSelect.options.length > 0) {
+        return accountSelect.options[0].value;
+    }
+    return null;
+}
+
+function formatCurrency(amount) {
+    return new Intl.NumberFormat('en-BD', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    }).format(amount);
+}
+
+// ===================== DASHBOARD DATA MANAGEMENT =====================
+async function fetchDashboardData() {
+    try {
+        const response = await fetch('/dashboard_data/');
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        updateDashboardData(data);
+        return data;
+    } catch (error) {
+        console.error('Error fetching dashboard data:', error);
+        showNotification('Failed to load dashboard data.', 'error');
+        return null;
+    }
+}
+
+function updateDashboardData(data) {
+    console.log('Updating dashboard data with:', data);
+
+    if (!data.success && data.message) {
+        showNotification(data.message, 'error');
+        return;
+    }
+
+    // Update total balance
+    const totalBalanceElement = document.getElementById('totalBalance');
+    if (totalBalanceElement && data.total_balance !== undefined) {
+        const formattedBalance = `৳${formatCurrency(data.total_balance)}`;
+        totalBalanceElement.textContent = formattedBalance;
+        totalBalanceElement.setAttribute('data-balance', formattedBalance);
+    }
+
+    // Update account counts
+    if (data.accounts_count !== undefined) {
+        const accountsCountElement = document.getElementById('accountsCount');
+        if (accountsCountElement) accountsCountElement.textContent = data.accounts_count;
+    }
+
+    if (data.cards_count !== undefined) {
+        const cardsCountElement = document.getElementById('cardsCount');
+        if (cardsCountElement) cardsCountElement.textContent = data.cards_count;
+    }
+
+    if (data.bills_count !== undefined) {
+        const billsCountElement = document.getElementById('billsCount');
+        if (billsCountElement) billsCountElement.textContent = data.bills_count;
+    }
+
+    if (data.goals_count !== undefined) {
+        const goalsCountElement = document.getElementById('goalsCount');
+        if (goalsCountElement) goalsCountElement.textContent = data.goals_count;
+    }
+
+    // Update individual account balances
+    if (data.accounts) {
+        data.accounts.forEach(account => {
+            const accountBalanceElement = document.querySelector(`[data-account-id="${account.id}"] .account-balance`);
+            if (accountBalanceElement) {
+                const formattedBalance = `৳${formatCurrency(account.balance)}`;
+                accountBalanceElement.textContent = formattedBalance;
+                accountBalanceElement.setAttribute('data-balance', formattedBalance);
+            }
+        });
     }
 
     // Update recent transactions
-    // This would refresh the transactions list
-}
+    const transactionsContainer = document.querySelector('.transactions-list');
+    if (transactionsContainer && data.transactions) {
+        transactionsContainer.innerHTML = '';
 
-// ===================== EXPENSE CATEGORIZATION =====================
-function initExpenseCategorization() {
-    const transactions = document.querySelectorAll('.transaction-item');
+        if (data.transactions.length === 0) {
+            transactionsContainer.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-exchange-alt fa-3x text-muted mb-3"></i>
+                    <h4>No Transactions Yet</h4>
+                    <p class="text-muted">Your transaction history will appear here.</p>
+                </div>
+            `;
+        } else {
+            data.transactions.forEach(transaction => {
+                const transactionItem = document.createElement('div');
+                transactionItem.className = `transaction-item ${transaction.transaction_type}`;
+                
+                const isDeposit = transaction.transaction_type === 'deposit' || transaction.transaction_type === 'transfer_in';
+                const amountClass = isDeposit ? 'text-success' : 'text-danger';
+                const amountSign = isDeposit ? '+' : '-';
+                
+                transactionItem.innerHTML = `
+                    <div class="transaction-icon">
+                        <i class="fas fa-${transaction.icon || 'exchange-alt'}"></i>
+                    </div>
+                    <div class="transaction-info">
+                        <h5>${transaction.description}</h5>
+                        <p class="text-muted mb-0">${transaction.category || 'Transaction'}</p>
+                        <small class="text-muted">${new Date(transaction.timestamp).toLocaleDateString()}</small>
+                    </div>
+                    <div class="transaction-amount ${amountClass}">
+                        ${amountSign}৳${formatCurrency(transaction.amount)}
+                    </div>
+                `;
+                
+                transactionsContainer.appendChild(transactionItem);
+            });
+        }
+    }
 
-    transactions.forEach(transaction => {
-        transaction.addEventListener('dblclick', function() {
-            const currentCategory = this.getAttribute('data-category') || 'uncategorized';
-            const newCategory = prompt('Enter category for this transaction:', currentCategory);
+    // Update bills
+    const billsContainer = document.querySelector('.bills-list');
+    if (billsContainer && data.bills) {
+        // This would update the bills list if needed
+    }
 
-            if (newCategory) {
-                const originalHTML = this.innerHTML;
-                this.innerHTML = '<div class="loading-spinner"></div>';
-
-                // Simulate category update
-                setTimeout(() => {
-                    this.setAttribute('data-category', newCategory);
-                    const categoryBadge = this.querySelector('.transaction-category') || document.createElement('span');
-                    categoryBadge.className = 'transaction-category badge bg-secondary ms-2';
-                    categoryBadge.textContent = newCategory;
-
-                    if (!this.querySelector('.transaction-category')) {
-                        this.querySelector('.transaction-info').appendChild(categoryBadge);
-                    }
-
-                    this.innerHTML = originalHTML;
-                    this.querySelector('.transaction-info').appendChild(categoryBadge);
-
-                    showNotification('Transaction categorized successfully', 'success');
-                }, 1000);
+    // Update savings goals progress
+    if (data.savings_goals) {
+        data.savings_goals.forEach(goal => {
+            const goalElement = document.querySelector(`[data-goal-id="${goal.id}"]`);
+            if (goalElement) {
+                const progressBar = goalElement.querySelector('.progress-bar');
+                const currentAmount = goalElement.querySelector('.current-amount');
+                const progressText = goalElement.querySelector('.progress-percentage');
+                
+                if (progressBar) {
+                    progressBar.style.width = `${goal.progress_percentage}%`;
+                    progressBar.textContent = `${Math.round(goal.progress_percentage)}%`;
+                }
+                if (currentAmount) {
+                    currentAmount.textContent = `৳${formatCurrency(goal.current_amount)}`;
+                }
+                if (progressText) {
+                    progressText.textContent = `${Math.round(goal.progress_percentage)}%`;
+                }
             }
         });
-    });
+    }
 }
 
+// ===================== TRANSACTION HANDLING =====================
+async function handleTransaction(endpoint, data) {
+    try {
+        const response = await fetch(endpoint, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify(data)
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            showNotification(result.message, 'success');
+            // Update dashboard with new data
+            await fetchDashboardData();
+            return result;
+        } else {
+            showNotification(result.message, 'error');
+            return null;
+        }
+    } catch (error) {
+        console.error('Transaction error:', error);
+        showNotification('An error occurred during the transaction.', 'error');
+        return null;
+    }
+}
+
+// Deposit handler
+function initDepositHandlers() {
+    const depositForm = document.getElementById('depositForm');
+    if (depositForm) {
+        depositForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const accountId = document.getElementById('depositAccount').value;
+            const amount = document.getElementById('depositAmount').value;
+            const description = document.getElementById('depositDescription').value || 'Deposit';
+
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+
+            submitBtn.innerHTML = '<div class="spinner-border spinner-border-sm me-2"></div> Processing...';
+            submitBtn.disabled = true;
+
+            try {
+                const result = await handleTransaction('/deposit_api/', {
+                    account_id: accountId,
+                    amount: amount,
+                    description: description
+                });
+
+                if (result) {
+                    this.reset();
+                    // Show success modal or redirect
+                    const successModal = new bootstrap.Modal(document.getElementById('successModal'));
+                    if (successModal) successModal.show();
+                }
+            } finally {
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            }
+        });
+    }
+}
+
+// Withdraw handler
+function initWithdrawHandlers() {
+    const withdrawForm = document.getElementById('withdrawForm');
+    if (withdrawForm) {
+        withdrawForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const accountId = document.getElementById('withdrawAccount').value;
+            const amount = document.getElementById('withdrawAmount').value;
+            const description = document.getElementById('withdrawDescription').value || 'Withdrawal';
+
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+
+            submitBtn.innerHTML = '<div class="spinner-border spinner-border-sm me-2"></div> Processing...';
+            submitBtn.disabled = true;
+
+            try {
+                const result = await handleTransaction('/withdraw_api/', {
+                    account_id: accountId,
+                    amount: amount,
+                    description: description
+                });
+
+                if (result) {
+                    this.reset();
+                    // Show success modal or redirect
+                    const successModal = new bootstrap.Modal(document.getElementById('successModal'));
+                    if (successModal) successModal.show();
+                }
+            } finally {
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            }
+        });
+    }
+}
+
+// Transfer handler
+function initTransferHandlers() {
+    const transferForm = document.getElementById('transferForm');
+    if (transferForm) {
+        transferForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const fromAccountId = document.getElementById('fromAccount').value;
+            const toAccountId = document.getElementById('toAccount').value;
+            const amount = document.getElementById('transferAmount').value;
+            const description = document.getElementById('transferDescription').value || 'Transfer';
+
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+
+            submitBtn.innerHTML = '<div class="spinner-border spinner-border-sm me-2"></div> Processing...';
+            submitBtn.disabled = true;
+
+            try {
+                const result = await handleTransaction('/transfer_api/', {
+                    from_account_id: fromAccountId,
+                    to_account_id: toAccountId,
+                    amount: amount,
+                    description: description
+                });
+
+                if (result) {
+                    this.reset();
+                    // Show success modal or redirect
+                    const successModal = new bootstrap.Modal(document.getElementById('successModal'));
+                    if (successModal) successModal.show();
+                }
+            } finally {
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            }
+        });
+    }
+}
+
+// ===================== NOTIFICATION SYSTEM =====================
+function showNotification(message, type = 'info') {
+    // Remove any existing notifications
+    const existingNotifications = document.querySelectorAll('.custom-notification');
+    existingNotifications.forEach(notification => notification.remove());
+
+    const notification = document.createElement('div');
+    notification.className = `custom-notification alert alert-${type} alert-dismissible fade show`;
+    notification.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+
+    // Add styles for notification positioning
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 9999;
+        min-width: 300px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    `;
+
+    document.body.appendChild(notification);
+
+    // Auto remove after 5 seconds
+    setTimeout(() => {
+        if (notification.parentNode) {
+            notification.remove();
+        }
+    }, 5000);
+}
+
+// ===================== DASHBOARD INITIALIZATION =====================
 function initDashboardPage() {
+    // Fetch and update dashboard data on page load
+    fetchDashboardData();
+
     // Balance toggle functionality
     const balanceToggle = document.getElementById('balanceToggle');
     const balanceElements = document.querySelectorAll('.total-balance, .account-balance');
 
-    if(balanceToggle) {
+    if (balanceToggle) {
         balanceToggle.addEventListener('click', function() {
             balanceElements.forEach(element => {
                 if (element.textContent.includes('***')) {
@@ -481,7 +878,6 @@ function initDashboardPage() {
         });
     }
 
-
     // Initialize balance data attributes
     balanceElements.forEach(element => {
         if (!element.textContent.includes('***')) {
@@ -489,161 +885,16 @@ function initDashboardPage() {
         }
     });
 
-    // Transaction filtering
-    const filterButtons = document.querySelectorAll('.transaction-filter');
-    const transactionItems = document.querySelectorAll('.transaction-item');
-
-    filterButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            const filter = this.getAttribute('data-filter');
-
-            // Update active button
-            filterButtons.forEach(btn => btn.classList.remove('active'));
-            this.classList.add('active');
-
-            // Filter transactions
-            transactionItems.forEach(item => {
-                if (filter === 'all') {
-                    item.style.display = 'flex';
-                } else {
-                    const isDeposit = item.classList.contains('deposit');
-                    if ((filter === 'deposit' && isDeposit) || (filter === 'withdrawal' && !isDeposit)) {
-                        item.style.display = 'flex';
-                    } else {
-                        item.style.display = 'none';
-                    }
-                }
-            });
-        });
-    });
-
-    // Add funds to savings goal
-    const addFundsButtons = document.querySelectorAll('.add-funds-btn');
-    const addFundsModalEl = document.getElementById('addFundsModal');
-    if (addFundsModalEl) {
-        const addFundsModal = new bootstrap.Modal(addFundsModalEl);
-
-        addFundsButtons.forEach(button => {
-            button.addEventListener('click', function() {
-                const goalItem = this.closest('.savings-goal');
-                const goalName = goalItem.querySelector('h4').textContent;
-                const currentAmount = goalItem.querySelector('.balance').textContent.split(' / ')[0];
-                const targetAmount = goalItem.querySelector('.balance').textContent.split(' / ')[1];
-                const progress = goalItem.querySelector('.progress-bar').style.width;
-
-                document.getElementById('modalGoalName').value = goalName;
-                document.getElementById('modalCurrentAmount').textContent = currentAmount;
-                document.getElementById('modalTargetAmount').textContent = targetAmount;
-                document.getElementById('modalProgressBar').style.width = progress;
-                document.getElementById('modalProgressBar').textContent = progress;
-
-                addFundsModal.show();
-            });
-        });
-    }
-
-
-    // Quick transfer form
-    const quickTransferForm = document.getElementById('quickTransferForm');
-    if (quickTransferForm) {
-        quickTransferForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            const submitBtn = this.querySelector('button[type="submit"]');
-            const originalText = submitBtn.innerHTML;
-
-            submitBtn.innerHTML = '<div class="spinner-border spinner-border-sm me-2"></div> Processing...';
-            submitBtn.disabled = true;
-
-            setTimeout(() => {
-                showNotification('Transfer completed successfully!', 'success');
-                bootstrap.Modal.getInstance(document.getElementById('quickTransferModal')).hide();
-                this.reset();
-                submitBtn.innerHTML = originalText;
-                submitBtn.disabled = false;
-            }, 2000);
-        });
-    }
-
-    // Add funds form
-    const addFundsForm = document.getElementById('addFundsForm');
-    if (addFundsForm) {
-        addFundsForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            const submitBtn = this.querySelector('button[type="submit"]');
-            const originalText = submitBtn.innerHTML;
-
-            submitBtn.innerHTML = '<div class="spinner-border spinner-border-sm me-2"></div> Adding...';
-            submitBtn.disabled = true;
-
-            setTimeout(() => {
-                showNotification('Funds added to goal successfully!', 'success');
-                bootstrap.Modal.getInstance(document.getElementById('addFundsModal')).hide();
-                this.reset();
-                submitBtn.innerHTML = originalText;
-                submitBtn.disabled = false;
-
-                // Refresh the page to update progress
-                setTimeout(() => location.reload(), 1000);
-            }, 2000);
-        });
-    }
-
-    // Card lock functionality
-    const cardLockButtons = document.querySelectorAll('.card-lock-btn');
-    cardLockButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            const card = this.closest('.credit-card');
-            const isLocked = card.classList.contains('locked');
-
-            if (isLocked) {
-                card.classList.remove('locked');
-                this.innerHTML = '<i class="fas fa-lock"></i>';
-                showNotification('Card unlocked successfully', 'success');
-            } else {
-                card.classList.add('locked');
-                this.innerHTML = '<i class="fas fa-lock-open"></i>';
-                showNotification('Card locked successfully', 'warning');
-            }
-        });
-    });
-
-    // View statement buttons
-    const viewStatementButtons = document.querySelectorAll('.view-statement');
-    viewStatementButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            const accountId = this.getAttribute('data-account-id');
-            showNotification('Generating account statement...', 'info');
-
-            setTimeout(() => {
-                if (window.PrintUtils) {
-                    window.PrintUtils.printAccountStatement({
-                        number: 'NV' + Date.now().toString().slice(-8),
-                        type: 'Savings Account',
-                        openingBalance: '৳5,000.00',
-                        closingBalance: '৳7,850.00',
-                        totalDeposits: '৳3,500.00',
-                        totalWithdrawals: '৳650.00'
-                    }, [
-                        { date: '2024-01-15', description: 'Salary Deposit', type: 'Deposit', amount: '৳3,000.00', balance: '৳8,000.00' },
-                        { date: '2024-01-18', description: 'Utility Bill', type: 'Withdrawal', amount: '৳450.00', balance: '৳7,550.00' },
-                        { date: '2024-01-20', description: 'Transfer', type: 'Deposit', amount: '৳500.00', balance: '৳8,050.00' },
-                        { date: '2024-01-22', description: 'Shopping', type: 'Withdrawal', amount: '৳200.00', balance: '৳7,850.00' }
-                    ]);
-                } else {
-                    showNotification('Statement generated successfully!', 'success');
-                }
-            }, 1500);
-        });
-    });
-
     // Initialize charts
-    if(document.getElementById('balanceChart') && document.getElementById('spendingChart')) {
+    if (document.getElementById('balanceChart') || document.getElementById('spendingChart')) {
         initializeDashboardCharts();
     }
+
+    // Auto-refresh dashboard data every 30 seconds
+    setInterval(fetchDashboardData, 30000);
 }
 
-
-// ===================== DASHBOARD INITIALIZATION =====================
+// ===================== MAIN INITIALIZATION =====================
 document.addEventListener('DOMContentLoaded', function() {
     initMobileMenu();
     initQuickActions();
@@ -653,11 +904,29 @@ document.addEventListener('DOMContentLoaded', function() {
     initSavingsGoals();
     initCreditCardManagement();
     initDashboardWidgets();
-    initExpenseCategorization();
     initDashboardPage();
+    
+    // Initialize transaction handlers based on current page
+    initDepositHandlers();
+    initWithdrawHandlers();
+    initTransferHandlers();
 
     console.log('Dashboard JavaScript initialized successfully');
 });
+// In your dashboard-script.js
+const API_ENDPOINTS = {
+    dashboard: '/dashboard_data/',
+    deposit: '/deposit_api/',
+    withdraw: '/withdraw_api/',
+    transfer: '/transfer_api/',
+    payBill: (billId) => `/pay_bill/${billId}/`,
+    addSavings: (goalId) => `/add_savings_funds/${goalId}/`,
+    creditCardPayment: (cardId) => `/credit_card_payment/${cardId}/`,
+    profilePicture: '/update_profile_picture/'
+};
 
-// Make dashboard functions available globally
+// Make functions available globally
 window.updateDashboardData = updateDashboardData;
+window.fetchDashboardData = fetchDashboardData;
+window.showNotification = showNotification;
+window.handleTransaction = handleTransaction;

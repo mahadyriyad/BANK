@@ -9,6 +9,6 @@ def bank_context(request):
     }
     
     if request.user.is_authenticated:
-        context['user_accounts'] = request.user.account_set.filter(is_active=True)
+        context['user_accounts'] = request.user.accounts.filter(is_active=True)
     
     return context

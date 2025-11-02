@@ -19,7 +19,9 @@
         <div class="col-md-4 text-end">
             <div class="balance-display">
                 <span class="balance-label">Total Balance</span>
-                <h2 class="total-balance" id="totalBalance">৳{{ total_balance|floatformat:2 }}</h2>
+                <h2 class="total-balance" id="totalBalance" data-balance="৳{{ total_balance|floatformat:2 }}">
+                    ৳{{ total_balance|floatformat:2 }}
+                </h2>
                 <button class="btn btn-sm btn-outline-secondary balance-toggle" id="balanceToggle">
                     <i class="fas fa-eye"></i>
                 </button>
@@ -140,13 +142,15 @@
             </div>
             <div class="accounts-grid">
                 {% for account in accounts %}
-                <div class="account-card" data-aos="fade-up">
+                <div class="account-card" data-account-id="{{ account.id }}">
                     <div class="account-header">
                         <h4>{{ account.get_account_type_display }}</h4>
                         <span class="account-status active">Active</span>
                     </div>
                     <p class="account-number">{{ account.account_number }}</p>
-                    <p class="balance">৳<span class="account-balance">{{ account.balance|floatformat:2 }}</span></p>
+                    <p class="balance">৳<span class="account-balance" data-balance="৳{{ account.balance|floatformat:2 }}">
+                        {{ account.balance|floatformat:2 }}
+                    </span></p>
                     <div class="account-footer">
                         <small class="text-muted">Last updated: {{ account.updated_at|date:"M d, Y" }}</small>
                         <button class="btn btn-sm btn-outline-primary view-statement" data-account-id="{{ account.id }}">
@@ -177,9 +181,11 @@
                     <button class="btn btn-outline-secondary btn-sm transaction-filter" data-filter="withdrawal">Expense</button>
                 </div>
             </div>
-            <div class="transactions-list">
+            <div class="transactions-list" id="transactionsList">
                 {% for transaction in transactions %}
-                <div class="transaction-item {% if transaction.transaction_type == 'withdrawal' %}withdrawal{% else %}deposit{% endif %}" data-category="{{ transaction.category }}">
+                <div class="transaction-item {% if transaction.transaction_type == 'withdrawal' or transaction.transaction_type == 'transfer_out' or transaction.transaction_type == 'payment' %}withdrawal{% else %}deposit{% endif %}" 
+                     data-category="{{ transaction.category }}"
+                     data-transaction-id="{{ transaction.id }}">
                     <div class="transaction-icon">
                         <i class="fas fa-{{ transaction.get_icon }}"></i>
                     </div>
@@ -189,7 +195,7 @@
                         <small class="text-muted">{{ transaction.timestamp|date:"M d, Y H:i" }}</small>
                     </div>
                     <div class="transaction-amount">
-                        {% if transaction.transaction_type == 'deposit' %}+{% else %}-{% endif %}৳{{ transaction.amount|floatformat:2 }}
+                        {% if transaction.transaction_type == 'deposit' or transaction.transaction_type == 'transfer_in' %}+{% else %}-{% endif %}৳{{ transaction.amount|floatformat:2 }}
                     </div>
                 </div>
                 {% empty %}
@@ -211,26 +217,36 @@
         <div class="accounts-section animate-fade-in">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h2>💳 Credit Cards</h2>
-                <a href="{% url 'credit_cards' %}" class="btn btn-outline-primary btn-sm">
+                <a href="{% url 'apply_credit_card' %}" class="btn btn-outline-primary btn-sm">
                     <i class="fas fa-plus me-1"></i>Apply New
                 </a>
             </div>
             <div class="accounts-grid">
                 {% for card in credit_cards %}
-                <div class="account-card credit-card">
+                <div class="account-card credit-card" data-card-id="{{ card.id }}">
                     <div class="card-header">
                         <h4>{{ card.get_card_type_display }}</h4>
                         <span class="badge bg-success">Active</span>
+                        {% if card.is_primary %}
+                        <span class="badge bg-primary">Primary</span>
+                        {% endif %}
                     </div>
                     <p class="account-number">**** **** **** {{ card.card_number|slice:"-4:" }}</p>
-                    <p class="balance">৳{{ card.available_credit|floatformat:2 }}</p>
+                    <p class="balance">৳<span class="available-credit">{{ card.available_credit|floatformat:2 }}</span></p>
                     <div class="card-details">
                         <small class="text-muted">Credit Limit: ৳{{ card.credit_limit|floatformat:2 }}</small>
-                        <small class="text-muted">Due Date: {{ card.due_date|date:"M d" }}</small>
+                        <small class="text-muted">Due Date: {{ card.next_payment_due|date:"M d" }}</small>
+                    </div>
+                    <div class="progress mb-2">
+                        <div class="progress-bar {% if card.utilization_percentage > 80 %}bg-danger{% elif card.utilization_percentage > 50 %}bg-warning{% else %}bg-success{% endif %}" 
+                             style="width: {{ card.utilization_percentage }}%">
+                            {{ card.utilization_percentage|floatformat:0 }}%
+                        </div>
                     </div>
                     <div class="card-actions">
-                        <button class="btn btn-sm btn-outline-primary card-lock-btn">
-                            <i class="fas fa-lock"></i>
+                        <button class="btn btn-sm btn-outline-primary card-lock-btn {% if card.is_locked %}locked{% endif %}" 
+                                data-card-id="{{ card.id }}">
+                            <i class="fas {% if card.is_locked %}fa-lock-open{% else %}fa-lock{% endif %}"></i>
                         </button>
                         <button class="btn btn-sm btn-outline-secondary view-statement">
                             Statement
@@ -242,7 +258,7 @@
                     <i class="fas fa-credit-card fa-3x text-muted mb-3"></i>
                     <h4>No Credit Cards</h4>
                     <p class="text-muted">You don't have any credit cards yet.</p>
-                    <a href="{% url 'credit_cards' %}" class="btn btn-primary">Apply for Card</a>
+                    <a href="{% url 'apply_credit_card' %}" class="btn btn-primary">Apply for Card</a>
                 </div>
                 {% endfor %}
             </div>
@@ -260,17 +276,20 @@
             </div>
             <div class="accounts-grid">
                 {% for goal in savings_goals %}
-                <div class="account-card savings-goal">
+                <div class="account-card savings-goal" data-goal-id="{{ goal.id }}">
                     <div class="goal-header">
                         <h4>{{ goal.name }}</h4>
                         <span class="goal-category {{ goal.category }}">{{ goal.get_category_display }}</span>
                     </div>
                     <div class="progress mb-3">
                         <div class="progress-bar" style="width: {{ goal.progress_percentage }}%">
-                            {{ goal.progress_percentage|floatformat:0 }}%
+                            <span class="progress-percentage">{{ goal.progress_percentage|floatformat:0 }}%</span>
                         </div>
                     </div>
-                    <p class="balance">৳{{ goal.current_amount|floatformat:2 }} <span class="text-muted">/ ৳{{ goal.target_amount|floatformat:2 }}</span></p>
+                    <p class="balance">
+                        ৳<span class="current-amount">{{ goal.current_amount|floatformat:2 }}</span> 
+                        <span class="text-muted">/ ৳{{ goal.target_amount|floatformat:2 }}</span>
+                    </p>
                     <div class="goal-details">
                         <small class="text-muted">Target: {{ goal.target_date|date:"M d, Y" }}</small>
                         <small class="text-muted">{{ goal.time_left }} left</small>
@@ -312,55 +331,6 @@
     </div>
 </div>
 
-<!-- Quick Transfer Modal -->
-<div class="modal fade" id="quickTransferModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">💸 Quick Transfer</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <form id="quickTransferForm">
-                    <div class="mb-3">
-                        <label class="form-label">From Account</label>
-                        <select class="form-select" required>
-                            <option value="">Select account...</option>
-                            {% for account in accounts %}
-                            <option value="{{ account.id }}">{{ account.account_number }} - ৳{{ account.balance|floatformat:2 }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">To Account</label>
-                        <select class="form-select" required>
-                            <option value="">Select account...</option>
-                            {% for account in accounts %}
-                            <option value="{{ account.id }}">{{ account.account_number }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Amount</label>
-                        <div class="input-group">
-                            <span class="input-group-text">৳</span>
-                            <input type="number" class="form-control" placeholder="0.00" min="1" step="0.01" required>
-                        </div>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Description</label>
-                        <input type="text" class="form-control" placeholder="Transfer description">
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="submit" form="quickTransferForm" class="btn btn-primary">Transfer Now</button>
-            </div>
-        </div>
-    </div>
-</div>
-
 <!-- Add Funds Modal -->
 <div class="modal fade" id="addFundsModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
@@ -371,6 +341,7 @@
             </div>
             <div class="modal-body">
                 <form id="addFundsForm">
+                    <input type="hidden" id="modalGoalId" name="goal_id">
                     <div class="mb-3">
                         <label class="form-label">Goal</label>
                         <input type="text" class="form-control" id="modalGoalName" readonly>
@@ -386,15 +357,15 @@
                         </div>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Amount to Add</label>
+                        <label for="fundAmount" class="form-label">Amount to Add</label>
                         <div class="input-group">
                             <span class="input-group-text">৳</span>
-                            <input type="number" class="form-control" placeholder="0.00" min="1" step="0.01" required>
+                            <input type="number" class="form-control" id="fundAmount" placeholder="0.00" min="1" step="0.01" required>
                         </div>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">From Account</label>
-                        <select class="form-select" required>
+                        <label for="fundSource" class="form-label">From Account</label>
+                        <select class="form-select" id="fundSource" required>
                             <option value="">Select account...</option>
                             {% for account in accounts %}
                             <option value="{{ account.id }}">{{ account.account_number }} - ৳{{ account.balance|floatformat:2 }}</option>
@@ -410,7 +381,76 @@
         </div>
     </div>
 </div>
+
+<!-- Success Modal -->
+<div class="modal fade" id="successModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-body text-center p-5">
+                <div class="success-icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <h3 class="mt-4 mb-3">🎉 Transaction Successful!</h3>
+                <p class="text-muted mb-4" id="successMessage">Your transaction has been processed successfully.</p>
+                <div class="d-grid gap-2">
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Continue</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Refresh Data Button -->
+<div class="position-fixed bottom-0 end-0 p-3">
+    <button class="btn btn-primary btn-lg rounded-pill shadow" id="refreshData" title="Refresh Dashboard">
+        <i class="fas fa-sync-alt"></i>
+    </button>
+</div>
 {% endblock %}
 
 {% block extra_js %}
+<script>
+
+// Initialize dashboard when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Dashboard initialized');
+    
+    // Auto-refresh dashboard data every 30 seconds
+    setInterval(fetchDashboardData, 30000);
+    
+    // Manual refresh button
+    const refreshBtn = document.getElementById('refreshData');
+    if (refreshBtn) {
+        refreshBtn.addEventListener('click', function() {
+            fetchDashboardData();
+            showNotification('Dashboard data refreshed', 'success');
+        });
+    }
+});
+
+// Global function to show notifications
+function showNotification(message, type = 'info') {
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+    notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+    notification.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Auto remove after 5 seconds
+    setTimeout(() => {
+        if (notification.parentNode) {
+            notification.remove();
+        }
+    }, 5000);
+}
+
+// Make functions available globally
+window.showNotification = showNotification;
+window.fetchDashboardData = fetchDashboardData;
+</script>
 {% endblock %}
