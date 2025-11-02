@@ -4,29 +4,28 @@ from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.contrib.auth.forms import AuthenticationForm
 from .forms import CustomUserCreationForm
-from .models import Account, Transaction, Bill, SavingsGoal
+from .models import Account, Transaction, Bill, SavingsGoal, Employee, GalleryImage
 from django.contrib import messages
 from django.utils import timezone
-from .models import Employee, GalleryImage
+import json
 
 def home(request):
-   
     employees = Employee.objects.filter(is_active=True)
     context = {
-       
         'employees': employees,
     }
     return render(request, 'index.html', context)
-
-
-def home(request):
-    return render(request, 'index.html')
 
 def about(request):
     return render(request, 'about.html')
 
 def gallery(request):
-    return render(request, 'gallery.html')
+    categories = GalleryImage.CATEGORIES
+    images = GalleryImage.objects.filter(is_active=True).order_by('-upload_date')
+    return render(request, 'gallery.html', {
+        'categories': categories,
+        'images': images,
+    })
 
 def contact(request):
     return render(request, 'contact.html')
@@ -56,38 +55,8 @@ def custom_login(request):
                 login(request, user)
                 return redirect('dashboard')
     else:
-        form = UserLoginForm()
+        form = AuthenticationForm()
     return render(request, 'registration/login.html', {'form': form})
-from django.shortcuts import render, redirect
-from django.contrib import messages
-from django.contrib.auth.decorators import login_required
-from .models import GalleryImage
-from .forms import GalleryImageForm
-
-def home(request):
-    return render(request, 'index.html')
-
-def gallery(request):
-    categories = GalleryImage.CATEGORIES
-    images = GalleryImage.objects.filter(is_active=True).order_by('-upload_date')
-    return render(request, 'gallery.html', {
-        'categories': categories,
-        'images': images,
-    })
-
-@login_required
-def upload_gallery_image(request):
-    if request.method == 'POST':
-        form = GalleryImageForm(request.POST, request.FILES)
-        if form.is_valid():
-            form.save()
-            messages.success(request, 'Image uploaded successfully!')
-            return redirect('gallery')
-        else:
-            messages.error(request, 'Failed to upload image. Please check the form.')
-    else:
-        form = GalleryImageForm()
-    return render(request, 'upload_image.html', {'form': form})
 
 @login_required
 def dashboard(request):
@@ -178,3 +147,60 @@ def update_savings_goal(request, goal_id):
             pass
     
     return JsonResponse({'success': False, 'message': 'Invalid amount'})
+
+@login_required
+def withdraw_api(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        account_id = data.get('account_id')
+        amount = data.get('amount')
+
+        try:
+            amount = float(amount)
+            account = Account.objects.get(id=account_id, user=request.user)
+
+            if account.balance >= amount:
+                account.balance -= amount
+                account.save()
+
+                Transaction.objects.create(
+                    account=account,
+                    transaction_type='withdrawal',
+                    amount=amount,
+                    description=data.get('description', 'Withdrawal')
+                )
+
+                return JsonResponse({'success': True, 'new_balance': account.balance})
+            else:
+                return JsonResponse({'success': False, 'message': 'Insufficient funds'})
+        except (Account.DoesNotExist, ValueError, TypeError):
+            return JsonResponse({'success': False, 'message': 'Invalid request'})
+
+    return JsonResponse({'success': False, 'message': 'Invalid request method'})
+
+@login_required
+def deposit_api(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        account_id = data.get('account_id')
+        amount = data.get('amount')
+
+        try:
+            amount = float(amount)
+            account = Account.objects.get(id=account_id, user=request.user)
+
+            account.balance += amount
+            account.save()
+
+            Transaction.objects.create(
+                account=account,
+                transaction_type='deposit',
+                amount=amount,
+                description=data.get('description', 'Deposit')
+            )
+
+            return JsonResponse({'success': True, 'new_balance': account.balance})
+        except (Account.DoesNotExist, ValueError, TypeError):
+            return JsonResponse({'success': False, 'message': 'Invalid request'})
+
+    return JsonResponse({'success': False, 'message': 'Invalid request method'})

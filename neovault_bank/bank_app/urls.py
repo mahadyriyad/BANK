@@ -6,7 +6,6 @@ urlpatterns = [
     path('', views.home, name='home'),
     path('about/', views.about, name='about'),
     path('gallery/', views.gallery, name='gallery'),
-     path('gallery/upload/', views.upload_gallery_image, name='upload_gallery_image'),
     path('contact/', views.contact, name='contact'),
     path('help/', views.help_section, name='help'),
     
@@ -28,4 +27,6 @@ urlpatterns = [
     # API endpoints
     path('api/pay-bill/<int:bill_id>/', views.pay_bill, name='pay_bill'),
     path('api/update-goal/<int:goal_id>/', views.update_savings_goal, name='update_goal'),
+    path('api/withdraw/', views.withdraw_api, name='withdraw_api'),
+    path('api/deposit/', views.deposit_api, name='deposit_api'),
 ]
