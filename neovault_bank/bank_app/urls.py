@@ -32,12 +32,17 @@ urlpatterns = [
     path('api/dashboard-data/', views.dashboard_data, name='dashboard_data'),
     path('api/deposit/', views.deposit_api, name='deposit_api'),
     path('api/withdraw/', views.withdraw_api, name='withdraw_api'),
+    path('withdraw_api/', views.withdraw_api, name='withdraw_api'),
     path('api/transfer/', views.transfer_api, name='transfer_api'),
     path('api/pay-bill/<int:bill_id>/', views.pay_bill, name='pay_bill'),
     path('api/add-savings-funds/<int:goal_id>/', views.add_savings_funds, name='add_savings_funds'),
     path('api/credit-card-payment/<int:card_id>/', views.credit_card_payment, name='credit_card_payment'),
     path('api/update-profile-picture/', views.update_profile_picture, name='update_profile_picture'),
     
+    # New API endpoints to match frontend calls
+    path('transfer_api/', views.transfer_api, name='transfer_api'),
+    path('credit_card_payment/<int:card_id>/', views.credit_card_payment, name='credit_card_payment'),
+
     # Additional API endpoints for specific operations
     path('pay-bill/<int:bill_id>/', views.pay_bill, name='pay_bill_direct'),
     path('add-savings-funds/<int:goal_id>/', views.add_savings_funds, name='add_savings_funds_direct'),

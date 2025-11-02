@@ -459,371 +459,113 @@
 {% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const typeOptions = document.querySelectorAll('.type-option');
-    const fromAccount = document.getElementById('fromAccount');
-    const amountInput = document.getElementById('amount');
     const transferForm = document.getElementById('transferForm');
-    const transferSpeedRadios = document.querySelectorAll('input[name="transferSpeed"]');
-    const securityConfirm = document.getElementById('securityConfirm');
     
-    let currentType = 'internal';
-    let transferFee = 0;
-    let processingTransfer = false;
-    
-    // Transfer type selection
-    typeOptions.forEach(option => {
-        option.addEventListener('click', function() {
-            if (processingTransfer) return;
+    if (transferForm) {
+        transferForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            console.log('Transfer form submitted');
             
-            typeOptions.forEach(opt => opt.classList.remove('active'));
-            this.classList.add('active');
-            
-            // Show corresponding transfer details
-            currentType = this.getAttribute('data-type');
-            document.querySelectorAll('.transfer-details').forEach(detail => {
-                detail.classList.remove('active');
-            });
-            document.getElementById(`${currentType}-details`).classList.add('active');
-            
-            // Show/hide transfer speed section
-            const speedSection = document.getElementById('transferSpeedSection');
-            if (currentType === 'internal') {
-                speedSection.style.display = 'none';
-            } else {
-                speedSection.style.display = 'block';
+            const fromAccountId = document.getElementById('fromAccount').value;
+            const toAccountId = document.getElementById('toAccountInternal').value; // Assuming internal transfer for now
+            const amount = document.getElementById('amount').value;
+            const description = document.getElementById('description').value || 'Transfer';
+
+            if (!fromAccountId || !toAccountId || !amount) {
+                alert('Please fill all required fields');
+                return;
             }
-            
-            // Update transfer type in summary
-            document.getElementById('transferType').textContent = 
-                this.querySelector('span').textContent;
-            
-            updateTransferFee();
-            updateSummary();
-        });
-    });
-    
-    // Update summary when inputs change
-    fromAccount.addEventListener('change', updateSummary);
-    amountInput.addEventListener('input', updateSummary);
-    transferSpeedRadios.forEach(radio => {
-        radio.addEventListener('change', updateTransferFee);
-    });
-    
-    // Use contact buttons
-    document.querySelectorAll('.use-contact').forEach(button => {
-        button.addEventListener('click', function() {
-            const contactInfo = this.closest('.contact-item').querySelector('.contact-info');
-            const bankInfo = contactInfo.querySelector('small').textContent.split('•');
-            const bankName = bankInfo[0].trim();
-            const accountNumber = bankInfo[1].trim();
-            
-            // Switch to external transfer
-            typeOptions.forEach(opt => opt.classList.remove('active'));
-            document.querySelector('[data-type="external"]').classList.add('active');
-            
-            currentType = 'external';
-            document.querySelectorAll('.transfer-details').forEach(detail => {
-                detail.classList.remove('active');
-            });
-            document.getElementById('external-details').classList.add('active');
-            
-            // Fill in the details
-            document.getElementById('externalBank').value = bankName.toLowerCase().replace(' ', '');
-            document.getElementById('externalAccountNumber').value = accountNumber;
-            document.getElementById('externalAccountName').value = contactInfo.querySelector('strong').textContent;
-            
-            document.getElementById('transferSpeedSection').style.display = 'block';
-            document.getElementById('transferType').textContent = 'External Transfer';
-            
-            updateTransferFee();
-            updateSummary();
-            
-            showNotification('Contact details filled successfully', 'success');
-        });
-    });
-    
-    function updateTransferFee() {
-        if (currentType === 'internal') {
-            transferFee = 0;
-            return;
-        }
-        
-        const selectedSpeed = document.querySelector('input[name="transferSpeed"]:checked');
-        if (!selectedSpeed) return;
-        
-        const speed = selectedSpeed.id;
-        
-        if (currentType === 'external') {
-            if (speed === 'standard') transferFee = 0;
-            else if (speed === 'express') transferFee = 50;
-            else if (speed === 'instant') transferFee = 100;
-        } else if (currentType === 'international') {
-            transferFee = 500; // Base fee for international
-            if (speed === 'express') transferFee += 100;
-            else if (speed === 'instant') transferFee += 200;
-        }
-        
-        updateSummary();
-    }
-    
-    function updateSummary() {
-        const selectedFromAccount = getSelectedFromAccount();
-        const currentBalance = selectedFromAccount ? parseFloat(selectedFromAccount.getAttribute('data-balance')) : 0;
-        const transferAmount = parseFloat(amountInput.value) || 0;
-        const totalAmount = transferAmount + transferFee;
-        
-        document.getElementById('fromAccountSummary').textContent = 
-            selectedFromAccount ? selectedFromAccount.text.split('(')[0] : '-';
-        document.getElementById('currentBalance').textContent = 
-            currentBalance ? `৳${currentBalance.toFixed(2)}` : '-';
-        document.getElementById('transferAmount').textContent = `৳${transferAmount.toFixed(2)}`;
-        document.getElementById('transferFee').textContent = `৳${transferFee.toFixed(2)}`;
-        document.getElementById('totalAmount').textContent = `৳${totalAmount.toFixed(2)}`;
-        
-        // Update to account summary
-        if (currentType === 'internal') {
-            const toAccount = document.getElementById('toAccountInternal');
-            const toOption = toAccount.options[toAccount.selectedIndex];
-            document.getElementById('toAccountSummary').textContent = 
-                toOption ? toOption.text : '-';
-        } else if (currentType === 'external') {
-            const bankSelect = document.getElementById('externalBank');
-            const bankOption = bankSelect.options[bankSelect.selectedIndex];
-            document.getElementById('toAccountSummary').textContent = 
-                bankOption ? bankOption.text + ' Account' : 'External Account';
-        } else if (currentType === 'international') {
-            const countrySelect = document.getElementById('internationalCountry');
-            const countryOption = countrySelect.options[countrySelect.selectedIndex];
-            document.getElementById('toAccountSummary').textContent = 
-                countryOption ? countryOption.text + ' Account' : 'International Account';
-        }
-        
-        const balanceWarning = document.getElementById('balanceWarning');
-        const warningMessage = document.getElementById('warningMessage');
-        
-        if (currentBalance) {
-            const newBalance = currentBalance - totalAmount;
-            document.getElementById('newBalance').textContent = `৳${newBalance.toFixed(2)}`;
-            
-            // Show warnings
-            if (newBalance < 0) {
-                balanceWarning.style.display = 'block';
-                warningMessage.textContent = 'Insufficient funds for this transfer';
-                balanceWarning.className = 'alert alert-danger mt-3';
-            } else if (newBalance < 1000) {
-                balanceWarning.style.display = 'block';
-                warningMessage.textContent = 'Low balance after transfer';
-                balanceWarning.className = 'alert alert-warning mt-3';
-            } else {
-                balanceWarning.style.display = 'none';
+
+            if (fromAccountId === toAccountId) {
+                alert('Cannot transfer to the same account');
+                return;
             }
-        }
-    }
-    
-    function getSelectedFromAccount() {
-        switch(currentType) {
-            case 'internal':
-                return fromAccount.options[fromAccount.selectedIndex];
-            case 'external':
-                return document.getElementById('fromAccountExternal').options[document.getElementById('fromAccountExternal').selectedIndex];
-            case 'international':
-                return document.getElementById('internationalFromAccount').options[document.getElementById('internationalFromAccount').selectedIndex];
-        }
-    }
-    
-    // OTP input handling
-    const otpInputs = document.querySelectorAll('.otp-input');
-    otpInputs.forEach((input, index) => {
-        input.addEventListener('input', function(e) {
-            if (this.value.length === 1) {
-                if (index < otpInputs.length - 1) {
-                    otpInputs[index + 1].focus();
-                }
-            }
-        });
-        
-        input.addEventListener('keydown', function(e) {
-            if (e.key === 'Backspace' && this.value.length === 0) {
-                if (index > 0) {
-                    otpInputs[index - 1].focus();
-                }
-            }
-        });
-    });
-    
-    // Form submission
-    transferForm.addEventListener('submit', function(e) {
-        e.preventDefault();
-        
-        if (processingTransfer) return;
-        
-        const selectedFromAccount = getSelectedFromAccount();
-        const currentBalance = selectedFromAccount ? parseFloat(selectedFromAccount.getAttribute('data-balance')) : 0;
-        const transferAmount = parseFloat(amountInput.value) || 0;
-        const totalAmount = transferAmount + transferFee;
-        
-        // Validation
-        if (!selectedFromAccount || !selectedFromAccount.value) {
-            showNotification('Please select a source account', 'error');
-            return;
-        }
-        
-        if (transferAmount < 1) {
-            showNotification('Minimum transfer amount is ৳1.00', 'error');
-            return;
-        }
-        
-        if (currentBalance < totalAmount) {
-            showNotification('Insufficient funds for this transfer', 'error');
-            return;
-        }
-        
-        if (!securityConfirm.checked) {
-            showNotification('Please confirm the security check', 'error');
-            return;
-        }
-        
-        processingTransfer = true;
-        
-        // Show security verification for large amounts or external transfers
-        if (transferAmount > 50000 || currentType !== 'internal') {
-            const securityModal = new bootstrap.Modal(document.getElementById('securityModal'));
-            
-            // Start OTP timer
-            let timeLeft = 120;
-            const timerElement = document.getElementById('otpTimer');
-            const timerInterval = setInterval(() => {
-                timeLeft--;
-                const minutes = Math.floor(timeLeft / 60);
-                const seconds = timeLeft % 60;
-                timerElement.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+
+            submitBtn.innerHTML = '<div class="spinner-border spinner-border-sm me-2"></div> Processing...';
+            submitBtn.disabled = true;
+
+            try {
+                console.log('Sending transfer request:', { fromAccountId, toAccountId, amount, description });
                 
-                if (timeLeft <= 0) {
-                    clearInterval(timerInterval);
-                    showNotification('OTP has expired', 'error');
-                    securityModal.hide();
-                    processingTransfer = false;
-                }
-            }, 1000);
-            
-            // Resend OTP
-            document.getElementById('resendOtp').addEventListener('click', function() {
-                timeLeft = 120;
-                showNotification('New OTP sent to your mobile', 'success');
-            });
-            
-            // Cancel transfer
-            document.getElementById('cancelTransfer').addEventListener('click', function() {
-                clearInterval(timerInterval);
-                securityModal.hide();
-                processingTransfer = false;
-            });
-            
-            // Verify OTP
-            document.getElementById('verifyOtp').addEventListener('click', function() {
-                const otp = Array.from(otpInputs).map(input => input.value).join('');
-                if (otp.length === 6) {
-                    clearInterval(timerInterval);
-                    securityModal.hide();
-                    processTransfer();
+                const response = await fetch('/transfer_api/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: JSON.stringify({
+                        from_account_id: fromAccountId,
+                        to_account_id: toAccountId,
+                        amount: parseFloat(amount),
+                        description: description
+                    })
+                });
+
+                const data = await response.json();
+                console.log('Transfer response:', data);
+
+                if (data.success) {
+                    showNotification('Transfer successful!', 'success');
+                    transferForm.reset();
+                    
+                    // Show success modal
+                    const successModal = document.getElementById('successModal');
+                    if (successModal) {
+                        const modal = new bootstrap.Modal(successModal);
+                        modal.show();
+                    }
                 } else {
-                    showNotification('Please enter complete OTP', 'error');
+                    showNotification(data.message || 'Transfer failed', 'error');
                 }
-            });
-            
-            securityModal.show();
-        } else {
-            processTransfer();
-        }
-    });
-    
-    function processTransfer() {
-        const processingModal = new bootstrap.Modal(document.getElementById('processingModal'));
-        const processingMessage = document.getElementById('processingMessage');
-        
-        // Set appropriate processing message
-        switch(currentType) {
-            case 'internal':
-                processingMessage.textContent = 'Processing internal transfer...';
-                break;
-            case 'external':
-                processingMessage.textContent = 'Processing external transfer...';
-                break;
-            case 'international':
-                processingMessage.textContent = 'Processing international transfer...';
-                break;
-        }
-        
-        processingModal.show();
-        
-        // Simulate API call
-        setTimeout(() => {
-            processingModal.hide();
-            
-            // Show success modal
-            const successModal = new bootstrap.Modal(document.getElementById('successModal'));
-            const successMessage = document.getElementById('successMessage');
-            const transactionId = 'TRF' + Date.now();
-            
-            document.getElementById('successAmount').textContent = `৳${amountInput.value}`;
-            document.getElementById('successFrom').textContent = document.getElementById('fromAccountSummary').textContent;
-            document.getElementById('successTo').textContent = document.getElementById('toAccountSummary').textContent;
-            document.getElementById('successReference').textContent = transactionId;
-            
-            // Set estimated arrival
-            let arrivalTime = 'Immediately';
-            if (currentType === 'external') {
-                const speed = document.querySelector('input[name="transferSpeed"]:checked').id;
-                if (speed === 'standard') arrivalTime = '1-2 business days';
-                else if (speed === 'express') arrivalTime = 'Same day';
-                else if (speed === 'instant') arrivalTime = 'Immediately';
-            } else if (currentType === 'international') {
-                arrivalTime = '3-5 business days';
+            } catch (error) {
+                console.error('Transfer error:', error);
+                showNotification('Network error occurred', 'error');
+            } finally {
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
             }
-            document.getElementById('successArrival').textContent = arrivalTime;
-            
-            // Set success message
-            successMessage.textContent = `Transfer completed successfully! Funds will arrive ${arrivalTime.toLowerCase()}.`;
-            
-            // Update print button
-            document.getElementById('printTransferReceipt').setAttribute('data-transaction-id', transactionId);
-            document.getElementById('printTransferReceipt').setAttribute('data-amount', amountInput.value);
-            document.getElementById('printTransferReceipt').setAttribute('data-from', document.getElementById('fromAccountSummary').textContent);
-            document.getElementById('printTransferReceipt').setAttribute('data-to', document.getElementById('toAccountSummary').textContent);
-            
-            successModal.show();
-            
-            // Reset form
-            transferForm.reset();
-            otpInputs.forEach(input => input.value = '');
-            updateSummary();
-            processingTransfer = false;
-        }, 3000);
+        });
     }
-    
-    // Print receipt functionality
-    document.getElementById('printTransferReceipt').addEventListener('click', function() {
-        const transactionData = {
-            id: this.getAttribute('data-transaction-id'),
-            type: 'Transfer',
-            amount: this.getAttribute('data-amount'),
-            date: new Date().toLocaleString(),
-            fromAccount: this.getAttribute('data-from'),
-            toAccount: this.getAttribute('data-to'),
-            description: document.getElementById('description').value || 'Funds Transfer',
-            fee: transferFee
-        };
-        
-        if (window.PrintUtils) {
-            window.PrintUtils.printTransactionReceipt(transactionData);
-        } else {
-            showNotification('Print functionality is not available', 'warning');
+
+    // Utility functions (same as above)
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
         }
-    });
-    
-    // Initialize
-    updateTransferFee();
-    updateSummary();
+        return cookieValue;
+    }
+
+    function showNotification(message, type = 'info') {
+        const existingNotifications = document.querySelectorAll('.custom-notification');
+        existingNotifications.forEach(notification => notification.remove());
+
+        const notification = document.createElement('div');
+        notification.className = `custom-notification alert alert-${type} alert-dismissible fade show`;
+        notification.style.cssText = 'position: fixed; top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+        notification.innerHTML = `
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        
+        document.body.appendChild(notification);
+
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.remove();
+            }
+        }, 5000);
+    }
 });
 </script>
 {% endblock %}

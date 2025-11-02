@@ -581,513 +581,141 @@
 
 {% block extra_js %}
 <script>
+// Credit card payment handler
 document.addEventListener('DOMContentLoaded', function() {
-    // Card selection in apply modal
-    const cardOptions = document.querySelectorAll('.card-option');
-    cardOptions.forEach(option => {
-        option.addEventListener('click', function() {
-            cardOptions.forEach(opt => opt.classList.remove('active'));
-            this.classList.add('active');
-        });
-    });
-    
-    // Card apply form
-    const applyCardForm = document.getElementById('applyCardForm');
-    applyCardForm.addEventListener('submit', function(e) {
-        e.preventDefault();
-        
-        const submitBtn = this.querySelector('button[type="submit"]');
-        const originalText = submitBtn.innerHTML;
-        
-        submitBtn.innerHTML = '<div class="spinner-border spinner-border-sm me-2"></div> Processing...';
-        submitBtn.disabled = true;
-        
-        setTimeout(() => {
-            showNotification('Credit card application submitted successfully! You will hear from us within 3-5 business days.', 'success');
-            bootstrap.Modal.getInstance(document.getElementById('applyCardModal')).hide();
-            this.reset();
-            submitBtn.innerHTML = originalText;
-            submitBtn.disabled = false;
-        }, 2000);
-    });
-    
-    // Make payment
     const makePaymentBtn = document.getElementById('makePaymentBtn');
-    const makePaymentModal = new bootstrap.Modal(document.getElementById('makePaymentModal'));
+    if (makePaymentBtn) {
+        makePaymentBtn.addEventListener('click', function() {
+            const makePaymentModal = new bootstrap.Modal(document.getElementById('makePaymentModal'));
+            makePaymentModal.show();
+        });
+    }
+
+    // Credit card payment form
     const makePaymentForm = document.getElementById('makePaymentForm');
-    
-    makePaymentBtn.addEventListener('click', function() {
-        makePaymentModal.show();
-    });
-    
-    // Payment date selection
-    const paymentDateSelect = document.getElementById('paymentDate');
-    const scheduledDateDiv = document.getElementById('scheduledDate');
-    
-    paymentDateSelect.addEventListener('change', function() {
-        if (this.value === 'schedule') {
-            scheduledDateDiv.style.display = 'block';
-        } else {
-            scheduledDateDiv.style.display = 'none';
-        }
-    });
-    
-    makePaymentForm.addEventListener('submit', function(e) {
-        e.preventDefault();
-        
-        const submitBtn = this.querySelector('button[type="submit"]');
-        const originalText = submitBtn.innerHTML;
-        
-        submitBtn.innerHTML = '<div class="spinner-border spinner-border-sm me-2"></div> Processing...';
-        submitBtn.disabled = true;
-        
-        setTimeout(() => {
-            showNotification('Payment processed successfully!', 'success');
-            makePaymentModal.hide();
-            this.reset();
-            scheduledDateDiv.style.display = 'none';
-            submitBtn.innerHTML = originalText;
-            submitBtn.disabled = false;
+    if (makePaymentForm) {
+        makePaymentForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
             
-            // Refresh the page to update balances
-            setTimeout(() => location.reload(), 1000);
-        }, 2000);
-    });
-    
+            const cardId = document.getElementById('paymentCardSelect').value;
+            const amount = document.getElementById('paymentAmount').value;
+            const accountId = document.getElementById('paymentAccount').value;
+
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+
+            submitBtn.innerHTML = '<div class="spinner-border spinner-border-sm me-2"></div> Processing...';
+            submitBtn.disabled = true;
+
+            try {
+                const success = await handleTransaction(`/credit_card_payment/${cardId}/`, {
+                    account_id: accountId,
+                    amount: amount
+                });
+
+                if (success) {
+                    makePaymentForm.reset();
+                    bootstrap.Modal.getInstance(document.getElementById('makePaymentModal')).hide();
+                    
+                    // Refresh page to update credit card data
+                    setTimeout(() => {
+                        location.reload();
+                    }, 1000);
+                }
+            } finally {
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            }
+        });
+    }
+
     // Card lock functionality
     const cardLockButtons = document.querySelectorAll('.card-lock-btn');
     cardLockButtons.forEach(button => {
         button.addEventListener('click', function() {
             const cardId = this.getAttribute('data-card-id');
             const isLocked = this.classList.contains('locked');
-            const cardItem = document.querySelector(`[data-card-id="${cardId}"]`);
-            
+
             if (isLocked) {
                 // Unlock card
                 this.classList.remove('locked');
                 this.innerHTML = '<i class="fas fa-lock me-1"></i>Lock';
-                cardItem.classList.remove('card-locked');
                 showNotification('Card unlocked successfully', 'success');
             } else {
                 // Lock card
                 this.classList.add('locked');
                 this.innerHTML = '<i class="fas fa-lock-open me-1"></i>Unlock';
-                cardItem.classList.add('card-locked');
                 showNotification('Card locked successfully', 'warning');
             }
+
+            // In real app, you would make API call here
         });
     });
-    
-    // Card details view
-    const cardDetailsButtons = document.querySelectorAll('.card-details-btn');
-    const cardDetailsModal = new bootstrap.Modal(document.getElementById('cardDetailsModal'));
-    
-    cardDetailsButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            const cardId = this.getAttribute('data-card-id');
-            const cardItem = document.querySelector(`[data-card-id="${cardId}"]`);
-            
-            // Simulate loading card details
-            const detailsContent = document.getElementById('cardDetailsContent');
-            detailsContent.innerHTML = `
-                <div class="card-detail-item">
-                    <strong>Card Number:</strong>
-                    <span>**** **** **** ${cardId.slice(-4)}</span>
-                </div>
-                <div class="card-detail-item">
-                    <strong>Expiry Date:</strong>
-                    <span>12/25</span>
-                </div>
-                <div class="card-detail-item">
-                    <strong>CVV:</strong>
-                    <span>***</span>
-                </div>
-                <div class="card-detail-item">
-                    <strong>Credit Limit:</strong>
-                    <span>৳50,000.00</span>
-                </div>
-                <div class="card-detail-item">
-                    <strong>Available Credit:</strong>
-                    <span>৳35,250.00</span>
-                </div>
-                <div class="card-detail-item">
-                    <strong>Current Balance:</strong>
-                    <span>৳14,750.00</span>
-                </div>
-                <div class="card-detail-item">
-                    <strong>Minimum Payment Due:</strong>
-                    <span>৳500.00</span>
-                </div>
-                <div class="card-detail-item">
-                    <strong>Payment Due Date:</strong>
-                    <span>${new Date(new Date().setDate(new Date().getDate() + 15)).toLocaleDateString()}</span>
-                </div>
-            `;
-            
-            cardDetailsModal.show();
-        });
-    });
-    
-    // Auto-pay setup
-    const setAutoPayBtn = document.getElementById('setAutoPay');
-    const autoPayModal = new bootstrap.Modal(document.getElementById('autoPayModal'));
-    const autoPayForm = document.getElementById('autoPayForm');
-    const autoPayType = document.getElementById('autoPayType');
-    const fixedAmountDiv = document.getElementById('fixedAmount');
-    
-    setAutoPayBtn.addEventListener('click', function() {
-        autoPayModal.show();
-    });
-    
-    autoPayType.addEventListener('change', function() {
-        if (this.value === 'fixed') {
-            fixedAmountDiv.style.display = 'block';
-        } else {
-            fixedAmountDiv.style.display = 'none';
-        }
-    });
-    
-    autoPayForm.addEventListener('submit', function(e) {
-        e.preventDefault();
-        
-        const submitBtn = this.querySelector('button[type="submit"]');
-        const originalText = submitBtn.innerHTML;
-        
-        submitBtn.innerHTML = '<div class="spinner-border spinner-border-sm me-2"></div> Setting up...';
-        submitBtn.disabled = true;
-        
-        setTimeout(() => {
-            showNotification('Auto-pay activated successfully!', 'success');
-            autoPayModal.hide();
-            this.reset();
-            fixedAmountDiv.style.display = 'none';
-            submitBtn.innerHTML = originalText;
-            submitBtn.disabled = false;
-        }, 1500);
-    });
-    
-    // Limit increase request
-    const limitIncreaseBtn = document.getElementById('limitIncreaseBtn');
-    limitIncreaseBtn.addEventListener('click', function() {
-        const originalText = this.innerHTML;
-        this.innerHTML = '<div class="spinner-border spinner-border-sm me-2"></div> Requesting...';
-        this.disabled = true;
-        
-        setTimeout(() => {
-            showNotification('Credit limit increase request submitted for review. We will notify you within 2 business days.', 'info');
-            this.innerHTML = originalText;
-            this.disabled = false;
-        }, 2000);
-    });
-    
-    // Quick actions
-    document.getElementById('viewAllTransactions').addEventListener('click', function() {
-        showNotification('Loading all transactions...', 'info');
-    });
-    
-    document.getElementById('downloadStatement').addEventListener('click', function() {
-        if (window.PrintUtils) {
-            window.PrintUtils.exportToCSV([
-                { date: '2024-01-15', description: 'Supermarket Purchase', type: 'Purchase', amount: '৳2,500.00', balance: '৳15,250.00', category: 'Shopping' },
-                { date: '2024-01-18', description: 'Online Shopping', type: 'Purchase', amount: '৳1,200.00', balance: '৳16,450.00', category: 'Shopping' },
-                { date: '2024-01-20', description: 'Payment Received', type: 'Payment', amount: '৳5,000.00', balance: '৳11,450.00', category: 'Payment' }
-            ], 'credit_card_statement.csv');
-        } else {
-            showNotification('Statement downloaded successfully!', 'success');
-        }
-    });
-    
-    document.getElementById('reportLostCard').addEventListener('click', function() {
-        if (confirm('Are you sure you want to report this card as lost or stolen? This will immediately block the card.')) {
-            const originalText = this.innerHTML;
-            this.innerHTML = '<div class="spinner-border spinner-border-sm me-2"></div> Reporting...';
-            this.disabled = true;
-            
-            setTimeout(() => {
-                showNotification('Card reported as lost/stolen. It has been blocked immediately. A replacement will be sent within 3-5 business days.', 'warning');
-                this.innerHTML = originalText;
-                this.disabled = false;
-            }, 1500);
-        }
-    });
-    
-    document.getElementById('viewCreditReport').addEventListener('click', function() {
-        showNotification('Loading credit report...', 'info');
-    });
-    
-    document.getElementById('viewRewards').addEventListener('click', function() {
-        showNotification('Opening rewards dashboard...', 'info');
-    });
-    
-    // Transaction filtering
-    const cardTransactionFilter = document.getElementById('cardTransactionFilter');
-    const transactionItems = document.querySelectorAll('.transaction-item');
-    
-    cardTransactionFilter.addEventListener('change', function() {
-        const selectedCardId = this.value;
-        
-        transactionItems.forEach(item => {
-            if (selectedCardId === 'all' || item.getAttribute('data-card-id') === selectedCardId) {
-                item.style.display = 'flex';
-            } else {
-                item.style.display = 'none';
-            }
-        });
-    });
-    
-    // Pay now buttons in payment history
-    const payNowButtons = document.querySelectorAll('.pay-now-btn');
-    payNowButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            const paymentId = this.getAttribute('data-payment-id');
-            makePaymentModal.show();
-        });
-    });
-    
-    // Initialize credit score circle
-    initializeCreditScore();
 });
 
-function initializeCreditScore() {
-    const scoreElements = document.querySelectorAll('.circle-progress');
+// Global transaction handler function (copied from transfer.html, ensure it's available globally or imported)
+async function handleTransaction(url, data) {
+    try {
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify(data)
+        });
+
+        const result = await response.json();
+        
+        if (result.success) {
+            showNotification(result.message || 'Transaction successful!', 'success');
+            return true;
+        } else {
+            showNotification(result.message || 'Transaction failed', 'error');
+            return false;
+        }
+    } catch (error) {
+        console.error('Transaction error:', error);
+        showNotification('An error occurred during transaction', 'error');
+        return false;
+    }
+}
+
+// CSRF token function (copied from transfer.html, ensure it's available globally or imported)
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+// Notification function (copied from transfer.html, ensure it's available globally or imported)
+function showNotification(message, type = 'info') {
+    // Create notification
+    const notification = document.createElement('div');
+    notification.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+    notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+    notification.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
     
-    scoreElements.forEach(element => {
-        const score = parseInt(element.getAttribute('data-score'));
-        const circle = element;
-        
-        // Calculate stroke dasharray based on score (0-850 scale)
-        const circumference = 2 * Math.PI * 40;
-        const progress = (score / 850) * circumference;
-        
-        circle.style.setProperty('--progress', progress);
-        circle.style.setProperty('--circumference', circumference);
-    });
+    document.body.appendChild(notification);
+    
+    // Auto remove after 5 seconds
+    setTimeout(() => {
+        if (notification.parentNode) {
+            notification.remove();
+        }
+    }, 5000);
 }
 </script>
-
-<style>
-.credit-cards-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 20px;
-}
-
-.credit-card-item {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    padding: 25px;
-    border-radius: 15px;
-    position: relative;
-    overflow: hidden;
-}
-
-.credit-card-item::before {
-    content: '';
-    position: absolute;
-    top: -50%;
-    right: -50%;
-    width: 100%;
-    height: 100%;
-    background: rgba(255, 255, 255, 0.1);
-    transform: rotate(45deg);
-}
-
-.credit-card-item.primary {
-    border: 2px solid #ffd700;
-}
-
-.credit-card-item.card-locked {
-    opacity: 0.7;
-    background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
-}
-
-.card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-}
-
-.card-type {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.card-type i {
-    font-size: 1.5rem;
-}
-
-.card-number {
-    font-size: 1.3rem;
-    letter-spacing: 2px;
-    margin-bottom: 20px;
-    font-family: monospace;
-}
-
-.card-details {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 15px;
-    margin-bottom: 20px;
-}
-
-.card-balance {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 15px;
-}
-
-.balance-info h4 {
-    margin: 0;
-    font-weight: 700;
-}
-
-.card-progress {
-    margin-bottom: 15px;
-}
-
-.card-actions {
-    display: flex;
-    gap: 10px;
-}
-
-.card-actions .btn {
-    flex: 1;
-}
-
-/* Card Options in Apply Modal */
-.card-options .card-option {
-    border: 2px solid #dee2e6;
-    border-radius: 10px;
-    padding: 20px;
-    text-align: center;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    height: 100%;
-}
-
-.card-options .card-option.active {
-    border-color: var(--primary-color);
-    background: rgba(37, 99, 235, 0.05);
-}
-
-.card-preview {
-    width: 60px;
-    height: 40px;
-    border-radius: 5px;
-    margin: 0 auto 15px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-size: 1.5rem;
-}
-
-.card-preview.classic { background: linear-gradient(135deg, #667eea, #764ba2); }
-.card-preview.gold { background: linear-gradient(135deg, #ffd700, #ffa500); }
-.card-preview.platinum { background: linear-gradient(135deg, #e5e7eb, #9ca3af); }
-
-.card-features {
-    margin-top: 10px;
-}
-
-.card-features span {
-    display: block;
-    font-size: 0.8rem;
-    color: #6b7280;
-    margin-bottom: 2px;
-}
-
-/* Credit Score Widget */
-.credit-score-widget {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-}
-
-.score-circle {
-    position: relative;
-    width: 80px;
-    height: 80px;
-}
-
-.circle-progress {
-    width: 100%;
-    height: 100%;
-    border-radius: 50%;
-    background: conic-gradient(
-        var(--primary-color) calc(var(--progress) * 100 / var(--circumference) * 360deg),
-        #e5e7eb 0deg
-    );
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.circle-progress::before {
-    content: '';
-    position: absolute;
-    width: 70px;
-    height: 70px;
-    background: white;
-    border-radius: 50%;
-}
-
-.score-value {
-    position: relative;
-    font-weight: 700;
-    font-size: 1.2rem;
-}
-
-/* Rewards Info */
-.rewards-info .reward-item {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    padding: 10px 0;
-    border-bottom: 1px solid #eee;
-}
-
-.rewards-info .reward-item:last-child {
-    border-bottom: none;
-}
-
-.reward-item i {
-    font-size: 1.2rem;
-}
-
-/* Card Details */
-.card-detail-item {
-    display: flex;
-    justify-content: space-between;
-    padding: 10px 0;
-    border-bottom: 1px solid #eee;
-}
-
-.card-detail-item:last-child {
-    border-bottom: none;
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-    .credit-cards-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .credit-score-widget {
-        flex-direction: column;
-        text-align: center;
-    }
-    
-    .card-details {
-        grid-template-columns: 1fr;
-    }
-    
-    .card-actions {
-        flex-direction: column;
-    }
-}
-</style>
 {% endblock %}

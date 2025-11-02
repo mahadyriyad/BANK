@@ -273,44 +273,9 @@
     </div>
 </div>
 
-<!-- Success Modal -->
-<div class="modal fade" id="successModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-body text-center p-5">
-                <div class="success-icon">
-                    <i class="fas fa-check-circle"></i>
-                </div>
-                <h3 class="mt-4 mb-3">🎉 Withdrawal Successful!</h3>
-                <p class="text-muted mb-4" id="successMessage">Your withdrawal has been processed successfully.</p>
-                <div class="withdrawal-details mb-4">
-                    <div class="detail-row">
-                        <span>Amount:</span>
-                        <strong id="successAmount"></strong>
-                    </div>
-                    <div class="detail-row">
-                        <span>Method:</span>
-                        <strong id="successMethod"></strong>
-                    </div>
-                    <div class="detail-row">
-                        <span>New Balance:</span>
-                        <strong id="successBalance"></strong>
-                    </div>
-                    <div class="detail-row">
-                        <span>Reference:</span>
-                        <strong id="successReference"></strong>
-                    </div>
-                </div>
-                <div class="d-grid gap-2">
-                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Continue</button>
-                    <button type="button" class="btn btn-outline-primary print-receipt" id="printWithdrawalReceipt">
-                        <i class="fas fa-print me-2"></i>Print Receipt
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+<button onclick="testWithdraw()" class="btn btn-warning mt-3">
+    <i class="fas fa-bug me-2"></i>Test Withdraw API
+</button>
 
 <!-- Processing Modal -->
 <div class="modal fade" id="processingModal" tabindex="-1" data-bs-backdrop="static">
@@ -351,222 +316,224 @@
 
 {% block extra_js %}
 <script>
+// Utility function to get CSRF token
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+// Notification function
+function showNotification(message, type = 'info') {
+    // Remove existing notifications
+    const existingNotifications = document.querySelectorAll('.custom-notification');
+    existingNotifications.forEach(notification => notification.remove());
+
+    // Create new notification
+    const notification = document.createElement('div');
+    notification.className = `custom-notification alert alert-${type} alert-dismissible fade show`;
+    notification.style.cssText = 'position: fixed; top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+    notification.innerHTML = `
+        <div class="d-flex align-items-center">
+            <i class="fas fa-${getNotificationIcon(type)} me-2"></i>
+            <span>${message}</span>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    document.body.appendChild(notification);
+
+    // Auto remove after 5 seconds
+    setTimeout(() => {
+        if (notification.parentNode) {
+            notification.remove();
+        }
+    }, 5000);
+}
+
+function getNotificationIcon(type) {
+    const icons = {
+        success: 'check-circle',
+        error: 'exclamation-circle',
+        warning: 'exclamation-triangle',
+        info: 'info-circle'
+    };
+    return icons[type] || 'info-circle';
+}
+
+// Main withdraw functionality
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('Withdraw page loaded');
+    
+    const withdrawForm = document.getElementById('withdrawForm');
     const accountSelect = document.getElementById('accountSelect');
     const amountInput = document.getElementById('amount');
-    const withdrawForm = document.getElementById('withdrawForm');
-    const methodOptions = document.querySelectorAll('.method-option');
     
-    let currentMethod = 'atm';
-    let serviceFee = 0;
-    
-    // Update summary when account or amount changes
-    accountSelect.addEventListener('change', updateSummary);
-    amountInput.addEventListener('input', updateSummary);
-    
-    // Withdrawal method selection
-    methodOptions.forEach(option => {
-        option.addEventListener('click', function() {
-            methodOptions.forEach(opt => opt.classList.remove('active'));
-            this.classList.add('active');
+    if (withdrawForm) {
+        console.log('Withdraw form found');
+        
+        withdrawForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            console.log('Withdraw form submitted');
             
-            // Show corresponding method details
-            currentMethod = this.getAttribute('data-method');
-            document.querySelectorAll('.method-details').forEach(detail => {
-                detail.classList.remove('active');
-            });
-            document.getElementById(`${currentMethod}-details`).classList.add('active');
+            // Get form values
+            const accountId = accountSelect.value;
+            const amount = amountInput.value;
+            const description = document.getElementById('description').value || 'Cash Withdrawal';
             
-            // Update service fee based on method
-            updateServiceFee();
-            updateSummary();
+            console.log('Form values:', { accountId, amount, description });
+            
+            // Validation
+            if (!accountId) {
+                showNotification('Please select an account', 'error');
+                return;
+            }
+            
+            if (!amount || parseFloat(amount) < 100) {
+                showNotification('Minimum withdrawal amount is ৳100.00', 'error');
+                return;
+            }
+            
+            // Get selected account balance
+            const selectedOption = accountSelect.options[accountSelect.selectedIndex];
+            const accountBalance = parseFloat(selectedOption.getAttribute('data-balance'));
+            
+            if (parseFloat(amount) > accountBalance) {
+                showNotification('Insufficient funds in selected account', 'error');
+                return;
+            }
+            
+            // Show loading state
+            const submitBtn = withdrawForm.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<div class="spinner-border spinner-border-sm me-2"></div> Processing...';
+            submitBtn.disabled = true;
+            
+            try {
+                // Prepare request data
+                const requestData = {
+                    account_id: parseInt(accountId),
+                    amount: parseFloat(amount),
+                    description: description
+                };
+                
+                console.log('Sending withdraw request:', requestData);
+                
+                // Make API call
+                const response = await fetch('/withdraw_api/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: JSON.stringify(requestData)
+                });
+                
+                const data = await response.json();
+                console.log('Withdraw API response:', data);
+                
+                if (data.success) {
+                    showNotification(data.message, 'success');
+                    
+                    // Reset form
+                    withdrawForm.reset();
+                    
+                    // Show success modal
+                    const successModal = document.getElementById('successModal');
+                    if (successModal) {
+                        // Update modal content
+                        const successMessage = document.getElementById('successMessage');
+                        const successAmount = document.getElementById('successAmount');
+                        
+                        if (successMessage) successMessage.textContent = data.message;
+                        if (successAmount) successAmount.textContent = `৳${parseFloat(amount).toFixed(2)}`;
+                        
+                        const modal = new bootstrap.Modal(successModal);
+                        modal.show();
+                    }
+                    
+                    // Update account balance in dropdown
+                    if (data.new_balance !== undefined) {
+                        selectedOption.setAttribute('data-balance', data.new_balance);
+                        selectedOption.textContent = selectedOption.textContent.replace(
+                            /\(Balance: ৳[0-9.,]+\)/,
+                            `(Balance: ৳${data.new_balance.toFixed(2)})`
+                        );
+                    }
+                    
+                } else {
+                    showNotification(data.message || 'Withdrawal failed', 'error');
+                }
+                
+            } catch (error) {
+                console.error('Withdraw error:', error);
+                showNotification('Network error occurred. Please try again.', 'error');
+            } finally {
+                // Restore button
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            }
         });
-    });
-    
-    function updateServiceFee() {
-        switch(currentMethod) {
-            case 'atm':
-                serviceFee = 15;
-                break;
-            case 'bank-transfer':
-                serviceFee = 25;
-                break;
-            case 'check':
-                serviceFee = 50;
-                break;
-            case 'branch':
-                serviceFee = 0;
-                break;
-        }
         
-        // Add express delivery fee for checks
-        if (currentMethod === 'check') {
-            const expressCheckbox = document.getElementById('expressDelivery');
-            if (expressCheckbox && expressCheckbox.checked) {
-                serviceFee += 100;
-            }
-        }
+    } else {
+        console.error('Withdraw form not found!');
     }
     
-    function updateSummary() {
-        const selectedOption = accountSelect.options[accountSelect.selectedIndex];
-        const currentBalance = selectedOption ? parseFloat(selectedOption.getAttribute('data-balance')) : 0;
-        const withdrawalAmount = parseFloat(amountInput.value) || 0;
-        const totalAmount = withdrawalAmount + serviceFee;
-        
-        document.getElementById('selectedAccount').textContent = 
-            selectedOption ? selectedOption.text.split('(')[0] : '-';
-        document.getElementById('currentBalance').textContent = 
-            currentBalance ? `৳${currentBalance.toFixed(2)}` : '-';
-        document.getElementById('withdrawalAmount').textContent = `৳${withdrawalAmount.toFixed(2)}`;
-        document.getElementById('serviceFee').textContent = `৳${serviceFee.toFixed(2)}`;
-        document.getElementById('totalAmount').textContent = `৳${totalAmount.toFixed(2)}`;
-        
-        const balanceWarning = document.getElementById('balanceWarning');
-        const warningMessage = document.getElementById('warningMessage');
-        
-        if (currentBalance) {
-            const newBalance = currentBalance - totalAmount;
-            document.getElementById('newBalance').textContent = `৳${newBalance.toFixed(2)}`;
+    // Real-time balance validation
+    if (amountInput && accountSelect) {
+        amountInput.addEventListener('input', function() {
+            const amount = parseFloat(this.value);
+            const selectedOption = accountSelect.options[accountSelect.selectedIndex];
             
-            // Show warnings
-            if (newBalance < 0) {
-                balanceWarning.style.display = 'block';
-                warningMessage.textContent = 'Insufficient funds for this withdrawal';
-                balanceWarning.className = 'alert alert-danger mt-3';
-            } else if (newBalance < 1000) {
-                balanceWarning.style.display = 'block';
-                warningMessage.textContent = 'Low balance after withdrawal';
-                balanceWarning.className = 'alert alert-warning mt-3';
-            } else {
-                balanceWarning.style.display = 'none';
+            if (selectedOption && selectedOption.value) {
+                const accountBalance = parseFloat(selectedOption.getAttribute('data-balance'));
+                
+                if (amount > accountBalance) {
+                    this.classList.add('is-invalid');
+                } else {
+                    this.classList.remove('is-invalid');
+                }
             }
-        }
-    }
-    
-    // Express delivery fee for checks
-    const expressCheckbox = document.getElementById('expressDelivery');
-    if (expressCheckbox) {
-        expressCheckbox.addEventListener('change', function() {
-            updateServiceFee();
-            updateSummary();
+        });
+        
+        accountSelect.addEventListener('change', function() {
+            amountInput.classList.remove('is-invalid');
         });
     }
-    
-    // Form submission
-    withdrawForm.addEventListener('submit', function(e) {
-        e.preventDefault();
-        
-        const selectedOption = accountSelect.options[accountSelect.selectedIndex];
-        const currentBalance = selectedOption ? parseFloat(selectedOption.getAttribute('data-balance')) : 0;
-        const withdrawalAmount = parseFloat(amountInput.value) || 0;
-        const totalAmount = withdrawalAmount + serviceFee;
-        
-        // Validation
-        if (!selectedOption || !selectedOption.value) {
-            showNotification('Please select an account', 'error');
-            return;
-        }
-        
-        if (withdrawalAmount < 100) {
-            showNotification('Minimum withdrawal amount is ৳100.00', 'error');
-            return;
-        }
-        
-        if (currentBalance < totalAmount) {
-            const insufficientModal = new bootstrap.Modal(document.getElementById('insufficientFundsModal'));
-            insufficientModal.show();
-            return;
-        }
-        
-        // Show processing modal with appropriate message
-        const processingModal = new bootstrap.Modal(document.getElementById('processingModal'));
-        const processingMessage = document.getElementById('processingMessage');
-        
-        switch(currentMethod) {
-            case 'atm':
-                processingMessage.textContent = 'Processing ATM withdrawal request...';
-                break;
-            case 'bank-transfer':
-                processingMessage.textContent = 'Processing bank transfer...';
-                break;
-            case 'check':
-                processingMessage.textContent = 'Processing check request...';
-                break;
-            case 'branch':
-                processingMessage.textContent = 'Processing branch withdrawal...';
-                break;
-        }
-        
-        processingModal.show();
-        
-        // Simulate API call
-        setTimeout(() => {
-            processingModal.hide();
-            
-            // Show success modal
-            const successModal = new bootstrap.Modal(document.getElementById('successModal'));
-            const successMessage = document.getElementById('successMessage');
-            const transactionId = 'WD' + Date.now();
-            
-            document.getElementById('successAmount').textContent = `৳${withdrawalAmount.toFixed(2)}`;
-            document.getElementById('successMethod').textContent = currentMethod.charAt(0).toUpperCase() + currentMethod.slice(1);
-            document.getElementById('successBalance').textContent = `৳${(currentBalance - totalAmount).toFixed(2)}`;
-            document.getElementById('successReference').textContent = transactionId;
-            
-            // Set success message based on method
-            switch(currentMethod) {
-                case 'atm':
-                    successMessage.textContent = 'ATM withdrawal code has been sent to your mobile.';
-                    break;
-                case 'bank-transfer':
-                    successMessage.textContent = 'Bank transfer has been initiated. It will take 1-2 business days.';
-                    break;
-                case 'check':
-                    successMessage.textContent = 'Check will be delivered to your address within 3-5 business days.';
-                    break;
-                case 'branch':
-                    successMessage.textContent = 'Visit the branch with your ID card to collect the cash.';
-                    break;
-            }
-            
-            // Update print button
-            document.getElementById('printWithdrawalReceipt').setAttribute('data-transaction-id', transactionId);
-            document.getElementById('printWithdrawalReceipt').setAttribute('data-amount', withdrawalAmount.toFixed(2));
-            document.getElementById('printWithdrawalReceipt').setAttribute('data-method', currentMethod);
-            
-            successModal.show();
-            
-            // Reset form
-            withdrawForm.reset();
-            updateSummary();
-        }, 3000);
-    });
-    
-    // Print receipt functionality
-    document.getElementById('printWithdrawalReceipt').addEventListener('click', function() {
-        const transactionData = {
-            id: this.getAttribute('data-transaction-id'),
-            type: 'Withdrawal',
-            amount: this.getAttribute('data-amount'),
-            date: new Date().toLocaleString(),
-            fromAccount: document.getElementById('selectedAccount').textContent,
-            toAccount: this.getAttribute('data-method').charAt(0).toUpperCase() + this.getAttribute('data-method').slice(1),
-            description: document.getElementById('description').value || 'Cash Withdrawal',
-            method: currentMethod,
-            fee: serviceFee
-        };
-        
-        if (window.PrintUtils) {
-            window.PrintUtils.printTransactionReceipt(transactionData);
-        } else {
-            showNotification('Print functionality is not available', 'warning');
-        }
-    });
-    
-    // Initialize
-    updateServiceFee();
-    updateSummary();
 });
+
+// Test function - add this button to your page for debugging
+function testWithdraw() {
+    console.log('Testing withdraw function...');
+    
+    const testData = {
+        account_id: 1, // Change to your actual account ID
+        amount: 100,
+        description: 'Test withdrawal'
+    };
+    
+    console.log('Test data:', testData);
+    
+    fetch('/withdraw_api/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify(testData)
+    })
+    .then(response => response.json())
+    .then(data => console.log('Test response:', data))
+    .catch(error => console.error('Test error:', error));
+}
 </script>
 {% endblock %}

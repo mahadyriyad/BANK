@@ -389,13 +389,7 @@ def deposit_api(request):
             accounts = Account.objects.filter(user=request.user, is_active=True)
             total_balance = accounts.aggregate(Sum('balance'))['balance__sum'] or Decimal('0.00')
 
-            return JsonResponse({
-                'success': True,
-                'message': f'Successfully deposited ৳{amount:.2f}',
-                'transaction_id': str(transaction.reference_number),
-                'new_balance': float(account.balance),
-                'total_balance': float(total_balance),
-            })
+            return dashboard_data(request)
 
         except Account.DoesNotExist:
             return JsonResponse({
@@ -417,8 +411,10 @@ def withdraw_api(request):
         try:
             data = json.loads(request.body)
             account_id = data.get('account_id')
-            amount = Decimal(data.get('amount'))
+            amount = Decimal(str(data.get('amount')))
             description = data.get('description', 'Withdrawal')
+
+            print(f"Withdraw request: account_id={account_id}, amount={amount}")
 
             if amount <= 0:
                 return JsonResponse({
@@ -435,7 +431,7 @@ def withdraw_api(request):
                     'message': 'Insufficient funds'
                 })
 
-            # Create transaction (this automatically updates balance via save method)
+            # Create transaction
             transaction = Transaction.objects.create(
                 account=account,
                 transaction_type='withdrawal',
@@ -444,16 +440,15 @@ def withdraw_api(request):
                 category='transfer'
             )
 
-            # Get updated data
-            accounts = Account.objects.filter(user=request.user, is_active=True)
-            total_balance = accounts.aggregate(Sum('balance'))['balance__sum'] or Decimal('0.00')
+            print(f"Withdrawal successful. New balance: {account.balance}")
 
+            # Return success with updated data
             return JsonResponse({
                 'success': True,
                 'message': f'Successfully withdrew ৳{amount:.2f}',
                 'transaction_id': str(transaction.reference_number),
                 'new_balance': float(account.balance),
-                'total_balance': float(total_balance),
+                'total_balance': float(Account.objects.filter(user=request.user, is_active=True).aggregate(Sum('balance'))['balance__sum'] or Decimal('0.00'))
             })
 
         except Account.DoesNotExist:
@@ -462,6 +457,7 @@ def withdraw_api(request):
                 'message': 'Account not found'
             })
         except Exception as e:
+            print(f"Withdraw error: {str(e)}")
             return JsonResponse({
                 'success': False, 
                 'message': f'Error: {str(e)}'
@@ -529,14 +525,7 @@ def transfer_api(request):
             accounts = Account.objects.filter(user=request.user, is_active=True)
             total_balance = accounts.aggregate(Sum('balance'))['balance__sum'] or Decimal('0.00')
 
-            return JsonResponse({
-                'success': True,
-                'message': f'Successfully transferred ৳{amount:.2f}',
-                'transaction_id': str(transfer_out.reference_number),
-                'new_from_balance': float(from_account.balance),
-                'new_to_balance': float(to_account.balance),
-                'total_balance': float(total_balance),
-            })
+            return dashboard_data(request)
 
         except Account.DoesNotExist:
             return JsonResponse({
@@ -568,13 +557,7 @@ def pay_bill(request, bill_id):
             accounts = Account.objects.filter(user=request.user, is_active=True)
             total_balance = accounts.aggregate(Sum('balance'))['balance__sum'] or Decimal('0.00')
 
-            return JsonResponse({
-                'success': True,
-                'message': f'Bill paid successfully!',
-                'transaction_id': str(transaction.reference_number),
-                'new_balance': float(account.balance),
-                'total_balance': float(total_balance),
-            })
+            return dashboard_data(request)
 
         except Account.DoesNotExist:
             return JsonResponse({
@@ -607,14 +590,7 @@ def add_savings_funds(request, goal_id):
             accounts = Account.objects.filter(user=request.user, is_active=True)
             total_balance = accounts.aggregate(Sum('balance'))['balance__sum'] or Decimal('0.00')
 
-            return JsonResponse({
-                'success': True,
-                'message': f'Successfully added ৳{amount:.2f} to your savings goal!',
-                'new_goal_amount': float(goal.current_amount),
-                'new_balance': float(account.balance),
-                'total_balance': float(total_balance),
-                'progress_percentage': goal.progress_percentage,
-            })
+            return dashboard_data(request)
 
         except Account.DoesNotExist:
             return JsonResponse({
@@ -648,14 +624,7 @@ def credit_card_payment(request, card_id):
             accounts = Account.objects.filter(user=request.user, is_active=True)
             total_balance = accounts.aggregate(Sum('balance'))['balance__sum'] or Decimal('0.00')
 
-            return JsonResponse({
-                'success': True,
-                'message': f'Credit card payment of ৳{amount:.2f} processed successfully!',
-                'new_balance': float(account.balance),
-                'total_balance': float(total_balance),
-                'card_balance': float(card.current_balance),
-                'available_credit': float(card.available_credit),
-            })
+            return dashboard_data(request)
 
         except Account.DoesNotExist:
             return JsonResponse({
