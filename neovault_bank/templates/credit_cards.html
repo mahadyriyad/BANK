@@ -1,289 +1,390 @@
-{% extends 'base.html' %}
+{% extends 'dashboard_base.html' %}
 {% load static %}
 
 {% block title %}Credit Cards - NeoVault Bank{% endblock %}
 
-{% block content %}
-<div class="dashboard-container">
-    {% include 'partials/dashboard_sidebar.html' %}
-    
-    <div class="dashboard-main">
-        <div class="page-header">
-            <h1><i class="fas fa-credit-card me-2"></i>Credit Cards</h1>
-            <p class="text-muted">Manage your credit cards and apply for new ones</p>
-        </div>
+{% block dashboard_content %}
+<div class="page-header animate-slide-up">
+    <h1><i class="fas fa-credit-card me-2"></i>Credit Cards</h1>
+    <p class="text-muted">Manage your credit cards and view transactions</p>
+</div>
 
-        <div class="row">
-            <div class="col-lg-8">
-                <!-- Your Credit Cards -->
-                <div class="operation-card mb-4">
-                    <div class="d-flex justify-content-between align-items-center mb-4">
-                        <h3>Your Credit Cards</h3>
-                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#applyCardModal">
-                            <i class="fas fa-plus me-2"></i>Apply for New Card
-                        </button>
+<div class="row">
+    <div class="col-lg-8">
+        <!-- Your Credit Cards -->
+        <div class="operation-card mb-4 animate-fade-in">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3>💳 Your Credit Cards</h3>
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#applyCardModal">
+                    <i class="fas fa-plus me-2"></i>Apply for New Card
+                </button>
+            </div>
+            
+            <div class="credit-cards-grid">
+                {% for card in credit_cards %}
+                <div class="credit-card-item {% if card.is_primary %}primary{% endif %}" data-card-id="{{ card.id }}">
+                    <div class="card-header">
+                        <div class="card-type">
+                            <i class="fab fa-cc-{{ card.get_card_brand|lower }}"></i>
+                            <span>{{ card.get_card_type_display }}</span>
+                        </div>
+                        <div class="card-status">
+                            <span class="badge bg-success">Active</span>
+                            {% if card.is_primary %}
+                            <span class="badge bg-primary">Primary</span>
+                            {% endif %}
+                        </div>
                     </div>
                     
-                    <div class="credit-cards-grid">
-                        {% for card in credit_cards %}
-                        <div class="credit-card {% if card.card_type == 'visa' %}visa{% elif card.card_type == 'mastercard' %}mastercard{% else %}amex{% endif %}">
-                            <div class="card-header">
-                                <div class="card-logo">
-                                    {% if card.card_type == 'visa' %}
-                                    <i class="fab fa-cc-visa"></i>
-                                    {% elif card.card_type == 'mastercard' %}
-                                    <i class="fab fa-cc-mastercard"></i>
-                                    {% else %}
-                                    <i class="fab fa-cc-amex"></i>
-                                    {% endif %}
-                                </div>
-                                <div class="card-status">
-                                    <span class="badge bg-success">Active</span>
-                                </div>
-                            </div>
-                            
-                            <div class="card-number">
-                                <span>**** **** **** {{ card.card_number|slice:"-4:" }}</span>
-                            </div>
-                            
-                            <div class="card-details">
-                                <div class="card-holder">
-                                    <small>Card Holder</small>
-                                    <div>{{ user.get_full_name|default:user.username }}</div>
-                                </div>
-                                <div class="card-expiry">
-                                    <small>Expires</small>
-                                    <div>{{ card.expiry_date|date:"m/y" }}</div>
-                                </div>
-                            </div>
-                            
-                            <div class="card-balance">
-                                <small>Available Credit</small>
-                                <div class="balance">${{ card.available_credit|floatformat:2 }}</div>
-                                <div class="limit">of ${{ card.credit_limit|floatformat:2 }}</div>
-                            </div>
-                            
-                            <div class="card-actions">
-                                <button class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#cardDetailsModal{{ card.id }}">
-                                    <i class="fas fa-eye"></i>
-                                </button>
-                                <button class="btn btn-outline-success btn-sm">
-                                    <i class="fas fa-sync"></i>
-                                </button>
-                                <button class="btn btn-outline-danger btn-sm">
-                                    <i class="fas fa-lock"></i>
-                                </button>
+                    <div class="card-number">
+                        <span>**** **** **** {{ card.card_number|slice:"-4:" }}</span>
+                    </div>
+                    
+                    <div class="card-details">
+                        <div class="detail-item">
+                            <small>Card Holder</small>
+                            <strong>{{ user.get_full_name }}</strong>
+                        </div>
+                        <div class="detail-item">
+                            <small>Valid Thru</small>
+                            <strong>{{ card.expiry_date|date:"m/y" }}</strong>
+                        </div>
+                    </div>
+                    
+                    <div class="card-balance">
+                        <div class="balance-info">
+                            <small>Available Credit</small>
+                            <h4>৳{{ card.available_credit|floatformat:2 }}</h4>
+                        </div>
+                        <div class="limit-info">
+                            <small>Credit Limit</small>
+                            <strong>৳{{ card.credit_limit|floatformat:2 }}</strong>
+                        </div>
+                    </div>
+                    
+                    <div class="card-progress">
+                        <div class="progress">
+                            <div class="progress-bar {% if card.utilization_percentage > 80 %}bg-danger{% elif card.utilization_percentage > 50 %}bg-warning{% else %}bg-success{% endif %}" 
+                                 style="width: {{ card.utilization_percentage }}%">
+                                {{ card.utilization_percentage|floatformat:0 }}%
                             </div>
                         </div>
-                        
-                        <!-- Card Details Modal -->
-                        <div class="modal fade" id="cardDetailsModal{{ card.id }}" tabindex="-1">
-                            <div class="modal-dialog modal-dialog-centered">
-                                <div class="modal-content">
-                                    <div class="modal-header">
-                                        <h5 class="modal-title">Card Details</h5>
-                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                    </div>
-                                    <div class="modal-body">
-                                        <div class="card-detail-item">
-                                            <span>Card Type:</span>
-                                            <strong>{{ card.get_card_type_display }}</strong>
-                                        </div>
-                                        <div class="card-detail-item">
-                                            <span>Card Number:</span>
-                                            <strong>**** **** **** {{ card.card_number|slice:"-4:" }}</strong>
-                                        </div>
-                                        <div class="card-detail-item">
-                                            <span>Expiry Date:</span>
-                                            <strong>{{ card.expiry_date|date:"F Y" }}</strong>
-                                        </div>
-                                        <div class="card-detail-item">
-                                            <span>Credit Limit:</span>
-                                            <strong>${{ card.credit_limit|floatformat:2 }}</strong>
-                                        </div>
-                                        <div class="card-detail-item">
-                                            <span>Available Credit:</span>
-                                            <strong>${{ card.available_credit|floatformat:2 }}</strong>
-                                        </div>
-                                        <div class="card-detail-item">
-                                            <span>Used Credit:</span>
-                                            <strong>${{ card.used_credit|floatformat:2 }}</strong>
-                                        </div>
-                                        <div class="progress mb-3">
-                                            <div class="progress-bar {% if card.usage_percentage < 50 %}bg-success{% elif card.usage_percentage < 80 %}bg-warning{% else %}bg-danger{% endif %}" 
-                                                 style="width: {{ card.usage_percentage }}%">
-                                                {{ card.usage_percentage }}%
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        {% empty %}
-                        <div class="col-12 text-center py-5">
-                            <i class="fas fa-credit-card fa-4x text-muted mb-3"></i>
-                            <h4 class="text-muted">No Credit Cards</h4>
-                            <p class="text-muted">You don't have any credit cards yet.</p>
-                            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#applyCardModal">
-                                Apply for Your First Card
-                            </button>
-                        </div>
-                        {% endfor %}
+                        <small>Credit Utilization</small>
+                    </div>
+                    
+                    <div class="card-actions">
+                        <button class="btn btn-outline-primary btn-sm view-statement" data-card-id="{{ card.id }}">
+                            <i class="fas fa-file-invoice-dollar me-1"></i>Statement
+                        </button>
+                        <button class="btn btn-outline-secondary btn-sm card-lock-btn {% if card.is_locked %}locked{% endif %}" data-card-id="{{ card.id }}">
+                            <i class="fas {% if card.is_locked %}fa-lock-open{% else %}fa-lock{% endif %} me-1"></i>
+                            {% if card.is_locked %}Unlock{% else %}Lock{% endif %}
+                        </button>
+                        <button class="btn btn-outline-info btn-sm card-details-btn" data-card-id="{{ card.id }}">
+                            <i class="fas fa-info-circle"></i>
+                        </button>
                     </div>
                 </div>
+                {% empty %}
+                <div class="empty-state text-center py-5">
+                    <i class="fas fa-credit-card fa-4x text-muted mb-3"></i>
+                    <h4 class="text-muted">No Credit Cards</h4>
+                    <p class="text-muted">You don't have any active credit cards yet.</p>
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#applyCardModal">
+                        Apply for Your First Card
+                    </button>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
 
-                <!-- Recent Transactions -->
-                <div class="operation-card">
-                    <h3 class="mb-4">Recent Transactions</h3>
-                    <div class="transactions-list">
-                        {% for transaction in recent_transactions %}
-                        <div class="transaction-item">
-                            <div class="transaction-icon">
-                                <i class="fas fa-shopping-cart"></i>
-                            </div>
-                            <div class="transaction-info">
-                                <h6>{{ transaction.merchant|default:"Unknown Merchant" }}</h6>
-                                <small class="text-muted">{{ transaction.date|date:"M d, Y" }} • {{ transaction.category }}</small>
-                            </div>
-                            <div class="transaction-amount {% if transaction.type == 'credit' %}text-success{% else %}text-danger{% endif %}">
-                                {% if transaction.type == 'credit' %}+{% else %}-{% endif %}${{ transaction.amount|floatformat:2 }}
-                            </div>
-                        </div>
-                        {% empty %}
-                        <div class="text-center py-4">
-                            <i class="fas fa-receipt fa-3x text-muted mb-3"></i>
-                            <p class="text-muted">No recent transactions</p>
-                        </div>
+        <!-- Recent Transactions -->
+        <div class="operation-card mb-4 animate-fade-in">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3>📊 Recent Transactions</h3>
+                <div class="transaction-filters">
+                    <select class="form-select form-select-sm" id="cardTransactionFilter">
+                        <option value="all">All Cards</option>
+                        {% for card in credit_cards %}
+                        <option value="{{ card.id }}">****{{ card.card_number|slice:"-4:" }}</option>
                         {% endfor %}
-                    </div>
+                    </select>
                 </div>
             </div>
             
-            <div class="col-lg-4">
-                <!-- Credit Summary -->
-                <div class="summary-card">
-                    <h4 class="mb-4">Credit Summary</h4>
-                    
-                    <div class="summary-item">
-                        <span>Total Credit Limit:</span>
-                        <strong>${{ total_credit_limit|floatformat:2 }}</strong>
+            <div class="transactions-list">
+                {% for transaction in recent_transactions %}
+                <div class="transaction-item" data-card-id="{{ transaction.card.id }}">
+                    <div class="transaction-icon">
+                        <i class="fas fa-{{ transaction.get_icon }}"></i>
                     </div>
-                    
-                    <div class="summary-item">
-                        <span>Available Credit:</span>
-                        <strong>${{ total_available_credit|floatformat:2 }}</strong>
+                    <div class="transaction-info">
+                        <h6>{{ transaction.merchant|default:transaction.description }}</h6>
+                        <p class="text-muted mb-0">{{ transaction.category }}</p>
+                        <small class="text-muted">{{ transaction.timestamp|date:"M d, Y H:i" }}</small>
                     </div>
-                    
-                    <div class="summary-item">
-                        <span>Used Credit:</span>
-                        <strong>${{ total_used_credit|floatformat:2 }}</strong>
-                    </div>
-                    
-                    <div class="summary-item">
-                        <span>Credit Utilization:</span>
-                        <strong>{{ credit_utilization }}%</strong>
-                    </div>
-                    
-                    <hr>
-                    
-                    <div class="progress mb-3">
-                        <div class="progress-bar {% if credit_utilization < 30 %}bg-success{% elif credit_utilization < 50 %}bg-warning{% else %}bg-danger{% endif %}" 
-                             style="width: {{ credit_utilization }}%">
-                            {{ credit_utilization }}%
-                        </div>
-                    </div>
-                    
-                    <small class="text-muted">
-                        <i class="fas fa-info-circle me-1"></i>
-                        Keep utilization below 30% for better credit score
-                    </small>
-                </div>
-                
-                <!-- Quick Actions -->
-                <div class="tips-card">
-                    <h5><i class="fas fa-bolt me-2"></i>Quick Actions</h5>
-                    <div class="quick-actions-grid">
-                        <button class="quick-action-btn">
-                            <i class="fas fa-money-bill-wave"></i>
-                            <span>Make Payment</span>
-                        </button>
-                        <button class="quick-action-btn">
-                            <i class="fas fa-file-invoice"></i>
-                            <span>View Statement</span>
-                        </button>
-                        <button class="quick-action-btn">
-                            <i class="fas fa-lock"></i>
-                            <span>Security Settings</span>
-                        </button>
-                        <button class="quick-action-btn">
-                            <i class="fas fa-bell"></i>
-                            <span>Alerts</span>
-                        </button>
+                    <div class="transaction-amount {% if transaction.transaction_type == 'payment' %}text-success{% else %}text-danger{% endif %}">
+                        {% if transaction.transaction_type == 'payment' %}-{% else %}+{% endif %}৳{{ transaction.amount|floatformat:2 }}
                     </div>
                 </div>
-                
-                <!-- Credit Score -->
-                <div class="recent-card">
-                    <h5>Credit Score</h5>
-                    <div class="credit-score-display">
-                        <div class="score-circle">
-                            <div class="score-value">750</div>
-                            <div class="score-label">Good</div>
-                        </div>
-                        <div class="score-details">
-                            <p><strong>Last Updated:</strong> {{ current_date|date:"M d, Y" }}</p>
-                            <p><strong>Factors:</strong> Payment History, Credit Usage</p>
-                        </div>
+                {% empty %}
+                <div class="empty-state-small text-center py-4">
+                    <i class="fas fa-receipt fa-3x text-muted mb-3"></i>
+                    <p class="text-muted">No recent transactions</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Payment History -->
+        <div class="operation-card animate-fade-in">
+            <h3 class="mb-4">💰 Payment History</h3>
+            
+            <div class="payment-history">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Card</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                                <th>Due Date</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for payment in payment_history %}
+                            <tr>
+                                <td>{{ payment.payment_date|date:"M d, Y" }}</td>
+                                <td>****{{ payment.card.card_number|slice:"-4:" }}</td>
+                                <td>৳{{ payment.amount|floatformat:2 }}</td>
+                                <td>
+                                    <span class="badge {% if payment.status == 'completed' %}bg-success{% elif payment.status == 'pending' %}bg-warning{% else %}bg-danger{% endif %}">
+                                        {{ payment.get_status_display }}
+                                    </span>
+                                </td>
+                                <td>{{ payment.due_date|date:"M d, Y" }}</td>
+                                <td>
+                                    {% if payment.status == 'pending' %}
+                                    <button class="btn btn-sm btn-outline-primary pay-now-btn" data-payment-id="{{ payment.id }}">
+                                        Pay Now
+                                    </button>
+                                    {% else %}
+                                    <button class="btn btn-sm btn-outline-secondary view-receipt" data-payment-id="{{ payment.id }}">
+                                        Receipt
+                                    </button>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="6" class="text-center text-muted py-4">
+                                    <i class="fas fa-history fa-2x mb-3"></i>
+                                    <p>No payment history available</p>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <!-- Credit Summary -->
+        <div class="summary-card animate-fade-in">
+            <h4 class="mb-4">💳 Credit Summary</h4>
+            
+            <div class="summary-item">
+                <span>Total Credit Limit:</span>
+                <strong>৳<span id="totalCreditLimit">{{ total_credit_limit|floatformat:2 }}</span></strong>
+            </div>
+            
+            <div class="summary-item">
+                <span>Available Credit:</span>
+                <strong>৳<span id="availableCredit">{{ available_credit|floatformat:2 }}</span></strong>
+            </div>
+            
+            <div class="summary-item">
+                <span>Current Balance:</span>
+                <strong>৳<span id="currentBalance">{{ current_balance|floatformat:2 }}</span></strong>
+            </div>
+            
+            <div class="summary-item">
+                <span>Total Utilization:</span>
+                <strong><span id="totalUtilization">{{ total_utilization|floatformat:1 }}</span>%</strong>
+            </div>
+            
+            <div class="summary-item">
+                <span>Next Payment Due:</span>
+                <strong id="nextPaymentDue">{{ next_payment_due|date:"M d, Y"|default:"No payment due" }}</strong>
+            </div>
+            
+            <div class="summary-item">
+                <span>Minimum Payment:</span>
+                <strong id="minimumPayment">৳{{ minimum_payment|floatformat:2|default:"0.00" }}</strong>
+            </div>
+            
+            <hr>
+            
+            <div class="d-grid gap-2">
+                <button class="btn btn-success" id="makePaymentBtn">
+                    <i class="fas fa-money-bill-wave me-2"></i>Make Payment
+                </button>
+                <button class="btn btn-outline-primary" id="limitIncreaseBtn">
+                    <i class="fas fa-chart-line me-2"></i>Request Limit Increase
+                </button>
+            </div>
+        </div>
+        
+        <!-- Quick Actions -->
+        <div class="tips-card animate-fade-in">
+            <h5><i class="fas fa-bolt me-2"></i>⚡ Quick Actions</h5>
+            <div class="quick-actions-list">
+                <button class="btn btn-outline-primary w-100 mb-2" id="viewAllTransactions">
+                    <i class="fas fa-list me-2"></i>View All Transactions
+                </button>
+                <button class="btn btn-outline-primary w-100 mb-2" id="downloadStatement">
+                    <i class="fas fa-download me-2"></i>Download Statement
+                </button>
+                <button class="btn btn-outline-primary w-100 mb-2" id="setAutoPay">
+                    <i class="fas fa-robot me-2"></i>Setup Auto-Pay
+                </button>
+                <button class="btn btn-outline-primary w-100" id="reportLostCard">
+                    <i class="fas fa-exclamation-triangle me-2"></i>Report Lost Card
+                </button>
+            </div>
+        </div>
+        
+        <!-- Credit Score -->
+        <div class="recent-card animate-fade-in">
+            <h5>📈 Credit Score</h5>
+            <div class="credit-score-widget">
+                <div class="score-circle">
+                    <div class="circle-progress" data-score="{{ credit_score }}">
+                        <span class="score-value">{{ credit_score }}</span>
+                    </div>
+                </div>
+                <div class="score-info">
+                    <h6>Your Credit Score</h6>
+                    <p class="text-muted mb-2">Updated {{ credit_score_date|date:"M d, Y" }}</p>
+                    <div class="score-category">
+                        <span class="badge {% if credit_score >= 750 %}bg-success{% elif credit_score >= 650 %}bg-warning{% else %}bg-danger{% endif %}">
+                            {% if credit_score >= 750 %}Excellent
+                            {% elif credit_score >= 650 %}Good
+                            {% elif credit_score >= 550 %}Fair
+                            {% else %}Poor{% endif %}
+                        </span>
                     </div>
                 </div>
             </div>
+            <button class="btn btn-outline-primary w-100 mt-3" id="viewCreditReport">
+                <i class="fas fa-chart-bar me-2"></i>View Full Report
+            </button>
+        </div>
+        
+        <!-- Rewards & Benefits -->
+        <div class="tips-card animate-fade-in">
+            <h5><i class="fas fa-gift me-2"></i>🎁 Rewards & Benefits</h5>
+            <div class="rewards-info">
+                <div class="reward-item">
+                    <i class="fas fa-coins text-warning"></i>
+                    <div>
+                        <strong>Cashback Earned</strong>
+                        <small>৳{{ cashback_earned|floatformat:2 }} this month</small>
+                    </div>
+                </div>
+                <div class="reward-item">
+                    <i class="fas fa-plane text-primary"></i>
+                    <div>
+                        <strong>Reward Points</strong>
+                        <small>{{ reward_points|default:"0" }} points available</small>
+                    </div>
+                </div>
+                <div class="reward-item">
+                    <i class="fas fa-shield-alt text-success"></i>
+                    <div>
+                        <strong>Insurance Benefits</strong>
+                        <small>Travel & Purchase Protection</small>
+                    </div>
+                </div>
+            </div>
+            <button class="btn btn-outline-primary w-100 mt-3" id="viewRewards">
+                <i class="fas fa-gift me-2"></i>View Rewards Dashboard
+            </button>
         </div>
     </div>
 </div>
 
 <!-- Apply for New Card Modal -->
 <div class="modal fade" id="applyCardModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Apply for Credit Card</h5>
+                <h5 class="modal-title">💳 Apply for New Credit Card</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <div class="card-options">
-                    <div class="card-option active" data-card-type="visa">
-                        <div class="card-preview visa">
-                            <i class="fab fa-cc-visa"></i>
-                            <h6>Visa Signature</h6>
-                            <p>5% cashback on groceries</p>
+                <form id="applyCardForm">
+                    <div class="card-options mb-4">
+                        <h6 class="mb-3">Select Card Type</h6>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <div class="card-option active" data-card-type="classic">
+                                    <div class="card-preview classic">
+                                        <i class="fab fa-cc-visa"></i>
+                                    </div>
+                                    <h6>Classic Card</h6>
+                                    <small class="text-muted">Basic features, no annual fee</small>
+                                    <div class="card-features">
+                                        <span>Credit Limit: Up to ৳50,000</span>
+                                        <span>Interest Rate: 18%</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <div class="card-option" data-card-type="gold">
+                                    <div class="card-preview gold">
+                                        <i class="fab fa-cc-mastercard"></i>
+                                    </div>
+                                    <h6>Gold Card</h6>
+                                    <small class="text-muted">Premium benefits, travel rewards</small>
+                                    <div class="card-features">
+                                        <span>Credit Limit: Up to ৳200,000</span>
+                                        <span>Annual Fee: ৳1,500</span>
+                                        <span>Rewards: 2% cashback</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <div class="card-option" data-card-type="platinum">
+                                    <div class="card-preview platinum">
+                                        <i class="fab fa-cc-amex"></i>
+                                    </div>
+                                    <h6>Platinum Card</h6>
+                                    <small class="text-muted">Elite benefits, premium services</small>
+                                    <div class="card-features">
+                                        <span>Credit Limit: Up to ৳500,000</span>
+                                        <span>Annual Fee: ৳3,000</span>
+                                        <span>Rewards: 3% cashback</span>
+                                        <span>Airport Lounge Access</span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    <div class="card-option" data-card-type="mastercard">
-                        <div class="card-preview mastercard">
-                            <i class="fab fa-cc-mastercard"></i>
-                            <h6>MasterCard Gold</h6>
-                            <p>Travel rewards & insurance</p>
-                        </div>
-                    </div>
-                    <div class="card-option" data-card-type="amex">
-                        <div class="card-preview amex">
-                            <i class="fab fa-cc-amex"></i>
-                            <h6>American Express</h6>
-                            <p>Premium benefits & concierge</p>
-                        </div>
-                    </div>
-                </div>
-                
-                <form id="cardApplicationForm" class="mt-4">
+                    
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Desired Credit Limit</label>
-                            <select class="form-select" id="creditLimit" required>
+                            <select class="form-select" required>
                                 <option value="">Select limit...</option>
-                                <option value="1000">$1,000</option>
-                                <option value="3000">$3,000</option>
-                                <option value="5000">$5,000</option>
-                                <option value="10000">$10,000</option>
+                                <option value="50000">৳50,000</option>
+                                <option value="100000">৳100,000</option>
+                                <option value="200000">৳200,000</option>
+                                <option value="500000">৳500,000</option>
                             </select>
                         </div>
                         <div class="col-md-6 mb-3">
@@ -291,280 +392,702 @@
                             <select class="form-select" required>
                                 <option value="">Select status...</option>
                                 <option value="employed">Employed</option>
-                                <option value="self-employed">Self-Employed</option>
+                                <option value="self_employed">Self-Employed</option>
                                 <option value="student">Student</option>
                                 <option value="retired">Retired</option>
                             </select>
                         </div>
                     </div>
                     
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Annual Income</label>
-                            <input type="number" class="form-control" placeholder="Enter annual income" required>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Monthly Rent/Mortgage</label>
-                            <input type="number" class="form-control" placeholder="Enter housing payment">
+                    <div class="mb-3">
+                        <label class="form-label">Monthly Income</label>
+                        <div class="input-group">
+                            <span class="input-group-text">৳</span>
+                            <input type="number" class="form-control" placeholder="Enter monthly income" required>
                         </div>
                     </div>
                     
                     <div class="form-check mb-3">
-                        <input class="form-check-input" type="checkbox" id="termsAccept" required>
-                        <label class="form-check-label" for="termsAccept">
-                            I agree to the terms and conditions and credit card agreement
+                        <input class="form-check-input" type="checkbox" id="agreeTerms" required>
+                        <label class="form-check-label" for="agreeTerms">
+                            I agree to the terms and conditions and confirm that all information provided is accurate.
                         </label>
                     </div>
                 </form>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="submit" form="cardApplicationForm" class="btn btn-primary">Submit Application</button>
+                <button type="submit" form="applyCardForm" class="btn btn-primary">Submit Application</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Make Payment Modal -->
+<div class="modal fade" id="makePaymentModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">💰 Make Payment</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="makePaymentForm">
+                    <div class="mb-3">
+                        <label class="form-label">Select Card</label>
+                        <select class="form-select" id="paymentCardSelect" required>
+                            <option value="">Choose card...</option>
+                            {% for card in credit_cards %}
+                            <option value="{{ card.id }}" data-balance="{{ card.current_balance }}">
+                                ****{{ card.card_number|slice:"-4:" }} - Balance: ৳{{ card.current_balance|floatformat:2 }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Payment Amount</label>
+                        <div class="input-group">
+                            <span class="input-group-text">৳</span>
+                            <input type="number" class="form-control" id="paymentAmount" 
+                                   placeholder="0.00" min="1" step="0.01" required>
+                        </div>
+                        <div class="form-text">
+                            Minimum payment: ৳{{ minimum_payment|floatformat:2|default:"500.00" }}
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">From Account</label>
+                        <select class="form-select" required>
+                            <option value="">Select account...</option>
+                            {% for account in user_accounts %}
+                            <option value="{{ account.id }}">{{ account.account_number }} - ৳{{ account.balance|floatformat:2 }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Payment Date</label>
+                        <select class="form-select" id="paymentDate" required>
+                            <option value="now">Pay Now</option>
+                            <option value="schedule">Schedule for Later</option>
+                        </select>
+                    </div>
+                    
+                    <div class="scheduled-date" id="scheduledDate" style="display: none;">
+                        <label class="form-label">Select Date</label>
+                        <input type="date" class="form-control" min="{{ current_date|date:'Y-m-d' }}">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" form="makePaymentForm" class="btn btn-success">Make Payment</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Card Details Modal -->
+<div class="modal fade" id="cardDetailsModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">💳 Card Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="card-details-content" id="cardDetailsContent">
+                    <!-- Card details will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Auto-Pay Setup Modal -->
+<div class="modal fade" id="autoPayModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">🤖 Setup Auto-Pay</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="autoPayForm">
+                    <div class="mb-3">
+                        <label class="form-label">Select Card</label>
+                        <select class="form-select" required>
+                            <option value="">Choose card...</option>
+                            {% for card in credit_cards %}
+                            <option value="{{ card.id }}">****{{ card.card_number|slice:"-4:" }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Payment Type</label>
+                        <select class="form-select" id="autoPayType" required>
+                            <option value="minimum">Minimum Payment</option>
+                            <option value="full">Full Statement Balance</option>
+                            <option value="fixed">Fixed Amount</option>
+                        </select>
+                    </div>
+                    
+                    <div class="fixed-amount" id="fixedAmount" style="display: none;">
+                        <label class="form-label">Fixed Amount</label>
+                        <div class="input-group">
+                            <span class="input-group-text">৳</span>
+                            <input type="number" class="form-control" placeholder="0.00" min="1" step="0.01">
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">From Account</label>
+                        <select class="form-select" required>
+                            <option value="">Select account...</option>
+                            {% for account in user_accounts %}
+                            <option value="{{ account.id }}">{{ account.account_number }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Payment Date</label>
+                        <select class="form-select" required>
+                            <option value="1">1st of each month</option>
+                            <option value="15">15th of each month</option>
+                            <option value="25">25th of each month</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="autoPayConfirm" required>
+                        <label class="form-check-label" for="autoPayConfirm">
+                            I authorize NeoVault Bank to automatically deduct payments from my selected account.
+                        </label>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" form="autoPayForm" class="btn btn-primary">Activate Auto-Pay</button>
             </div>
         </div>
     </div>
 </div>
 {% endblock %}
 
-{% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/dashboard-style.css' %}">
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Card selection in apply modal
+    const cardOptions = document.querySelectorAll('.card-option');
+    cardOptions.forEach(option => {
+        option.addEventListener('click', function() {
+            cardOptions.forEach(opt => opt.classList.remove('active'));
+            this.classList.add('active');
+        });
+    });
+    
+    // Card apply form
+    const applyCardForm = document.getElementById('applyCardForm');
+    applyCardForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const submitBtn = this.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+        
+        submitBtn.innerHTML = '<div class="spinner-border spinner-border-sm me-2"></div> Processing...';
+        submitBtn.disabled = true;
+        
+        setTimeout(() => {
+            showNotification('Credit card application submitted successfully! You will hear from us within 3-5 business days.', 'success');
+            bootstrap.Modal.getInstance(document.getElementById('applyCardModal')).hide();
+            this.reset();
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+        }, 2000);
+    });
+    
+    // Make payment
+    const makePaymentBtn = document.getElementById('makePaymentBtn');
+    const makePaymentModal = new bootstrap.Modal(document.getElementById('makePaymentModal'));
+    const makePaymentForm = document.getElementById('makePaymentForm');
+    
+    makePaymentBtn.addEventListener('click', function() {
+        makePaymentModal.show();
+    });
+    
+    // Payment date selection
+    const paymentDateSelect = document.getElementById('paymentDate');
+    const scheduledDateDiv = document.getElementById('scheduledDate');
+    
+    paymentDateSelect.addEventListener('change', function() {
+        if (this.value === 'schedule') {
+            scheduledDateDiv.style.display = 'block';
+        } else {
+            scheduledDateDiv.style.display = 'none';
+        }
+    });
+    
+    makePaymentForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const submitBtn = this.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+        
+        submitBtn.innerHTML = '<div class="spinner-border spinner-border-sm me-2"></div> Processing...';
+        submitBtn.disabled = true;
+        
+        setTimeout(() => {
+            showNotification('Payment processed successfully!', 'success');
+            makePaymentModal.hide();
+            this.reset();
+            scheduledDateDiv.style.display = 'none';
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+            
+            // Refresh the page to update balances
+            setTimeout(() => location.reload(), 1000);
+        }, 2000);
+    });
+    
+    // Card lock functionality
+    const cardLockButtons = document.querySelectorAll('.card-lock-btn');
+    cardLockButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const cardId = this.getAttribute('data-card-id');
+            const isLocked = this.classList.contains('locked');
+            const cardItem = document.querySelector(`[data-card-id="${cardId}"]`);
+            
+            if (isLocked) {
+                // Unlock card
+                this.classList.remove('locked');
+                this.innerHTML = '<i class="fas fa-lock me-1"></i>Lock';
+                cardItem.classList.remove('card-locked');
+                showNotification('Card unlocked successfully', 'success');
+            } else {
+                // Lock card
+                this.classList.add('locked');
+                this.innerHTML = '<i class="fas fa-lock-open me-1"></i>Unlock';
+                cardItem.classList.add('card-locked');
+                showNotification('Card locked successfully', 'warning');
+            }
+        });
+    });
+    
+    // Card details view
+    const cardDetailsButtons = document.querySelectorAll('.card-details-btn');
+    const cardDetailsModal = new bootstrap.Modal(document.getElementById('cardDetailsModal'));
+    
+    cardDetailsButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const cardId = this.getAttribute('data-card-id');
+            const cardItem = document.querySelector(`[data-card-id="${cardId}"]`);
+            
+            // Simulate loading card details
+            const detailsContent = document.getElementById('cardDetailsContent');
+            detailsContent.innerHTML = `
+                <div class="card-detail-item">
+                    <strong>Card Number:</strong>
+                    <span>**** **** **** ${cardId.slice(-4)}</span>
+                </div>
+                <div class="card-detail-item">
+                    <strong>Expiry Date:</strong>
+                    <span>12/25</span>
+                </div>
+                <div class="card-detail-item">
+                    <strong>CVV:</strong>
+                    <span>***</span>
+                </div>
+                <div class="card-detail-item">
+                    <strong>Credit Limit:</strong>
+                    <span>৳50,000.00</span>
+                </div>
+                <div class="card-detail-item">
+                    <strong>Available Credit:</strong>
+                    <span>৳35,250.00</span>
+                </div>
+                <div class="card-detail-item">
+                    <strong>Current Balance:</strong>
+                    <span>৳14,750.00</span>
+                </div>
+                <div class="card-detail-item">
+                    <strong>Minimum Payment Due:</strong>
+                    <span>৳500.00</span>
+                </div>
+                <div class="card-detail-item">
+                    <strong>Payment Due Date:</strong>
+                    <span>${new Date(new Date().setDate(new Date().getDate() + 15)).toLocaleDateString()}</span>
+                </div>
+            `;
+            
+            cardDetailsModal.show();
+        });
+    });
+    
+    // Auto-pay setup
+    const setAutoPayBtn = document.getElementById('setAutoPay');
+    const autoPayModal = new bootstrap.Modal(document.getElementById('autoPayModal'));
+    const autoPayForm = document.getElementById('autoPayForm');
+    const autoPayType = document.getElementById('autoPayType');
+    const fixedAmountDiv = document.getElementById('fixedAmount');
+    
+    setAutoPayBtn.addEventListener('click', function() {
+        autoPayModal.show();
+    });
+    
+    autoPayType.addEventListener('change', function() {
+        if (this.value === 'fixed') {
+            fixedAmountDiv.style.display = 'block';
+        } else {
+            fixedAmountDiv.style.display = 'none';
+        }
+    });
+    
+    autoPayForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const submitBtn = this.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+        
+        submitBtn.innerHTML = '<div class="spinner-border spinner-border-sm me-2"></div> Setting up...';
+        submitBtn.disabled = true;
+        
+        setTimeout(() => {
+            showNotification('Auto-pay activated successfully!', 'success');
+            autoPayModal.hide();
+            this.reset();
+            fixedAmountDiv.style.display = 'none';
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+        }, 1500);
+    });
+    
+    // Limit increase request
+    const limitIncreaseBtn = document.getElementById('limitIncreaseBtn');
+    limitIncreaseBtn.addEventListener('click', function() {
+        const originalText = this.innerHTML;
+        this.innerHTML = '<div class="spinner-border spinner-border-sm me-2"></div> Requesting...';
+        this.disabled = true;
+        
+        setTimeout(() => {
+            showNotification('Credit limit increase request submitted for review. We will notify you within 2 business days.', 'info');
+            this.innerHTML = originalText;
+            this.disabled = false;
+        }, 2000);
+    });
+    
+    // Quick actions
+    document.getElementById('viewAllTransactions').addEventListener('click', function() {
+        showNotification('Loading all transactions...', 'info');
+    });
+    
+    document.getElementById('downloadStatement').addEventListener('click', function() {
+        if (window.PrintUtils) {
+            window.PrintUtils.exportToCSV([
+                { date: '2024-01-15', description: 'Supermarket Purchase', type: 'Purchase', amount: '৳2,500.00', balance: '৳15,250.00', category: 'Shopping' },
+                { date: '2024-01-18', description: 'Online Shopping', type: 'Purchase', amount: '৳1,200.00', balance: '৳16,450.00', category: 'Shopping' },
+                { date: '2024-01-20', description: 'Payment Received', type: 'Payment', amount: '৳5,000.00', balance: '৳11,450.00', category: 'Payment' }
+            ], 'credit_card_statement.csv');
+        } else {
+            showNotification('Statement downloaded successfully!', 'success');
+        }
+    });
+    
+    document.getElementById('reportLostCard').addEventListener('click', function() {
+        if (confirm('Are you sure you want to report this card as lost or stolen? This will immediately block the card.')) {
+            const originalText = this.innerHTML;
+            this.innerHTML = '<div class="spinner-border spinner-border-sm me-2"></div> Reporting...';
+            this.disabled = true;
+            
+            setTimeout(() => {
+                showNotification('Card reported as lost/stolen. It has been blocked immediately. A replacement will be sent within 3-5 business days.', 'warning');
+                this.innerHTML = originalText;
+                this.disabled = false;
+            }, 1500);
+        }
+    });
+    
+    document.getElementById('viewCreditReport').addEventListener('click', function() {
+        showNotification('Loading credit report...', 'info');
+    });
+    
+    document.getElementById('viewRewards').addEventListener('click', function() {
+        showNotification('Opening rewards dashboard...', 'info');
+    });
+    
+    // Transaction filtering
+    const cardTransactionFilter = document.getElementById('cardTransactionFilter');
+    const transactionItems = document.querySelectorAll('.transaction-item');
+    
+    cardTransactionFilter.addEventListener('change', function() {
+        const selectedCardId = this.value;
+        
+        transactionItems.forEach(item => {
+            if (selectedCardId === 'all' || item.getAttribute('data-card-id') === selectedCardId) {
+                item.style.display = 'flex';
+            } else {
+                item.style.display = 'none';
+            }
+        });
+    });
+    
+    // Pay now buttons in payment history
+    const payNowButtons = document.querySelectorAll('.pay-now-btn');
+    payNowButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const paymentId = this.getAttribute('data-payment-id');
+            makePaymentModal.show();
+        });
+    });
+    
+    // Initialize credit score circle
+    initializeCreditScore();
+});
+
+function initializeCreditScore() {
+    const scoreElements = document.querySelectorAll('.circle-progress');
+    
+    scoreElements.forEach(element => {
+        const score = parseInt(element.getAttribute('data-score'));
+        const circle = element;
+        
+        // Calculate stroke dasharray based on score (0-850 scale)
+        const circumference = 2 * Math.PI * 40;
+        const progress = (score / 850) * circumference;
+        
+        circle.style.setProperty('--progress', progress);
+        circle.style.setProperty('--circumference', circumference);
+    });
+}
+</script>
+
 <style>
+.credit-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+.credit-card-item {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 25px;
+    border-radius: 15px;
+    position: relative;
+    overflow: hidden;
+}
+
+.credit-card-item::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.1);
+    transform: rotate(45deg);
+}
+
+.credit-card-item.primary {
+    border: 2px solid #ffd700;
+}
+
+.credit-card-item.card-locked {
+    opacity: 0.7;
+    background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.card-type {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.card-type i {
+    font-size: 1.5rem;
+}
+
+.card-number {
+    font-size: 1.3rem;
+    letter-spacing: 2px;
+    margin-bottom: 20px;
+    font-family: monospace;
+}
+
+.card-details {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.card-balance {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.balance-info h4 {
+    margin: 0;
+    font-weight: 700;
+}
+
+.card-progress {
+    margin-bottom: 15px;
+}
+
+.card-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.card-actions .btn {
+    flex: 1;
+}
+
+/* Card Options in Apply Modal */
+.card-options .card-option {
+    border: 2px solid #dee2e6;
+    border-radius: 10px;
+    padding: 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    height: 100%;
+}
+
+.card-options .card-option.active {
+    border-color: var(--primary-color);
+    background: rgba(37, 99, 235, 0.05);
+}
+
+.card-preview {
+    width: 60px;
+    height: 40px;
+    border-radius: 5px;
+    margin: 0 auto 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.5rem;
+}
+
+.card-preview.classic { background: linear-gradient(135deg, #667eea, #764ba2); }
+.card-preview.gold { background: linear-gradient(135deg, #ffd700, #ffa500); }
+.card-preview.platinum { background: linear-gradient(135deg, #e5e7eb, #9ca3af); }
+
+.card-features {
+    margin-top: 10px;
+}
+
+.card-features span {
+    display: block;
+    font-size: 0.8rem;
+    color: #6b7280;
+    margin-bottom: 2px;
+}
+
+/* Credit Score Widget */
+.credit-score-widget {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.score-circle {
+    position: relative;
+    width: 80px;
+    height: 80px;
+}
+
+.circle-progress {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: conic-gradient(
+        var(--primary-color) calc(var(--progress) * 100 / var(--circumference) * 360deg),
+        #e5e7eb 0deg
+    );
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.circle-progress::before {
+    content: '';
+    position: absolute;
+    width: 70px;
+    height: 70px;
+    background: white;
+    border-radius: 50%;
+}
+
+.score-value {
+    position: relative;
+    font-weight: 700;
+    font-size: 1.2rem;
+}
+
+/* Rewards Info */
+.rewards-info .reward-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 10px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.rewards-info .reward-item:last-child {
+    border-bottom: none;
+}
+
+.reward-item i {
+    font-size: 1.2rem;
+}
+
+/* Card Details */
+.card-detail-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.card-detail-item:last-child {
+    border-bottom: none;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
     .credit-cards-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-        gap: 20px;
+        grid-template-columns: 1fr;
     }
     
-    .credit-card {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        padding: 25px;
-        border-radius: 15px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-        position: relative;
-        overflow: hidden;
-        min-height: 200px;
-        display: flex;
+    .credit-score-widget {
         flex-direction: column;
-        justify-content: space-between;
-    }
-    
-    .credit-card.visa {
-        background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
-    }
-    
-    .credit-card.mastercard {
-        background: linear-gradient(135deg, #f46b45, #eea849);
-    }
-    
-    .credit-card.amex {
-        background: linear-gradient(135deg, #0077b6, #00b4d8);
-    }
-    
-    .card-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 20px;
-    }
-    
-    .card-logo i {
-        font-size: 2rem;
-    }
-    
-    .card-number {
-        font-size: 1.3rem;
-        letter-spacing: 2px;
-        margin-bottom: 20px;
-        font-family: monospace;
+        text-align: center;
     }
     
     .card-details {
-        display: flex;
-        justify-content: space-between;
-        margin-bottom: 20px;
-    }
-    
-    .card-details small {
-        opacity: 0.8;
-        font-size: 0.8rem;
-    }
-    
-    .card-balance {
-        text-align: center;
-        margin-bottom: 15px;
-    }
-    
-    .balance {
-        font-size: 1.5rem;
-        font-weight: 700;
-    }
-    
-    .limit {
-        opacity: 0.8;
-        font-size: 0.9rem;
+        grid-template-columns: 1fr;
     }
     
     .card-actions {
-        display: flex;
-        gap: 8px;
-        justify-content: center;
+        flex-direction: column;
     }
-    
-    .card-options {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 15px;
-        margin-bottom: 20px;
-    }
-    
-    .card-option {
-        cursor: pointer;
-    }
-    
-    .card-preview {
-        background: var(--light-color);
-        padding: 20px;
-        border-radius: 10px;
-        text-align: center;
-        border: 2px solid transparent;
-        transition: all 0.3s ease;
-    }
-    
-    .card-option.active .card-preview {
-        border-color: var(--accent-color);
-        background: rgba(255, 107, 53, 0.1);
-    }
-    
-    .card-preview i {
-        font-size: 2rem;
-        margin-bottom: 10px;
-    }
-    
-    .card-preview.visa i { color: #1a2a6c; }
-    .card-preview.mastercard i { color: #f46b45; }
-    .card-preview.amex i { color: #0077b6; }
-    
-    .quick-actions-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 10px;
-        margin-top: 15px;
-    }
-    
-    .quick-action-btn {
-        background: var(--light-color);
-        border: none;
-        padding: 15px 10px;
-        border-radius: 8px;
-        text-align: center;
-        transition: all 0.3s ease;
-    }
-    
-    .quick-action-btn:hover {
-        background: var(--primary-color);
-        color: white;
-        transform: translateY(-2px);
-    }
-    
-    .quick-action-btn i {
-        font-size: 1.2rem;
-        margin-bottom: 5px;
-        display: block;
-    }
-    
-    .credit-score-display {
-        text-align: center;
-        padding: 20px 0;
-    }
-    
-    .score-circle {
-        width: 100px;
-        height: 100px;
-        border-radius: 50%;
-        background: conic-gradient(#28a745 0% 75%, #dee2e6 75% 100%);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin: 0 auto 15px;
-        position: relative;
-    }
-    
-    .score-circle::before {
-        content: '';
-        position: absolute;
-        width: 80px;
-        height: 80px;
-        background: white;
-        border-radius: 50%;
-    }
-    
-    .score-value {
-        font-size: 1.5rem;
-        font-weight: 700;
-        position: relative;
-        z-index: 1;
-    }
-    
-    .score-label {
-        color: var(--success-color);
-        font-weight: 600;
-    }
-    
-    .card-detail-item {
-        display: flex;
-        justify-content: space-between;
-        padding: 10px 0;
-        border-bottom: 1px solid #eee;
-    }
-    
-    .card-detail-item:last-child {
-        border-bottom: none;
-    }
+}
 </style>
-{% endblock %}
-
-{% block extra_js %}
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Card selection
-        const cardOptions = document.querySelectorAll('.card-option');
-        cardOptions.forEach(option => {
-            option.addEventListener('click', function() {
-                cardOptions.forEach(opt => opt.classList.remove('active'));
-                this.classList.add('active');
-            });
-        });
-        
-        // Card application form
-        const cardApplicationForm = document.getElementById('cardApplicationForm');
-        cardApplicationForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const submitBtn = this.querySelector('button[type="submit"]');
-            const originalText = submitBtn.innerHTML;
-            
-            submitBtn.innerHTML = '<div class="spinner-border spinner-border-sm me-2"></div> Processing...';
-            submitBtn.disabled = true;
-            
-            // Simulate application processing
-            setTimeout(() => {
-                showNotification('Credit card application submitted successfully!', 'success');
-                bootstrap.Modal.getInstance(document.getElementById('applyCardModal')).hide();
-                
-                submitBtn.innerHTML = originalText;
-                submitBtn.disabled = false;
-                this.reset();
-            }, 2000);
-        });
-        
-        // Quick action buttons
-        document.querySelectorAll('.quick-action-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                const action = this.querySelector('span').textContent;
-                showNotification(`${action} feature would be implemented here`, 'info');
-            });
-        });
-    });
-</script>
 {% endblock %}

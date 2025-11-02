@@ -199,21 +199,7 @@
             showNotification('Password reset feature would be implemented here', 'info');
         });
         
-        // Form submission animation
-        const loginForm = document.getElementById('loginForm');
-        loginForm.addEventListener('submit', function(e) {
-            const submitBtn = this.querySelector('button[type="submit"]');
-            const originalText = submitBtn.innerHTML;
-            
-            submitBtn.innerHTML = '<div class="spinner-border spinner-border-sm me-2"></div> Signing in...';
-            submitBtn.disabled = true;
-            
-            // Re-enable after 2 seconds (for demo)
-            setTimeout(() => {
-                submitBtn.innerHTML = originalText;
-                submitBtn.disabled = false;
-            }, 2000);
-        });
+
     });
 </script>
 {% endblock %}

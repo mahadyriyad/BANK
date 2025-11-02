@@ -1,220 +1,271 @@
-{% extends 'base.html' %}
+{% extends 'dashboard_base.html' %}
 {% load static %}
 
 {% block title %}Savings Goals - NeoVault Bank{% endblock %}
 
-{% block content %}
-<div class="dashboard-container">
-    {% include 'partials/dashboard_sidebar.html' %}
-    
-    <div class="dashboard-main">
-        <div class="page-header">
-            <h1><i class="fas fa-bullseye me-2"></i>Savings Goals</h1>
-            <p class="text-muted">Plan and track your financial goals</p>
+{% block dashboard_content %}
+<div class="page-header animate-slide-up">
+    <h1><i class="fas fa-bullseye me-2"></i>Savings Goals</h1>
+    <p class="text-muted">Plan and track your financial goals</p>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <!-- Create New Goal -->
+        <div class="operation-card mb-4 animate-fade-in">
+            <h3 class="mb-4">🎯 Create New Savings Goal</h3>
+            
+            <form id="createGoalForm">
+                {% csrf_token %}
+                
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="goalName" class="form-label">Goal Name</label>
+                        <input type="text" class="form-control" id="goalName" 
+                               placeholder="e.g., New Car, Vacation, Emergency Fund" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="goalCategory" class="form-label">Category</label>
+                        <select class="form-select" id="goalCategory" required>
+                            <option value="">Select category...</option>
+                            <option value="emergency">🚨 Emergency Fund</option>
+                            <option value="vacation">🏖️ Vacation</option>
+                            <option value="vehicle">🚗 Vehicle</option>
+                            <option value="home">🏠 Home</option>
+                            <option value="education">🎓 Education</option>
+                            <option value="retirement">👵 Retirement</option>
+                            <option value="wedding">💍 Wedding</option>
+                            <option value="gadgets">📱 Gadgets</option>
+                            <option value="other">⭐ Other</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="targetAmount" class="form-label">Target Amount</label>
+                        <div class="input-group">
+                            <span class="input-group-text">৳</span>
+                            <input type="number" class="form-control" id="targetAmount" 
+                                   placeholder="0.00" min="100" step="0.01" required>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="targetDate" class="form-label">Target Date</label>
+                        <input type="date" class="form-control" id="targetDate" required>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="initialAmount" class="form-label">Initial Amount (Optional)</label>
+                    <div class="input-group">
+                        <span class="input-group-text">৳</span>
+                        <input type="number" class="form-control" id="initialAmount" 
+                               placeholder="0.00" min="0" step="0.01">
+                    </div>
+                    <div class="form-text">Starting amount if you already have some savings</div>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="goalDescription" class="form-label">Description</label>
+                    <textarea class="form-control" id="goalDescription" rows="3" 
+                              placeholder="Describe your goal and motivation..."></textarea>
+                </div>
+                
+                <div class="goal-preview mb-4" id="goalPreview" style="display: none;">
+                    <h6>Goal Preview:</h6>
+                    <div class="preview-card">
+                        <div class="preview-header">
+                            <span id="previewName"></span>
+                            <span class="preview-category" id="previewCategory"></span>
+                        </div>
+                        <div class="preview-progress">
+                            <div class="progress">
+                                <div class="progress-bar" id="previewProgressBar" style="width: 0%">0%</div>
+                            </div>
+                        </div>
+                        <div class="preview-amounts">
+                            <span id="previewCurrent">৳0</span>
+                            <span id="previewTarget">of ৳0</span>
+                        </div>
+                        <div class="preview-details">
+                            <small>Monthly saving: <strong id="previewMonthly"></strong></small>
+                            <small>Target: <strong id="previewDate"></strong></small>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-plus me-2"></i>Create Goal
+                    </button>
+                </div>
+            </form>
         </div>
 
-        <div class="row">
-            <div class="col-lg-8">
-                <!-- Create New Goal -->
-                <div class="operation-card mb-4">
-                    <h3 class="mb-4">Create New Savings Goal</h3>
-                    
-                    <form id="createGoalForm">
-                        {% csrf_token %}
-                        
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="goalName" class="form-label">Goal Name</label>
-                                <input type="text" class="form-control" id="goalName" 
-                                       placeholder="e.g., New Car, Vacation, Emergency Fund" required>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="goalCategory" class="form-label">Category</label>
-                                <select class="form-select" id="goalCategory" required>
-                                    <option value="">Select category...</option>
-                                    <option value="emergency">Emergency Fund</option>
-                                    <option value="vacation">Vacation</option>
-                                    <option value="vehicle">Vehicle</option>
-                                    <option value="home">Home</option>
-                                    <option value="education">Education</option>
-                                    <option value="retirement">Retirement</option>
-                                    <option value="wedding">Wedding</option>
-                                    <option value="other">Other</option>
-                                </select>
-                            </div>
-                        </div>
-                        
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="targetAmount" class="form-label">Target Amount</label>
-                                <div class="input-group">
-                                    <span class="input-group-text">$</span>
-                                    <input type="number" class="form-control" id="targetAmount" 
-                                           placeholder="0.00" min="0.01" step="0.01" required>
-                                </div>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="targetDate" class="form-label">Target Date</label>
-                                <input type="date" class="form-control" id="targetDate" required>
-                            </div>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label for="goalDescription" class="form-label">Description</label>
-                            <textarea class="form-control" id="goalDescription" rows="3" 
-                                      placeholder="Describe your goal and motivation..."></textarea>
-                        </div>
-                        
-                        <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-plus me-2"></i>Create Goal
-                            </button>
-                        </div>
-                    </form>
-                </div>
-
-                <!-- Your Goals -->
-                <div class="operation-card">
-                    <h3 class="mb-4">Your Savings Goals</h3>
-                    
-                    <div class="goals-list">
-                        {% for goal in savings_goals %}
-                        <div class="goal-item">
-                            <div class="goal-icon">
-                                <i class="fas fa-{% if goal.category == 'emergency' %}shield-alt{% elif goal.category == 'vacation' %}umbrella-beach{% elif goal.category == 'vehicle' %}car{% elif goal.category == 'home' %}home{% elif goal.category == 'education' %}graduation-cap{% elif goal.category == 'retirement' %}piggy-bank{% else %}star{% endif %}"></i>
-                            </div>
-                            
-                            <div class="goal-info">
-                                <div class="goal-header">
-                                    <h5>{{ goal.name }}</h5>
-                                    <div class="goal-amounts">
-                                        <span class="current-amount">${{ goal.current_amount|floatformat:2 }}</span>
-                                        <span class="target-amount">of ${{ goal.target_amount|floatformat:2 }}</span>
-                                    </div>
-                                </div>
-                                
-                                <div class="goal-progress">
-                                    <div class="progress">
-                                        <div class="progress-bar" style="width: {{ goal.progress_percentage }}%">
-                                            {{ goal.progress_percentage|floatformat:0 }}%
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div class="goal-details">
-                                    <div class="detail-item">
-                                        <small>Target Date</small>
-                                        <strong>{{ goal.target_date|date:"M d, Y" }}</strong>
-                                    </div>
-                                    <div class="detail-item">
-                                        <small>Time Left</small>
-                                        <strong>{{ goal.time_left }}</strong>
-                                    </div>
-                                    <div class="detail-item">
-                                        <small>Monthly Saving</small>
-                                        <strong>${{ goal.monthly_saving|floatformat:2 }}</strong>
-                                    </div>
-                                </div>
-                                
-                                {% if goal.description %}
-                                <div class="goal-description">
-                                    <p class="text-muted mb-0">{{ goal.description }}</p>
-                                </div>
-                                {% endif %}
-                            </div>
-                            
-                            <div class="goal-actions">
-                                <button class="btn btn-success btn-sm add-funds-btn" data-goal-id="{{ goal.id }}">
-                                    <i class="fas fa-plus me-1"></i>Add Funds
-                                </button>
-                                <button class="btn btn-outline-primary btn-sm">
-                                    <i class="fas fa-chart-line"></i>
-                                </button>
-                                <button class="btn btn-outline-danger btn-sm">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </div>
-                        </div>
-                        {% empty %}
-                        <div class="text-center py-5">
-                            <i class="fas fa-bullseye fa-4x text-muted mb-3"></i>
-                            <h4 class="text-muted">No Savings Goals Yet</h4>
-                            <p class="text-muted">Start by creating your first savings goal above!</p>
-                        </div>
-                        {% endfor %}
-                    </div>
+        <!-- Your Goals -->
+        <div class="operation-card animate-fade-in">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3>📊 Your Savings Goals</h3>
+                <div class="goal-filters">
+                    <button class="btn btn-outline-secondary btn-sm goal-filter active" data-filter="all">All</button>
+                    <button class="btn btn-outline-secondary btn-sm goal-filter" data-filter="active">Active</button>
+                    <button class="btn btn-outline-secondary btn-sm goal-filter" data-filter="completed">Completed</button>
                 </div>
             </div>
             
-            <div class="col-lg-4">
-                <!-- Savings Summary -->
-                <div class="summary-card">
-                    <h4 class="mb-4">Savings Summary</h4>
-                    
-                    <div class="summary-item">
-                        <span>Total Goals:</span>
-                        <strong>{{ savings_goals.count }}</strong>
+            <div class="goals-list">
+                {% for goal in savings_goals %}
+                <div class="goal-item" data-category="{{ goal.category }}" data-status="{{ goal.status }}">
+                    <div class="goal-icon">
+                        <i class="fas fa-{% if goal.category == 'emergency' %}shield-alt{% elif goal.category == 'vacation' %}umbrella-beach{% elif goal.category == 'vehicle' %}car{% elif goal.category == 'home' %}home{% elif goal.category == 'education' %}graduation-cap{% elif goal.category == 'retirement' %}piggy-bank{% elif goal.category == 'wedding' %}ring{% elif goal.category == 'gadgets' %}mobile-alt{% else %}star{% endif %}"></i>
                     </div>
                     
-                    <div class="summary-item">
-                        <span>Total Target:</span>
-                        <strong>${{ total_target|floatformat:2 }}</strong>
-                    </div>
-                    
-                    <div class="summary-item">
-                        <span>Total Saved:</span>
-                        <strong>${{ total_saved|floatformat:2 }}</strong>
-                    </div>
-                    
-                    <div class="summary-item">
-                        <span>Overall Progress:</span>
-                        <strong>{{ overall_progress }}%</strong>
-                    </div>
-                    
-                    <hr>
-                    
-                    <div class="progress mb-3">
-                        <div class="progress-bar bg-success" style="width: {{ overall_progress }}%">
-                            {{ overall_progress }}%
+                    <div class="goal-info">
+                        <div class="goal-header">
+                            <h5>{{ goal.name }}</h5>
+                            <div class="goal-amounts">
+                                <span class="current-amount">৳{{ goal.current_amount|floatformat:2 }}</span>
+                                <span class="target-amount">of ৳{{ goal.target_amount|floatformat:2 }}</span>
+                            </div>
                         </div>
+                        
+                        <div class="goal-progress">
+                            <div class="progress">
+                                <div class="progress-bar {% if goal.progress_percentage >= 100 %}bg-success{% elif goal.progress_percentage >= 70 %}bg-warning{% else %}bg-primary{% endif %}" 
+                                     style="width: {{ goal.progress_percentage }}%">
+                                    {{ goal.progress_percentage|floatformat:0 }}%
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="goal-details">
+                            <div class="detail-item">
+                                <small>Target Date</small>
+                                <strong>{{ goal.target_date|date:"M d, Y" }}</strong>
+                            </div>
+                            <div class="detail-item">
+                                <small>Time Left</small>
+                                <strong>{{ goal.time_left }}</strong>
+                            </div>
+                            <div class="detail-item">
+                                <small>Monthly Saving</small>
+                                <strong>৳{{ goal.monthly_saving|floatformat:2 }}</strong>
+                            </div>
+                        </div>
+                        
+                        {% if goal.description %}
+                        <div class="goal-description">
+                            <p class="text-muted mb-0">{{ goal.description }}</p>
+                        </div>
+                        {% endif %}
                     </div>
                     
-                    <div class="d-grid gap-2">
-                        <button class="btn btn-primary" id="quickSaveBtn">
-                            <i class="fas fa-piggy-bank me-2"></i>Quick Save $50
+                    <div class="goal-actions">
+                        <button class="btn btn-success btn-sm add-funds-btn" data-goal-id="{{ goal.id }}">
+                            <i class="fas fa-plus me-1"></i>Add Funds
+                        </button>
+                        <button class="btn btn-outline-primary btn-sm view-chart" data-goal-id="{{ goal.id }}">
+                            <i class="fas fa-chart-line"></i>
+                        </button>
+                        <button class="btn btn-outline-danger btn-sm delete-goal" data-goal-id="{{ goal.id }}">
+                            <i class="fas fa-trash"></i>
                         </button>
                     </div>
                 </div>
-                
-                <!-- Savings Tips -->
-                <div class="tips-card">
-                    <h5><i class="fas fa-lightbulb me-2"></i>Savings Tips</h5>
-                    <ul class="tips-list">
-                        <li>Set realistic and specific goals</li>
-                        <li>Automate your savings transfers</li>
-                        <li>Review and adjust goals regularly</li>
-                        <li>Celebrate small milestones</li>
-                        <li>Consider high-yield savings accounts</li>
-                    </ul>
+                {% empty %}
+                <div class="empty-state text-center py-5">
+                    <i class="fas fa-bullseye fa-4x text-muted mb-3"></i>
+                    <h4 class="text-muted">No Savings Goals Yet</h4>
+                    <p class="text-muted">Start by creating your first savings goal above!</p>
                 </div>
-                
-                <!-- Recent Contributions -->
-                <div class="recent-card">
-                    <h5>Recent Contributions</h5>
-                    <div class="recent-list">
-                        {% for contribution in recent_contributions %}
-                        <div class="recent-item">
-                            <div class="recent-info">
-                                <strong>{{ contribution.goal.name }}</strong>
-                                <small>{{ contribution.date|date:"M d" }}</small>
-                            </div>
-                            <span class="amount text-success">+${{ contribution.amount|floatformat:2 }}</span>
-                        </div>
-                        {% empty %}
-                        <p class="text-muted text-center">No recent contributions</p>
-                        {% endfor %}
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <!-- Savings Summary -->
+        <div class="summary-card animate-fade-in">
+            <h4 class="mb-4">💰 Savings Summary</h4>
+            
+            <div class="summary-item">
+                <span>Total Goals:</span>
+                <strong id="totalGoals">{{ savings_goals.count }}</strong>
+            </div>
+            
+            <div class="summary-item">
+                <span>Total Target:</span>
+                <strong>৳<span id="totalTarget">{{ total_target|floatformat:2 }}</span></strong>
+            </div>
+            
+            <div class="summary-item">
+                <span>Total Saved:</span>
+                <strong>৳<span id="totalSaved">{{ total_saved|floatformat:2 }}</span></strong>
+            </div>
+            
+            <div class="summary-item">
+                <span>Overall Progress:</span>
+                <strong><span id="overallProgress">{{ overall_progress }}</span>%</strong>
+            </div>
+            
+            <hr>
+            
+            <div class="progress mb-3">
+                <div class="progress-bar bg-success" style="width: {{ overall_progress }}%">
+                    {{ overall_progress }}%
+                </div>
+            </div>
+            
+            <div class="d-grid gap-2">
+                <button class="btn btn-primary" id="quickSaveBtn">
+                    <i class="fas fa-piggy-bank me-2"></i>Quick Save ৳500
+                </button>
+                <button class="btn btn-outline-primary" id="autoSaveBtn">
+                    <i class="fas fa-robot me-2"></i>Setup Auto-Save
+                </button>
+            </div>
+        </div>
+        
+        <!-- Savings Tips -->
+        <div class="tips-card animate-fade-in">
+            <h5><i class="fas fa-lightbulb me-2"></i>💡 Savings Tips</h5>
+            <ul class="tips-list">
+                <li>Set realistic and specific goals</li>
+                <li>Automate your savings transfers</li>
+                <li>Review and adjust goals regularly</li>
+                <li>Celebrate small milestones</li>
+                <li>Consider high-yield savings accounts</li>
+                <li>Cut unnecessary expenses</li>
+            </ul>
+        </div>
+        
+        <!-- Recent Contributions -->
+        <div class="recent-card animate-fade-in">
+            <h5>🕐 Recent Contributions</h5>
+            <div class="recent-list">
+                {% for contribution in recent_contributions %}
+                <div class="recent-item">
+                    <div class="recent-info">
+                        <strong>{{ contribution.goal.name }}</strong>
+                        <small>{{ contribution.date|date:"M d" }}</small>
                     </div>
+                    <span class="amount text-success">+৳{{ contribution.amount|floatformat:2 }}</span>
                 </div>
+                {% empty %}
+                <div class="empty-state-small">
+                    <i class="fas fa-history text-muted"></i>
+                    <p class="text-muted mb-0">No recent contributions</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <!-- Monthly Savings Chart -->
+        <div class="tips-card animate-fade-in">
+            <h5><i class="fas fa-chart-bar me-2"></i>📈 Monthly Progress</h5>
+            <div class="chart-container-small">
+                <canvas id="monthlySavingsChart" height="200"></canvas>
             </div>
         </div>
     </div>
@@ -225,296 +276,553 @@
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Add Funds to Goal</h5>
+                <h5 class="modal-title">💰 Add Funds to Goal</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <div class="goal-summary mb-4">
-                    <h6 id="modalGoalName"></h6>
-                    <div class="progress mb-2">
-                        <div class="progress-bar" id="modalProgressBar"></div>
-                    </div>
-                    <div class="d-flex justify-content-between">
-                        <small>Saved: <strong id="modalCurrentAmount"></strong></small>
-                        <small>Target: <strong id="modalTargetAmount"></strong></small>
-                    </div>
-                </div>
-                
                 <form id="addFundsForm">
                     <div class="mb-3">
-                        <label for="contributionAmount" class="form-label">Amount to Add</label>
-                        <div class="input-group">
-                            <span class="input-group-text">$</span>
-                            <input type="number" class="form-control" id="contributionAmount" 
-                                   placeholder="0.00" min="0.01" step="0.01" required>
+                        <label class="form-label">Goal</label>
+                        <input type="text" class="form-control" id="modalGoalName" readonly>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Current Progress</label>
+                        <div class="progress mb-2">
+                            <div class="progress-bar" id="modalProgressBar"></div>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <small id="modalCurrentAmount"></small>
+                            <small id="modalTargetAmount"></small>
                         </div>
                     </div>
                     
                     <div class="mb-3">
-                        <label for="sourceAccount" class="form-label">From Account</label>
-                        <select class="form-select" id="sourceAccount" required>
+                        <label for="fundAmount" class="form-label">Amount to Add</label>
+                        <div class="input-group">
+                            <span class="input-group-text">৳</span>
+                            <input type="number" class="form-control" id="fundAmount" placeholder="0.00" min="1" step="0.01" required>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="fundSource" class="form-label">From Account</label>
+                        <select class="form-select" id="fundSource" required>
                             <option value="">Select account...</option>
                             {% for account in user_accounts %}
-                            <option value="{{ account.id }}" data-balance="{{ account.balance }}">
-                                {{ account.get_account_type_display }} - ${{ account.balance|floatformat:2 }}
-                            </option>
+                            <option value="{{ account.id }}">{{ account.account_number }} - ৳{{ account.balance|floatformat:2 }}</option>
                             {% endfor %}
                         </select>
                     </div>
                     
                     <div class="mb-3">
-                        <label for="contributionDate" class="form-label">Date</label>
-                        <input type="date" class="form-control" id="contributionDate" 
-                               value="{{ current_date|date:'Y-m-d' }}" required>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="contributionNote" class="form-label">Note (Optional)</label>
-                        <textarea class="form-control" id="contributionNote" rows="2" 
-                                  placeholder="Add a note about this contribution..."></textarea>
+                        <label for="fundDescription" class="form-label">Description (Optional)</label>
+                        <input type="text" class="form-control" id="fundDescription" placeholder="e.g., Monthly savings, Bonus, etc.">
                     </div>
                 </form>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="submit" form="addFundsForm" class="btn btn-primary">Add Funds</button>
+                <button type="submit" form="addFundsForm" class="btn btn-success">Add Funds</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Save Modal -->
+<div class="modal fade" id="quickSaveModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-body text-center p-5">
+                <div class="success-icon">
+                    <i class="fas fa-piggy-bank"></i>
+                </div>
+                <h3 class="mt-4 mb-3">Quick Save</h3>
+                <p class="text-muted mb-4">Distribute ৳500 among your savings goals</p>
+                
+                <div class="distribution-options mb-4">
+                    <div class="distribution-option active" data-method="equal">
+                        <i class="fas fa-equals"></i>
+                        <span>Equal Distribution</span>
+                    </div>
+                    <div class="distribution-option" data-method="priority">
+                        <i class="fas fa-flag"></i>
+                        <span>By Priority</span>
+                    </div>
+                    <div class="distribution-option" data-method="progress">
+                        <i class="fas fa-chart-line"></i>
+                        <span>By Progress</span>
+                    </div>
+                </div>
+                
+                <div class="distribution-preview" id="distributionPreview">
+                    <!-- Distribution details will be shown here -->
+                </div>
+                
+                <div class="d-grid gap-2 mt-4">
+                    <button type="button" class="btn btn-primary" id="confirmQuickSave">Confirm Quick Save</button>
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Goal Chart Modal -->
+<div class="modal fade" id="goalChartModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="chartModalTitle">Goal Progress Chart</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="chart-container">
+                    <canvas id="goalProgressChart" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Auto-Save Setup Modal -->
+<div class="modal fade" id="autoSaveModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">🤖 Setup Auto-Save</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="autoSaveForm">
+                    <div class="mb-3">
+                        <label class="form-label">Select Goals</label>
+                        <div class="goals-checklist">
+                            {% for goal in savings_goals %}
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" value="{{ goal.id }}" id="goal{{ goal.id }}">
+                                <label class="form-check-label" for="goal{{ goal.id }}">
+                                    {{ goal.name }} (৳{{ goal.monthly_saving|floatformat:2 }}/month)
+                                </label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Source Account</label>
+                        <select class="form-select" required>
+                            <option value="">Select account...</option>
+                            {% for account in user_accounts %}
+                            <option value="{{ account.id }}">{{ account.account_number }} - ৳{{ account.balance|floatformat:2 }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Transfer Date</label>
+                        <select class="form-select" required>
+                            <option value="1">1st of each month</option>
+                            <option value="15">15th of each month</option>
+                            <option value="28">28th of each month</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Start Date</label>
+                        <input type="date" class="form-control" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" form="autoSaveForm" class="btn btn-primary">Activate Auto-Save</button>
             </div>
         </div>
     </div>
 </div>
 {% endblock %}
 
-{% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/dashboard-style.css' %}">
-<style>
-    .goals-list {
-        display: flex;
-        flex-direction: column;
-        gap: 20px;
-    }
-    
-    .goal-item {
-        display: flex;
-        gap: 20px;
-        padding: 25px;
-        background: var(--light-color);
-        border-radius: 15px;
-        border-left: 4px solid var(--primary-color);
-        transition: all 0.3s ease;
-    }
-    
-    .goal-item:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 5px 15px var(--shadow-color);
-    }
-    
-    .goal-icon {
-        width: 60px;
-        height: 60px;
-        background: var(--primary-color);
-        color: white;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.5rem;
-        flex-shrink: 0;
-    }
-    
-    .goal-info {
-        flex: 1;
-    }
-    
-    .goal-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-        margin-bottom: 15px;
-    }
-    
-    .goal-header h5 {
-        margin: 0;
-        color: var(--primary-color);
-    }
-    
-    .goal-amounts {
-        text-align: right;
-    }
-    
-    .current-amount {
-        font-size: 1.2rem;
-        font-weight: 700;
-        color: var(--success-color);
-        display: block;
-    }
-    
-    .target-amount {
-        font-size: 0.9rem;
-        color: var(--text-color);
-        opacity: 0.7;
-    }
-    
-    .goal-progress {
-        margin-bottom: 15px;
-    }
-    
-    .goal-progress .progress {
-        height: 10px;
-        border-radius: 5px;
-    }
-    
-    .goal-details {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 15px;
-        margin-bottom: 15px;
-    }
-    
-    .detail-item {
-        text-align: center;
-    }
-    
-    .detail-item small {
-        display: block;
-        color: var(--text-color);
-        opacity: 0.7;
-        font-size: 0.8rem;
-    }
-    
-    .detail-item strong {
-        color: var(--primary-color);
-    }
-    
-    .goal-description {
-        padding-top: 15px;
-        border-top: 1px solid #eee;
-    }
-    
-    .goal-actions {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-        flex-shrink: 0;
-    }
-    
-    .goal-summary {
-        background: var(--light-color);
-        padding: 15px;
-        border-radius: 10px;
-    }
-</style>
-{% endblock %}
-
 {% block extra_js %}
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const createGoalForm = document.getElementById('createGoalForm');
-        const addFundsModal = new bootstrap.Modal(document.getElementById('addFundsModal'));
-        const addFundsForm = document.getElementById('addFundsForm');
-        const quickSaveBtn = document.getElementById('quickSaveBtn');
+document.addEventListener('DOMContentLoaded', function() {
+    const createGoalForm = document.getElementById('createGoalForm');
+    const addFundsModal = new bootstrap.Modal(document.getElementById('addFundsModal'));
+    const addFundsForm = document.getElementById('addFundsForm');
+    const quickSaveBtn = document.getElementById('quickSaveBtn');
+    const autoSaveBtn = document.getElementById('autoSaveBtn');
+    const goalFilters = document.querySelectorAll('.goal-filter');
+    
+    let currentGoalId = null;
+    
+    // Set target date to 1 year from now by default
+    const targetDateInput = document.getElementById('targetDate');
+    const oneYearFromNow = new Date();
+    oneYearFromNow.setFullYear(oneYearFromNow.getFullYear() + 1);
+    targetDateInput.valueAsDate = oneYearFromNow;
+    
+    // Goal creation form preview
+    const goalNameInput = document.getElementById('goalName');
+    const targetAmountInput = document.getElementById('targetAmount');
+    const initialAmountInput = document.getElementById('initialAmount');
+    const targetDateInput = document.getElementById('targetDate');
+    const goalPreview = document.getElementById('goalPreview');
+    
+    [goalNameInput, targetAmountInput, initialAmountInput, targetDateInput].forEach(input => {
+        input.addEventListener('input', updateGoalPreview);
+    });
+    
+    function updateGoalPreview() {
+        const name = goalNameInput.value;
+        const targetAmount = parseFloat(targetAmountInput.value) || 0;
+        const initialAmount = parseFloat(initialAmountInput.value) || 0;
+        const targetDate = new Date(targetDateInput.value);
+        const today = new Date();
         
-        let currentGoalId = null;
+        if (name && targetAmount > 0 && targetDateInput.value) {
+            const monthsDiff = (targetDate.getFullYear() - today.getFullYear()) * 12 + 
+                              (targetDate.getMonth() - today.getMonth());
+            const monthlySaving = monthsDiff > 0 ? (targetAmount - initialAmount) / monthsDiff : 0;
+            const progress = (initialAmount / targetAmount) * 100;
+            
+            document.getElementById('previewName').textContent = name;
+            document.getElementById('previewCategory').textContent = 
+                document.getElementById('goalCategory').options[document.getElementById('goalCategory').selectedIndex].text;
+            document.getElementById('previewProgressBar').style.width = `${progress}%`;
+            document.getElementById('previewProgressBar').textContent = `${progress.toFixed(1)}%`;
+            document.getElementById('previewCurrent').textContent = `৳${initialAmount.toFixed(2)}`;
+            document.getElementById('previewTarget').textContent = `of ৳${targetAmount.toFixed(2)}`;
+            document.getElementById('previewMonthly').textContent = `৳${monthlySaving.toFixed(2)}`;
+            document.getElementById('previewDate').textContent = targetDate.toLocaleDateString();
+            
+            goalPreview.style.display = 'block';
+        } else {
+            goalPreview.style.display = 'none';
+        }
+    }
+    
+    // Create new goal
+    createGoalForm.addEventListener('submit', function(e) {
+        e.preventDefault();
         
-        // Set target date to 1 year from now by default
-        const targetDateInput = document.getElementById('targetDate');
-        const oneYearFromNow = new Date();
-        oneYearFromNow.setFullYear(oneYearFromNow.getFullYear() + 1);
-        targetDateInput.valueAsDate = oneYearFromNow;
+        const submitBtn = this.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
         
-        // Create new goal
-        createGoalForm.addEventListener('submit', function(e) {
-            e.preventDefault();
+        submitBtn.innerHTML = '<div class="spinner-border spinner-border-sm me-2"></div> Creating...';
+        submitBtn.disabled = true;
+        
+        setTimeout(() => {
+            showNotification('Savings goal created successfully!', 'success');
+            this.reset();
+            targetDateInput.valueAsDate = oneYearFromNow;
+            goalPreview.style.display = 'none';
             
-            const submitBtn = this.querySelector('button[type="submit"]');
-            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
             
-            submitBtn.innerHTML = '<div class="spinner-border spinner-border-sm me-2"></div> Creating...';
-            submitBtn.disabled = true;
+            // In real app, refresh the goals list
+            location.reload();
+        }, 1500);
+    });
+    
+    // Add funds to goal
+    document.querySelectorAll('.add-funds-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            currentGoalId = this.getAttribute('data-goal-id');
+            const goalItem = this.closest('.goal-item');
+            const goalName = goalItem.querySelector('h5').textContent;
+            const currentAmount = goalItem.querySelector('.current-amount').textContent.replace('৳', '');
+            const targetAmount = goalItem.querySelector('.target-amount').textContent.replace('of ৳', '');
+            const progress = goalItem.querySelector('.progress-bar').style.width;
             
-            setTimeout(() => {
-                showNotification('Savings goal created successfully!', 'success');
-                this.reset();
-                targetDateInput.valueAsDate = oneYearFromNow;
-                
-                submitBtn.innerHTML = originalText;
-                submitBtn.disabled = false;
-                
-                // In real app, refresh the goals list
-                location.reload();
-            }, 1500);
+            document.getElementById('modalGoalName').value = goalName;
+            document.getElementById('modalCurrentAmount').textContent = `৳${currentAmount}`;
+            document.getElementById('modalTargetAmount').textContent = `৳${targetAmount}`;
+            document.getElementById('modalProgressBar').style.width = progress;
+            document.getElementById('modalProgressBar').textContent = progress;
+            document.getElementById('modalProgressBar').className = 'progress-bar ' + 
+                goalItem.querySelector('.progress-bar').className.split(' ').find(cls => cls.includes('bg-'));
+            
+            addFundsModal.show();
         });
+    });
+    
+    // Add funds form submission
+    addFundsForm.addEventListener('submit', function(e) {
+        e.preventDefault();
         
-        // Add funds to goal
-        document.querySelectorAll('.add-funds-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                currentGoalId = this.getAttribute('data-goal-id');
-                const goalItem = this.closest('.goal-item');
-                const goalName = goalItem.querySelector('h5').textContent;
-                const currentAmount = goalItem.querySelector('.current-amount').textContent;
-                const targetAmount = goalItem.querySelector('.target-amount').textContent.replace('of ', '');
-                const progress = goalItem.querySelector('.progress-bar').style.width;
-                
-                document.getElementById('modalGoalName').textContent = goalName;
-                document.getElementById('modalCurrentAmount').textContent = currentAmount;
-                document.getElementById('modalTargetAmount').textContent = targetAmount;
-                document.getElementById('modalProgressBar').style.width = progress;
-                document.getElementById('modalProgressBar').textContent = progress;
-                document.getElementById('modalProgressBar').className = 'progress-bar';
-                
-                addFundsModal.show();
+        const submitBtn = this.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+        
+        submitBtn.innerHTML = '<div class="spinner-border spinner-border-sm me-2"></div> Adding...';
+        submitBtn.disabled = true;
+        
+        setTimeout(() => {
+            showNotification('Funds added to goal successfully!', 'success');
+            addFundsModal.hide();
+            this.reset();
+            
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+            
+            // In real app, refresh the goals list
+            location.reload();
+        }, 1500);
+    });
+    
+    // Quick save
+    quickSaveBtn.addEventListener('click', function() {
+        const quickSaveModal = new bootstrap.Modal(document.getElementById('quickSaveModal'));
+        updateDistributionPreview('equal');
+        quickSaveModal.show();
+    });
+    
+    // Distribution method selection
+    document.querySelectorAll('.distribution-option').forEach(option => {
+        option.addEventListener('click', function() {
+            document.querySelectorAll('.distribution-option').forEach(opt => opt.classList.remove('active'));
+            this.classList.add('active');
+            const method = this.getAttribute('data-method');
+            updateDistributionPreview(method);
+        });
+    });
+    
+    function updateDistributionPreview(method) {
+        const preview = document.getElementById('distributionPreview');
+        let html = '<h6>Distribution:</h6>';
+        
+        // Simulate distribution based on method
+        const goals = document.querySelectorAll('.goal-item');
+        const totalAmount = 500;
+        
+        if (method === 'equal') {
+            const perGoal = totalAmount / goals.length;
+            goals.forEach((goal, index) => {
+                const goalName = goal.querySelector('h5').textContent;
+                html += `<div class="distribution-item">
+                    <span>${goalName}</span>
+                    <strong>৳${perGoal.toFixed(2)}</strong>
+                </div>`;
+            });
+        } else if (method === 'priority') {
+            // Simulate priority-based distribution
+            goals.forEach((goal, index) => {
+                const goalName = goal.querySelector('h5').textContent;
+                const amount = index === 0 ? 200 : (index === 1 ? 150 : (index === 2 ? 100 : 50));
+                html += `<div class="distribution-item">
+                    <span>${goalName}</span>
+                    <strong>৳${amount.toFixed(2)}</strong>
+                </div>`;
+            });
+        } else if (method === 'progress') {
+            // Simulate progress-based distribution (more to goals with lower progress)
+            goals.forEach((goal, index) => {
+                const goalName = goal.querySelector('h5').textContent;
+                const progress = parseFloat(goal.querySelector('.progress-bar').style.width);
+                const amount = progress < 30 ? 150 : (progress < 60 ? 100 : 50);
+                html += `<div class="distribution-item">
+                    <span>${goalName}</span>
+                    <strong>৳${amount.toFixed(2)}</strong>
+                </div>`;
+            });
+        }
+        
+        preview.innerHTML = html;
+    }
+    
+    // Confirm quick save
+    document.getElementById('confirmQuickSave').addEventListener('click', function() {
+        const originalText = this.innerHTML;
+        this.innerHTML = '<div class="spinner-border spinner-border-sm me-2"></div> Saving...';
+        this.disabled = true;
+        
+        setTimeout(() => {
+            showNotification('৳500 distributed among your savings goals!', 'success');
+            bootstrap.Modal.getInstance(document.getElementById('quickSaveModal')).hide();
+            this.innerHTML = originalText;
+            this.disabled = false;
+            location.reload();
+        }, 1500);
+    });
+    
+    // Auto-save setup
+    autoSaveBtn.addEventListener('click', function() {
+        const autoSaveModal = new bootstrap.Modal(document.getElementById('autoSaveModal'));
+        autoSaveModal.show();
+    });
+    
+    // Auto-save form submission
+    document.getElementById('autoSaveForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const submitBtn = this.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+        
+        submitBtn.innerHTML = '<div class="spinner-border spinner-border-sm me-2"></div> Activating...';
+        submitBtn.disabled = true;
+        
+        setTimeout(() => {
+            showNotification('Auto-save activated successfully!', 'success');
+            bootstrap.Modal.getInstance(document.getElementById('autoSaveModal')).hide();
+            this.reset();
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+        }, 1500);
+    });
+    
+    // Goal filtering
+    goalFilters.forEach(filter => {
+        filter.addEventListener('click', function() {
+            goalFilters.forEach(f => f.classList.remove('active'));
+            this.classList.add('active');
+            
+            const filterType = this.getAttribute('data-filter');
+            const goals = document.querySelectorAll('.goal-item');
+            
+            goals.forEach(goal => {
+                if (filterType === 'all') {
+                    goal.style.display = 'flex';
+                } else if (filterType === 'active') {
+                    const progress = parseFloat(goal.querySelector('.progress-bar').style.width);
+                    goal.style.display = progress < 100 ? 'flex' : 'none';
+                } else if (filterType === 'completed') {
+                    const progress = parseFloat(goal.querySelector('.progress-bar').style.width);
+                    goal.style.display = progress >= 100 ? 'flex' : 'none';
+                }
             });
         });
-        
-        // Add funds form submission
-        addFundsForm.addEventListener('submit', function(e) {
-            e.preventDefault();
+    });
+    
+    // View goal chart
+    document.querySelectorAll('.view-chart').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const goalId = this.getAttribute('data-goal-id');
+            const goalItem = this.closest('.goal-item');
+            const goalName = goalItem.querySelector('h5').textContent;
             
-            const submitBtn = this.querySelector('button[type="submit"]');
-            const originalText = submitBtn.innerHTML;
+            document.getElementById('chartModalTitle').textContent = `${goalName} - Progress Chart`;
+            initializeGoalChart(goalId);
             
-            submitBtn.innerHTML = '<div class="spinner-border spinner-border-sm me-2"></div> Adding...';
-            submitBtn.disabled = true;
-            
-            setTimeout(() => {
-                showNotification('Funds added to goal successfully!', 'success');
-                addFundsModal.hide();
-                this.reset();
-                
-                submitBtn.innerHTML = originalText;
-                submitBtn.disabled = false;
-                
-                // In real app, refresh the goals list
-                location.reload();
-            }, 1500);
+            const chartModal = new bootstrap.Modal(document.getElementById('goalChartModal'));
+            chartModal.show();
         });
-        
-        // Quick save
-        quickSaveBtn.addEventListener('click', function() {
-            if (confirm('Add $50 to your savings goals?')) {
-                const originalText = this.innerHTML;
-                this.innerHTML = '<div class="spinner-border spinner-border-sm me-2"></div> Saving...';
+    });
+    
+    // Delete goal
+    document.querySelectorAll('.delete-goal').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const goalId = this.getAttribute('data-goal-id');
+            const goalItem = this.closest('.goal-item');
+            const goalName = goalItem.querySelector('h5').textContent;
+            
+            if (confirm(`Are you sure you want to delete "${goalName}"? This action cannot be undone.`)) {
+                const originalHTML = this.innerHTML;
+                this.innerHTML = '<div class="spinner-border spinner-border-sm"></div>';
                 this.disabled = true;
                 
                 setTimeout(() => {
-                    showNotification('$50 added to your savings goals!', 'success');
-                    this.innerHTML = originalText;
-                    this.disabled = false;
-                    location.reload();
-                }, 1500);
-            }
-        });
-        
-        // Update progress bar color based on progress
-        document.querySelectorAll('.progress-bar').forEach(bar => {
-            const progress = parseInt(bar.style.width);
-            if (progress < 30) {
-                bar.classList.add('bg-danger');
-            } else if (progress < 70) {
-                bar.classList.add('bg-warning');
-            } else {
-                bar.classList.add('bg-success');
+                    showNotification(`"${goalName}" has been deleted`, 'success');
+                    goalItem.remove();
+                    
+                    // Update summary
+                    const totalGoals = document.querySelectorAll('.goal-item').length;
+                    document.getElementById('totalGoals').textContent = totalGoals;
+                    
+                    if (totalGoals === 0) {
+                        location.reload();
+                    }
+                }, 1000);
             }
         });
     });
+    
+    // Initialize monthly savings chart
+    initializeMonthlyChart();
+});
+
+function initializeGoalChart(goalId) {
+    const ctx = document.getElementById('goalProgressChart').getContext('2d');
+    
+    // Destroy existing chart if any
+    if (window.goalChart) {
+        window.goalChart.destroy();
+    }
+    
+    window.goalChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+            datasets: [{
+                label: 'Savings Progress',
+                data: [0, 5000, 7500, 12000, 15000, 18000, 22000, 25000, 28000, 32000, 35000, 40000],
+                borderColor: '#2563eb',
+                backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                borderWidth: 3,
+                fill: true,
+                tension: 0.4
+            }, {
+                label: 'Target',
+                data: [40000, 40000, 40000, 40000, 40000, 40000, 40000, 40000, 40000, 40000, 40000, 40000],
+                borderColor: '#10b981',
+                borderWidth: 2,
+                borderDash: [5, 5],
+                fill: false
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Monthly Progress Towards Goal'
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return '৳' + value.toLocaleString();
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+function initializeMonthlyChart() {
+    const ctx = document.getElementById('monthlySavingsChart').getContext('2d');
+    
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+            datasets: [{
+                label: 'Monthly Savings',
+                data: [5000, 7000, 4500, 8000, 6000, 9000],
+                backgroundColor: '#2563eb',
+                borderRadius: 5
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return '৳' + value.toLocaleString();
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
 </script>
 {% endblock %}

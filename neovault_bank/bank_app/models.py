@@ -97,7 +97,7 @@ class Employee(models.Model):
     name = models.CharField(max_length=100)
     position = models.CharField(max_length=100)
     bio = models.TextField()
-    profile_picture = models.ImageField(upload_to='employee_profiles/')
+    profile_picture = models.ImageField(upload_to='employee_profiles/', blank=True)
     email = models.EmailField()
     phone = models.CharField(max_length=15)
     join_date = models.DateField()

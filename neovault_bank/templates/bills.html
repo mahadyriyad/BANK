@@ -1,13 +1,9 @@
-{% extends 'base.html' %}
+{% extends 'dashboard_base.html' %}
 {% load static %}
 
 {% block title %}Pay Bills - NeoVault Bank{% endblock %}
 
-{% block content %}
-<div class="dashboard-container">
-    {% include 'partials/dashboard_sidebar.html' %}
-    
-    <div class="dashboard-main">
+{% block dashboard_content %}
         <div class="page-header">
             <h1><i class="fas fa-file-invoice-dollar me-2"></i>Pay Bills</h1>
             <p class="text-muted">Manage and pay your bills securely</p>
@@ -205,142 +201,9 @@
                 </div>
             </div>
         </div>
-    </div>
-</div>
+    {% endblock %}
 
-<!-- Payment Modal -->
-<div class="modal fade" id="paymentModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Confirm Payment</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <div class="payment-details">
-                    <p><strong>Bill:</strong> <span id="paymentBillName"></span></p>
-                    <p><strong>Amount:</strong> <span id="paymentAmount"></span></p>
-                    <p><strong>Due Date:</strong> <span id="paymentDueDate"></span></p>
-                </div>
-                
-                <div class="mb-3">
-                    <label for="paymentAccount" class="form-label">Pay From Account</label>
-                    <select class="form-select" id="paymentAccount">
-                        {% for account in user_accounts %}
-                        <option value="{{ account.id }}" data-balance="{{ account.balance }}">
-                            {{ account.get_account_type_display }} - {{ account.account_number }} (${{ account.balance|floatformat:2 }})
-                        </option>
-                        {% endfor %}
-                    </select>
-                </div>
-                
-                <div class="form-check mb-3">
-                    <input class="form-check-input" type="checkbox" id="savePayment">
-                    <label class="form-check-label" for="savePayment">
-                        Save this payment method for future bills
-                    </label>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-primary" id="confirmPayment">Confirm Payment</button>
-            </div>
-        </div>
-    </div>
-</div>
-{% endblock %}
 
-{% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/dashboard-style.css' %}">
-<style>
-    .bills-list {
-        max-height: 500px;
-        overflow-y: auto;
-    }
-    
-    .bill-item {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 20px;
-        background: var(--light-color);
-        border-radius: 10px;
-        margin-bottom: 15px;
-        border-left: 4px solid var(--success-color);
-        transition: all 0.3s ease;
-    }
-    
-    .bill-item.pending {
-        border-left-color: var(--warning-color);
-    }
-    
-    .bill-item.paid {
-        opacity: 0.7;
-        background: #f8f9fa;
-    }
-    
-    .bill-item:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 5px 15px var(--shadow-color);
-    }
-    
-    .bill-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 8px;
-    }
-    
-    .bill-header h5 {
-        margin: 0;
-        color: var(--primary-color);
-    }
-    
-    .bill-amount {
-        font-size: 1.2rem;
-        font-weight: 700;
-        color: var(--primary-color);
-    }
-    
-    .bill-details {
-        display: flex;
-        gap: 20px;
-        font-size: 0.9rem;
-        color: var(--text-color);
-        opacity: 0.8;
-    }
-    
-    .bill-actions {
-        display: flex;
-        gap: 8px;
-    }
-    
-    .recent-item.due-soon {
-        border-left: 3px solid var(--danger-color);
-        background: rgba(220, 53, 69, 0.05);
-    }
-    
-    .quick-pay-buttons {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 10px;
-        margin-top: 15px;
-    }
-    
-    .payment-details {
-        background: var(--light-color);
-        padding: 15px;
-        border-radius: 8px;
-        margin-bottom: 20px;
-    }
-    
-    .payment-details p {
-        margin-bottom: 8px;
-        display: flex;
-        justify-content: space-between;
-    }
-</style>
-{% endblock %}
 
 {% block extra_js %}
 <script>

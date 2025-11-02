@@ -1,290 +1,354 @@
-{% extends 'base.html' %}
+{% extends 'dashboard_base.html' %}
 {% load static %}
 
 {% block title %}Transfer Funds - NeoVault Bank{% endblock %}
 
-{% block content %}
-<div class="dashboard-container">
-    {% include 'partials/dashboard_sidebar.html' %}
-    
-    <div class="dashboard-main">
-        <div class="page-header">
-            <h1><i class="fas fa-exchange-alt me-2"></i>Transfer Funds</h1>
-            <p class="text-muted">Transfer money between accounts or to other banks</p>
-        </div>
+{% block dashboard_content %}
+<div class="page-header animate-slide-up">
+    <h1><i class="fas fa-exchange-alt me-2"></i>Transfer Funds</h1>
+    <p class="text-muted">Transfer money between accounts or to other banks</p>
+</div>
 
-        <div class="row">
-            <div class="col-lg-8">
-                <div class="operation-card">
-                    <h3 class="mb-4">Make a Transfer</h3>
-                    
-                    <form id="transferForm">
-                        {% csrf_token %}
-                        
-                        <div class="transfer-type-selector mb-4">
-                            <label class="form-label">Transfer Type</label>
-                            <div class="type-options">
-                                <div class="type-option active" data-type="internal">
-                                    <i class="fas fa-arrows-alt-h"></i>
-                                    <span>Internal Transfer</span>
-                                    <small>Between your accounts</small>
-                                </div>
-                                <div class="type-option" data-type="external">
-                                    <i class="fas fa-university"></i>
-                                    <span>External Transfer</span>
-                                    <small>To other banks</small>
-                                </div>
-                                <div class="type-option" data-type="international">
-                                    <i class="fas fa-globe"></i>
-                                    <span>International</span>
-                                    <small>To other countries</small>
-                                </div>
-                            </div>
+<div class="row">
+    <div class="col-lg-8">
+        <div class="operation-card animate-fade-in">
+            <h3 class="mb-4">💸 Make a Transfer</h3>
+            
+            <form id="transferForm">
+                {% csrf_token %}
+                
+                <div class="transfer-type-selector mb-4">
+                    <label class="form-label">Transfer Type</label>
+                    <div class="type-options">
+                        <div class="type-option active" data-type="internal">
+                            <i class="fas fa-arrows-alt-h"></i>
+                            <span>Internal Transfer</span>
+                            <small>Between your accounts</small>
                         </div>
-                        
-                        <!-- Internal Transfer -->
-                        <div class="transfer-details active" id="internal-details">
-                            <div class="row">
-                                <div class="col-md-6 mb-3">
-                                    <label for="fromAccount" class="form-label">From Account</label>
-                                    <select class="form-select" id="fromAccount" required>
-                                        <option value="">Select source account...</option>
-                                        {% for account in user_accounts %}
-                                        <option value="{{ account.id }}" data-balance="{{ account.balance }}">
-                                            {{ account.get_account_type_display }} - {{ account.account_number }} (${{ account.balance|floatformat:2 }})
-                                        </option>
-                                        {% endfor %}
-                                    </select>
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label for="toAccountInternal" class="form-label">To Account</label>
-                                    <select class="form-select" id="toAccountInternal" required>
-                                        <option value="">Select destination account...</option>
-                                        {% for account in user_accounts %}
-                                        <option value="{{ account.id }}">
-                                            {{ account.get_account_type_display }} - {{ account.account_number }}
-                                        </option>
-                                        {% endfor %}
-                                    </select>
-                                </div>
-                            </div>
+                        <div class="type-option" data-type="external">
+                            <i class="fas fa-university"></i>
+                            <span>External Transfer</span>
+                            <small>To other banks</small>
                         </div>
-                        
-                        <!-- External Transfer -->
-                        <div class="transfer-details" id="external-details">
-                            <div class="row">
-                                <div class="col-md-6 mb-3">
-                                    <label for="fromAccountExternal" class="form-label">From Account</label>
-                                    <select class="form-select" id="fromAccountExternal" required>
-                                        <option value="">Select source account...</option>
-                                        {% for account in user_accounts %}
-                                        <option value="{{ account.id }}" data-balance="{{ account.balance }}">
-                                            {{ account.get_account_type_display }} - {{ account.account_number }} (${{ account.balance|floatformat:2 }})
-                                        </option>
-                                        {% endfor %}
-                                    </select>
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label">To Bank</label>
-                                    <select class="form-select" id="externalBank">
-                                        <option value="">Select bank...</option>
-                                        <option value="chase">Chase Bank</option>
-                                        <option value="bankofamerica">Bank of America</option>
-                                        <option value="wellsfargo">Wells Fargo</option>
-                                        <option value="citibank">Citi Bank</option>
-                                        <option value="other">Other Bank</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label">Account Number</label>
-                                    <input type="text" class="form-control" placeholder="Enter account number">
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label">Routing Number</label>
-                                    <input type="text" class="form-control" placeholder="Enter routing number">
-                                </div>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Account Holder Name</label>
-                                <input type="text" class="form-control" placeholder="Enter account holder name">
-                            </div>
+                        <div class="type-option" data-type="international">
+                            <i class="fas fa-globe"></i>
+                            <span>International</span>
+                            <small>To other countries</small>
                         </div>
-                        
-                        <!-- International Transfer -->
-                        <div class="transfer-details" id="international-details">
-                            <div class="alert alert-warning">
-                                <i class="fas fa-exclamation-triangle me-2"></i>
-                                International transfers may take 3-5 business days and include additional fees.
-                            </div>
-                            <div class="row">
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label">From Account</label>
-                                    <select class="form-select">
-                                        <option value="">Select source account...</option>
-                                        {% for account in user_accounts %}
-                                        <option value="{{ account.id }}" data-balance="{{ account.balance }}">
-                                            {{ account.get_account_type_display }} - {{ account.account_number }} (${{ account.balance|floatformat:2 }})
-                                        </option>
-                                        {% endfor %}
-                                    </select>
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label">Country</label>
-                                    <select class="form-select">
-                                        <option value="">Select country...</option>
-                                        <option value="uk">United Kingdom</option>
-                                        <option value="canada">Canada</option>
-                                        <option value="australia">Australia</option>
-                                        <option value="germany">Germany</option>
-                                        <option value="france">France</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label">SWIFT/BIC Code</label>
-                                    <input type="text" class="form-control" placeholder="Enter SWIFT/BIC code">
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label">IBAN/Account Number</label>
-                                    <input type="text" class="form-control" placeholder="Enter IBAN/account number">
-                                </div>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Beneficiary Name</label>
-                                <input type="text" class="form-control" placeholder="Enter beneficiary name">
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Beneficiary Address</label>
-                                <textarea class="form-control" rows="2" placeholder="Enter beneficiary address"></textarea>
-                            </div>
-                        </div>
-                        
-                        <div class="mb-4">
-                            <label for="amount" class="form-label">Amount</label>
-                            <div class="input-group">
-                                <span class="input-group-text">$</span>
-                                <input type="number" class="form-control" id="amount" 
-                                       placeholder="0.00" min="0.01" step="0.01" required>
-                            </div>
-                        </div>
-                        
-                        <div class="mb-4">
-                            <label for="description" class="form-label">Description</label>
-                            <textarea class="form-control" id="description" rows="3" 
-                                      placeholder="Add a note for this transfer (optional)"></textarea>
-                        </div>
-                        
-                        <div class="mb-4">
-                            <label class="form-label">Transfer Speed</label>
-                            <div class="speed-options">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="transferSpeed" id="standard" checked>
-                                    <label class="form-check-label" for="standard">
-                                        Standard (1-2 business days) - Free
-                                    </label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="transferSpeed" id="express">
-                                    <label class="form-check-label" for="express">
-                                        Express (Same day) - $15.00
-                                    </label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="transferSpeed" id="instant">
-                                    <label class="form-check-label" for="instant">
-                                        Instant (Immediate) - $25.00
-                                    </label>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-primary btn-lg">
-                                <i class="fas fa-paper-plane me-2"></i>Process Transfer
-                            </button>
-                        </div>
-                    </form>
+                    </div>
                 </div>
+                
+                <!-- Internal Transfer -->
+                <div class="transfer-details active" id="internal-details">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="fromAccount" class="form-label">From Account</label>
+                            <select class="form-select" id="fromAccount" required>
+                                <option value="">Select source account...</option>
+                                {% for account in user_accounts %}
+                                <option value="{{ account.id }}" data-balance="{{ account.balance }}">
+                                    {{ account.get_account_type_display }} - {{ account.account_number }} (৳{{ account.balance|floatformat:2 }})
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="toAccountInternal" class="form-label">To Account</label>
+                            <select class="form-select" id="toAccountInternal" required>
+                                <option value="">Select destination account...</option>
+                                {% for account in user_accounts %}
+                                <option value="{{ account.id }}">
+                                    {{ account.get_account_type_display }} - {{ account.account_number }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="alert alert-success">
+                        <i class="fas fa-bolt me-2"></i>
+                        Internal transfers are instant and free of charge
+                    </div>
+                </div>
+                
+                <!-- External Transfer -->
+                <div class="transfer-details" id="external-details">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="fromAccountExternal" class="form-label">From Account</label>
+                            <select class="form-select" id="fromAccountExternal" required>
+                                <option value="">Select source account...</option>
+                                {% for account in user_accounts %}
+                                <option value="{{ account.id }}" data-balance="{{ account.balance }}">
+                                    {{ account.get_account_type_display }} - {{ account.account_number }} (৳{{ account.balance|floatformat:2 }})
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">To Bank</label>
+                            <select class="form-select" id="externalBank" required>
+                                <option value="">Select bank...</option>
+                                <option value="dutch">Dutch-Bangla Bank</option>
+                                <option value="brac">BRAC Bank</option>
+                                <option value="city">City Bank</option>
+                                <option value="eastern">Eastern Bank</option>
+                                <option value="islami">Islami Bank</option>
+                                <option value="other">Other Bank</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Account Number</label>
+                            <input type="text" class="form-control" id="externalAccountNumber" placeholder="Enter account number" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Account Holder Name</label>
+                            <input type="text" class="form-control" id="externalAccountName" placeholder="Enter account holder name" required>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Routing Number (Optional)</label>
+                        <input type="text" class="form-control" placeholder="Enter routing number">
+                    </div>
+                    <div class="alert alert-info">
+                        <i class="fas fa-clock me-2"></i>
+                        External transfers typically take 1-2 business days
+                    </div>
+                </div>
+                
+                <!-- International Transfer -->
+                <div class="transfer-details" id="international-details">
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        International transfers may take 3-5 business days and include additional fees.
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">From Account</label>
+                            <select class="form-select" id="internationalFromAccount" required>
+                                <option value="">Select source account...</option>
+                                {% for account in user_accounts %}
+                                <option value="{{ account.id }}" data-balance="{{ account.balance }}">
+                                    {{ account.get_account_type_display }} - {{ account.account_number }} (৳{{ account.balance|floatformat:2 }})
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Country</label>
+                            <select class="form-select" id="internationalCountry" required>
+                                <option value="">Select country...</option>
+                                <option value="usa">United States</option>
+                                <option value="uk">United Kingdom</option>
+                                <option value="canada">Canada</option>
+                                <option value="australia">Australia</option>
+                                <option value="uae">United Arab Emirates</option>
+                                <option value="singapore">Singapore</option>
+                                <option value="malaysia">Malaysia</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">SWIFT/BIC Code</label>
+                            <input type="text" class="form-control" id="swiftCode" placeholder="Enter SWIFT/BIC code" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">IBAN/Account Number</label>
+                            <input type="text" class="form-control" id="ibanNumber" placeholder="Enter IBAN/account number" required>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Beneficiary Name</label>
+                        <input type="text" class="form-control" id="beneficiaryName" placeholder="Enter beneficiary name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Beneficiary Address</label>
+                        <textarea class="form-control" id="beneficiaryAddress" rows="2" placeholder="Enter beneficiary address"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Bank Name</label>
+                        <input type="text" class="form-control" id="internationalBankName" placeholder="Enter bank name">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Bank Address</label>
+                        <textarea class="form-control" id="bankAddress" rows="2" placeholder="Enter bank address"></textarea>
+                    </div>
+                </div>
+                
+                <div class="mb-4">
+                    <label for="amount" class="form-label">Amount</label>
+                    <div class="input-group">
+                        <span class="input-group-text">৳</span>
+                        <input type="number" class="form-control" id="amount" 
+                               placeholder="0.00" min="1" step="0.01" required>
+                    </div>
+                    <div class="form-text" id="amountHelp">
+                        Minimum transfer amount: ৳1.00
+                    </div>
+                </div>
+                
+                <div class="mb-4">
+                    <label for="description" class="form-label">Description</label>
+                    <textarea class="form-control" id="description" rows="3" 
+                              placeholder="Add a note for this transfer (optional)"></textarea>
+                </div>
+                
+                <div class="mb-4" id="transferSpeedSection">
+                    <label class="form-label">Transfer Speed</label>
+                    <div class="speed-options">
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="transferSpeed" id="standard" checked>
+                            <label class="form-check-label" for="standard">
+                                <span class="speed-name">Standard</span>
+                                <span class="speed-details">1-2 business days - Free</span>
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="transferSpeed" id="express">
+                            <label class="form-check-label" for="express">
+                                <span class="speed-name">Express</span>
+                                <span class="speed-details">Same day - ৳50.00</span>
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="transferSpeed" id="instant">
+                            <label class="form-check-label" for="instant">
+                                <span class="speed-name">Instant</span>
+                                <span class="speed-details">Immediate - ৳100.00</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="security-check mb-4">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="securityConfirm" required>
+                        <label class="form-check-label" for="securityConfirm">
+                            I confirm that I have verified all transfer details and this transaction is authorized by me.
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        <i class="fas fa-paper-plane me-2"></i>Process Transfer
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <!-- Transfer Summary -->
+        <div class="summary-card animate-fade-in">
+            <h4 class="mb-4">💵 Transfer Summary</h4>
+            
+            <div class="summary-item">
+                <span>Transfer Type:</span>
+                <strong id="transferType">Internal</strong>
             </div>
             
-            <div class="col-lg-4">
-                <!-- Transfer Summary -->
-                <div class="summary-card">
-                    <h4 class="mb-4">Transfer Summary</h4>
-                    
-                    <div class="summary-item">
-                        <span>Transfer Type:</span>
-                        <strong id="transferType">Internal</strong>
+            <div class="summary-item">
+                <span>From Account:</span>
+                <strong id="fromAccountSummary">-</strong>
+            </div>
+            
+            <div class="summary-item">
+                <span>To Account:</span>
+                <strong id="toAccountSummary">-</strong>
+            </div>
+            
+            <div class="summary-item">
+                <span>Current Balance:</span>
+                <strong id="currentBalance">-</strong>
+            </div>
+            
+            <div class="summary-item">
+                <span>Transfer Amount:</span>
+                <strong id="transferAmount">৳0.00</strong>
+            </div>
+            
+            <div class="summary-item">
+                <span>Transfer Fee:</span>
+                <strong id="transferFee">৳0.00</strong>
+            </div>
+            
+            <div class="summary-item">
+                <span>New Balance:</span>
+                <strong id="newBalance">-</strong>
+            </div>
+            
+            <hr>
+            
+            <div class="summary-item total">
+                <span>Total Amount:</span>
+                <strong id="totalAmount">৳0.00</strong>
+            </div>
+            
+            <div class="balance-warning alert alert-warning mt-3" id="balanceWarning" style="display: none;">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                <span id="warningMessage"></span>
+            </div>
+        </div>
+        
+        <!-- Quick Tips -->
+        <div class="tips-card animate-fade-in">
+            <h5><i class="fas fa-lightbulb me-2"></i>💡 Transfer Information</h5>
+            <ul class="tips-list">
+                <li>Internal transfers are instant and free</li>
+                <li>External transfers take 1-2 business days</li>
+                <li>International transfers may have additional fees</li>
+                <li>Always verify account details before transferring</li>
+                <li>Keep transaction receipts for your records</li>
+            </ul>
+        </div>
+        
+        <!-- Recent Transfers -->
+        <div class="recent-card animate-fade-in">
+            <h5>🕐 Recent Transfers</h5>
+            <div class="recent-list">
+                {% for transaction in recent_transfers %}
+                <div class="recent-item">
+                    <div class="recent-info">
+                        <strong>৳{{ transaction.amount|floatformat:2 }}</strong>
+                        <small>{{ transaction.timestamp|date:"M d" }}</small>
                     </div>
-                    
-                    <div class="summary-item">
-                        <span>From Account:</span>
-                        <strong id="fromAccountSummary">-</strong>
-                    </div>
-                    
-                    <div class="summary-item">
-                        <span>To Account:</span>
-                        <strong id="toAccountSummary">-</strong>
-                    </div>
-                    
-                    <div class="summary-item">
-                        <span>Current Balance:</span>
-                        <strong id="currentBalance">-</strong>
-                    </div>
-                    
-                    <div class="summary-item">
-                        <span>Transfer Amount:</span>
-                        <strong id="transferAmount">$0.00</strong>
-                    </div>
-                    
-                    <div class="summary-item">
-                        <span>Transfer Fee:</span>
-                        <strong id="transferFee">$0.00</strong>
-                    </div>
-                    
-                    <div class="summary-item">
-                        <span>New Balance:</span>
-                        <strong id="newBalance">-</strong>
-                    </div>
-                    
-                    <hr>
-                    
-                    <div class="summary-item total">
-                        <span>Total Amount:</span>
-                        <strong id="totalAmount">$0.00</strong>
-                    </div>
+                    <span class="status completed">Completed</span>
                 </div>
-                
-                <!-- Quick Tips -->
-                <div class="tips-card">
-                    <h5><i class="fas fa-lightbulb me-2"></i>Transfer Information</h5>
-                    <ul class="tips-list">
-                        <li>Internal transfers are instant and free</li>
-                        <li>External transfers take 1-2 business days</li>
-                        <li>International transfers may have additional fees</li>
-                        <li>Always verify account details before transferring</li>
-                    </ul>
+                {% empty %}
+                <div class="empty-state-small">
+                    <i class="fas fa-history text-muted"></i>
+                    <p class="text-muted mb-0">No recent transfers</p>
                 </div>
-                
-                <!-- Recent Transfers -->
-                <div class="recent-card">
-                    <h5>Recent Transfers</h5>
-                    <div class="recent-list">
-                        {% for transaction in recent_transfers %}
-                        <div class="recent-item">
-                            <div class="recent-info">
-                                <strong>${{ transaction.amount|floatformat:2 }}</strong>
-                                <small>{{ transaction.timestamp|date:"M d" }}</small>
-                            </div>
-                            <span class="status completed">Completed</span>
-                        </div>
-                        {% empty %}
-                        <p class="text-muted text-center">No recent transfers</p>
-                        {% endfor %}
+                {% endfor %}
+            </div>
+        </div>
+        
+        <!-- Favorite Contacts -->
+        <div class="tips-card animate-fade-in">
+            <h5><i class="fas fa-star me-2"></i>⭐ Favorite Contacts</h5>
+            <div class="contacts-list">
+                <div class="contact-item">
+                    <div class="contact-avatar">
+                        <i class="fas fa-user"></i>
                     </div>
+                    <div class="contact-info">
+                        <strong>John Smith</strong>
+                        <small>BRAC Bank • 1234 5678 9012</small>
+                    </div>
+                    <button class="btn btn-sm btn-outline-primary use-contact">Use</button>
+                </div>
+                <div class="contact-item">
+                    <div class="contact-avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="contact-info">
+                        <strong>Sarah Johnson</strong>
+                        <small>City Bank • 5678 9012 3456</small>
+                    </div>
+                    <button class="btn btn-sm btn-outline-primary use-contact">Use</button>
                 </div>
             </div>
         </div>
@@ -299,18 +363,33 @@
                 <div class="success-icon">
                     <i class="fas fa-check-circle"></i>
                 </div>
-                <h3 class="mt-4 mb-3">Transfer Successful!</h3>
+                <h3 class="mt-4 mb-3">🎉 Transfer Successful!</h3>
                 <p class="text-muted mb-4" id="successMessage">Your transfer has been processed successfully.</p>
                 <div class="transfer-details mb-4">
-                    <p><strong>Amount:</strong> <span id="successAmount"></span></p>
-                    <p><strong>From:</strong> <span id="successFrom"></span></p>
-                    <p><strong>To:</strong> <span id="successTo"></span></p>
-                    <p><strong>Reference:</strong> <span id="successReference"></span></p>
-                    <p><strong>Estimated Arrival:</strong> <span id="successArrival"></span></p>
+                    <div class="detail-row">
+                        <span>Amount:</span>
+                        <strong id="successAmount"></strong>
+                    </div>
+                    <div class="detail-row">
+                        <span>From:</span>
+                        <strong id="successFrom"></strong>
+                    </div>
+                    <div class="detail-row">
+                        <span>To:</span>
+                        <strong id="successTo"></strong>
+                    </div>
+                    <div class="detail-row">
+                        <span>Reference:</span>
+                        <strong id="successReference"></strong>
+                    </div>
+                    <div class="detail-row">
+                        <span>Estimated Arrival:</span>
+                        <strong id="successArrival"></strong>
+                    </div>
                 </div>
                 <div class="d-grid gap-2">
                     <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Continue</button>
-                    <button type="button" class="btn btn-outline-primary" onclick="generateReceipt()">
+                    <button type="button" class="btn btn-outline-primary print-receipt" id="printTransferReceipt">
                         <i class="fas fa-print me-2"></i>Print Receipt
                     </button>
                 </div>
@@ -318,273 +397,433 @@
         </div>
     </div>
 </div>
-{% endblock %}
 
-{% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/dashboard-style.css' %}">
-<style>
-    .type-options {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-        gap: 15px;
-        margin-top: 10px;
-    }
-    
-    .type-option {
-        background: var(--light-color);
-        padding: 20px 15px;
-        border-radius: 10px;
-        text-align: center;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        border: 2px solid transparent;
-    }
-    
-    .type-option.active {
-        border-color: var(--accent-color);
-        background: rgba(255, 107, 53, 0.1);
-    }
-    
-    .type-option:hover {
-        transform: translateY(-2px);
-    }
-    
-    .type-option i {
-        font-size: 1.5rem;
-        color: var(--primary-color);
-        margin-bottom: 10px;
-        display: block;
-    }
-    
-    .type-option small {
-        display: block;
-        color: var(--text-color);
-        opacity: 0.7;
-        font-size: 0.8rem;
-        margin-top: 5px;
-    }
-    
-    .transfer-details {
-        display: none;
-        background: var(--light-color);
-        padding: 20px;
-        border-radius: 10px;
-        margin-top: 20px;
-    }
-    
-    .transfer-details.active {
-        display: block;
-    }
-    
-    .speed-options {
-        background: var(--light-color);
-        padding: 20px;
-        border-radius: 10px;
-    }
-    
-    .transfer-details-info {
-        background: white;
-        padding: 20px;
-        border-radius: 8px;
-        border-left: 4px solid var(--primary-color);
-    }
-</style>
+<!-- Processing Modal -->
+<div class="modal fade" id="processingModal" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-body text-center p-5">
+                <div class="processing-spinner">
+                    <i class="fas fa-sync fa-spin"></i>
+                </div>
+                <h3 class="mt-4 mb-3">Processing Transfer</h3>
+                <p class="text-muted mb-4" id="processingMessage">Please wait while we process your transaction...</p>
+                <div class="progress mb-3">
+                    <div class="progress-bar progress-bar-striped progress-bar-animated" style="width: 100%"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Security Verification Modal -->
+<div class="modal fade" id="securityModal" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">🔒 Security Verification</h5>
+            </div>
+            <div class="modal-body text-center">
+                <div class="security-icon mb-4">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <h5>Verify Your Identity</h5>
+                <p class="text-muted mb-4">For your security, please enter the OTP sent to your registered mobile number.</p>
+                
+                <div class="otp-inputs mb-4">
+                    <input type="text" class="otp-input" maxlength="1" pattern="[0-9]">
+                    <input type="text" class="otp-input" maxlength="1" pattern="[0-9]">
+                    <input type="text" class="otp-input" maxlength="1" pattern="[0-9]">
+                    <input type="text" class="otp-input" maxlength="1" pattern="[0-9]">
+                    <input type="text" class="otp-input" maxlength="1" pattern="[0-9]">
+                    <input type="text" class="otp-input" maxlength="1" pattern="[0-9]">
+                </div>
+                
+                <div class="timer mb-3">
+                    <small class="text-muted">OTP valid for: <span id="otpTimer">02:00</span></small>
+                </div>
+                
+                <button class="btn btn-link p-0" id="resendOtp">
+                    <small>Didn't receive OTP? Resend</small>
+                </button>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" id="cancelTransfer">Cancel</button>
+                <button type="button" class="btn btn-primary" id="verifyOtp">Verify & Proceed</button>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const typeOptions = document.querySelectorAll('.type-option');
-        const fromAccount = document.getElementById('fromAccount');
-        const amountInput = document.getElementById('amount');
-        const transferForm = document.getElementById('transferForm');
-        const transferSpeedRadios = document.querySelectorAll('input[name="transferSpeed"]');
-        
-        let currentType = 'internal';
-        let transferFee = 0;
-        
-        // Transfer type selection
-        typeOptions.forEach(option => {
-            option.addEventListener('click', function() {
-                typeOptions.forEach(opt => opt.classList.remove('active'));
-                this.classList.add('active');
-                
-                // Show corresponding transfer details
-                currentType = this.getAttribute('data-type');
-                document.querySelectorAll('.transfer-details').forEach(detail => {
-                    detail.classList.remove('active');
-                });
-                document.getElementById(`${currentType}-details`).classList.add('active');
-                
-                // Update transfer type in summary
-                document.getElementById('transferType').textContent = 
-                    this.querySelector('span').textContent;
-                
-                updateTransferFee();
-                updateSummary();
+document.addEventListener('DOMContentLoaded', function() {
+    const typeOptions = document.querySelectorAll('.type-option');
+    const fromAccount = document.getElementById('fromAccount');
+    const amountInput = document.getElementById('amount');
+    const transferForm = document.getElementById('transferForm');
+    const transferSpeedRadios = document.querySelectorAll('input[name="transferSpeed"]');
+    const securityConfirm = document.getElementById('securityConfirm');
+    
+    let currentType = 'internal';
+    let transferFee = 0;
+    let processingTransfer = false;
+    
+    // Transfer type selection
+    typeOptions.forEach(option => {
+        option.addEventListener('click', function() {
+            if (processingTransfer) return;
+            
+            typeOptions.forEach(opt => opt.classList.remove('active'));
+            this.classList.add('active');
+            
+            // Show corresponding transfer details
+            currentType = this.getAttribute('data-type');
+            document.querySelectorAll('.transfer-details').forEach(detail => {
+                detail.classList.remove('active');
             });
-        });
-        
-        // Update summary when inputs change
-        fromAccount.addEventListener('change', updateSummary);
-        amountInput.addEventListener('input', updateSummary);
-        transferSpeedRadios.forEach(radio => {
-            radio.addEventListener('change', updateTransferFee);
-        });
-        
-        function updateTransferFee() {
-            const selectedSpeed = document.querySelector('input[name="transferSpeed"]:checked').id;
+            document.getElementById(`${currentType}-details`).classList.add('active');
             
-            switch(currentType) {
-                case 'internal':
-                    transferFee = 0;
-                    break;
-                case 'external':
-                    if (selectedSpeed === 'standard') transferFee = 0;
-                    else if (selectedSpeed === 'express') transferFee = 15;
-                    else if (selectedSpeed === 'instant') transferFee = 25;
-                    break;
-                case 'international':
-                    transferFee = 35; // Base fee for international
-                    if (selectedSpeed === 'express') transferFee += 10;
-                    else if (selectedSpeed === 'instant') transferFee += 20;
-                    break;
-            }
-            
-            updateSummary();
-        }
-        
-        function updateSummary() {
-            const selectedOption = fromAccount.options[fromAccount.selectedIndex];
-            const currentBalance = selectedOption ? parseFloat(selectedOption.getAttribute('data-balance')) : 0;
-            const transferAmount = parseFloat(amountInput.value) || 0;
-            const totalAmount = transferAmount + transferFee;
-            
-            document.getElementById('fromAccountSummary').textContent = 
-                selectedOption ? selectedOption.text.split('(')[0] : '-';
-            document.getElementById('currentBalance').textContent = 
-                currentBalance ? `$${currentBalance.toFixed(2)}` : '-';
-            document.getElementById('transferAmount').textContent = `$${transferAmount.toFixed(2)}`;
-            document.getElementById('transferFee').textContent = `$${transferFee.toFixed(2)}`;
-            document.getElementById('totalAmount').textContent = `$${totalAmount.toFixed(2)}`;
-            
+            // Show/hide transfer speed section
+            const speedSection = document.getElementById('transferSpeedSection');
             if (currentType === 'internal') {
-                const toAccount = document.getElementById('toAccountInternal');
-                const toOption = toAccount.options[toAccount.selectedIndex];
-                document.getElementById('toAccountSummary').textContent = 
-                    toOption ? toOption.text : '-';
+                speedSection.style.display = 'none';
             } else {
-                document.getElementById('toAccountSummary').textContent = 'External Account';
+                speedSection.style.display = 'block';
             }
             
-            if (currentBalance) {
-                const newBalance = currentBalance - totalAmount;
-                document.getElementById('newBalance').textContent = `$${newBalance.toFixed(2)}`;
-                
-                // Highlight if insufficient funds
-                if (newBalance < 0) {
-                    document.getElementById('newBalance').style.color = 'var(--danger-color)';
-                } else {
-                    document.getElementById('newBalance').style.color = '';
-                }
-            }
+            // Update transfer type in summary
+            document.getElementById('transferType').textContent = 
+                this.querySelector('span').textContent;
+            
+            updateTransferFee();
+            updateSummary();
+        });
+    });
+    
+    // Update summary when inputs change
+    fromAccount.addEventListener('change', updateSummary);
+    amountInput.addEventListener('input', updateSummary);
+    transferSpeedRadios.forEach(radio => {
+        radio.addEventListener('change', updateTransferFee);
+    });
+    
+    // Use contact buttons
+    document.querySelectorAll('.use-contact').forEach(button => {
+        button.addEventListener('click', function() {
+            const contactInfo = this.closest('.contact-item').querySelector('.contact-info');
+            const bankInfo = contactInfo.querySelector('small').textContent.split('•');
+            const bankName = bankInfo[0].trim();
+            const accountNumber = bankInfo[1].trim();
+            
+            // Switch to external transfer
+            typeOptions.forEach(opt => opt.classList.remove('active'));
+            document.querySelector('[data-type="external"]').classList.add('active');
+            
+            currentType = 'external';
+            document.querySelectorAll('.transfer-details').forEach(detail => {
+                detail.classList.remove('active');
+            });
+            document.getElementById('external-details').classList.add('active');
+            
+            // Fill in the details
+            document.getElementById('externalBank').value = bankName.toLowerCase().replace(' ', '');
+            document.getElementById('externalAccountNumber').value = accountNumber;
+            document.getElementById('externalAccountName').value = contactInfo.querySelector('strong').textContent;
+            
+            document.getElementById('transferSpeedSection').style.display = 'block';
+            document.getElementById('transferType').textContent = 'External Transfer';
+            
+            updateTransferFee();
+            updateSummary();
+            
+            showNotification('Contact details filled successfully', 'success');
+        });
+    });
+    
+    function updateTransferFee() {
+        if (currentType === 'internal') {
+            transferFee = 0;
+            return;
         }
         
-        // Form submission
-        transferForm.addEventListener('submit', function(e) {
-            e.preventDefault();
+        const selectedSpeed = document.querySelector('input[name="transferSpeed"]:checked');
+        if (!selectedSpeed) return;
+        
+        const speed = selectedSpeed.id;
+        
+        if (currentType === 'external') {
+            if (speed === 'standard') transferFee = 0;
+            else if (speed === 'express') transferFee = 50;
+            else if (speed === 'instant') transferFee = 100;
+        } else if (currentType === 'international') {
+            transferFee = 500; // Base fee for international
+            if (speed === 'express') transferFee += 100;
+            else if (speed === 'instant') transferFee += 200;
+        }
+        
+        updateSummary();
+    }
+    
+    function updateSummary() {
+        const selectedFromAccount = getSelectedFromAccount();
+        const currentBalance = selectedFromAccount ? parseFloat(selectedFromAccount.getAttribute('data-balance')) : 0;
+        const transferAmount = parseFloat(amountInput.value) || 0;
+        const totalAmount = transferAmount + transferFee;
+        
+        document.getElementById('fromAccountSummary').textContent = 
+            selectedFromAccount ? selectedFromAccount.text.split('(')[0] : '-';
+        document.getElementById('currentBalance').textContent = 
+            currentBalance ? `৳${currentBalance.toFixed(2)}` : '-';
+        document.getElementById('transferAmount').textContent = `৳${transferAmount.toFixed(2)}`;
+        document.getElementById('transferFee').textContent = `৳${transferFee.toFixed(2)}`;
+        document.getElementById('totalAmount').textContent = `৳${totalAmount.toFixed(2)}`;
+        
+        // Update to account summary
+        if (currentType === 'internal') {
+            const toAccount = document.getElementById('toAccountInternal');
+            const toOption = toAccount.options[toAccount.selectedIndex];
+            document.getElementById('toAccountSummary').textContent = 
+                toOption ? toOption.text : '-';
+        } else if (currentType === 'external') {
+            const bankSelect = document.getElementById('externalBank');
+            const bankOption = bankSelect.options[bankSelect.selectedIndex];
+            document.getElementById('toAccountSummary').textContent = 
+                bankOption ? bankOption.text + ' Account' : 'External Account';
+        } else if (currentType === 'international') {
+            const countrySelect = document.getElementById('internationalCountry');
+            const countryOption = countrySelect.options[countrySelect.selectedIndex];
+            document.getElementById('toAccountSummary').textContent = 
+                countryOption ? countryOption.text + ' Account' : 'International Account';
+        }
+        
+        const balanceWarning = document.getElementById('balanceWarning');
+        const warningMessage = document.getElementById('warningMessage');
+        
+        if (currentBalance) {
+            const newBalance = currentBalance - totalAmount;
+            document.getElementById('newBalance').textContent = `৳${newBalance.toFixed(2)}`;
             
-            const selectedOption = fromAccount.options[fromAccount.selectedIndex];
-            const currentBalance = selectedOption ? parseFloat(selectedOption.getAttribute('data-balance')) : 0;
-            const transferAmount = parseFloat(amountInput.value) || 0;
-            const totalAmount = transferAmount + transferFee;
-            
-            // Check for sufficient funds
-            if (currentBalance < totalAmount) {
-                showNotification('Insufficient funds for this transfer', 'danger');
-                return;
+            // Show warnings
+            if (newBalance < 0) {
+                balanceWarning.style.display = 'block';
+                warningMessage.textContent = 'Insufficient funds for this transfer';
+                balanceWarning.className = 'alert alert-danger mt-3';
+            } else if (newBalance < 1000) {
+                balanceWarning.style.display = 'block';
+                warningMessage.textContent = 'Low balance after transfer';
+                balanceWarning.className = 'alert alert-warning mt-3';
+            } else {
+                balanceWarning.style.display = 'none';
             }
-            
-            const submitBtn = this.querySelector('button[type="submit"]');
-            const originalText = submitBtn.innerHTML;
-            
-            submitBtn.innerHTML = '<div class="spinner-border spinner-border-sm me-2"></div> Processing...';
-            submitBtn.disabled = true;
-            
-            // Simulate API call
-            setTimeout(() => {
-                // Show success modal
-                const successModal = new bootstrap.Modal(document.getElementById('successModal'));
-                document.getElementById('successAmount').textContent = `$${transferAmount.toFixed(2)}`;
-                document.getElementById('successFrom').textContent = document.getElementById('fromAccountSummary').textContent;
-                document.getElementById('successTo').textContent = document.getElementById('toAccountSummary').textContent;
-                document.getElementById('successReference').textContent = 'NVT' + Date.now();
-                
-                // Set estimated arrival based on transfer speed and type
-                let arrivalTime = 'Immediately';
-                if (currentType === 'external') {
-                    const speed = document.querySelector('input[name="transferSpeed"]:checked').id;
-                    if (speed === 'standard') arrivalTime = '1-2 business days';
-                    else if (speed === 'express') arrivalTime = 'Same day';
-                    else if (speed === 'instant') arrivalTime = 'Immediately';
-                } else if (currentType === 'international') {
-                    arrivalTime = '3-5 business days';
+        }
+    }
+    
+    function getSelectedFromAccount() {
+        switch(currentType) {
+            case 'internal':
+                return fromAccount.options[fromAccount.selectedIndex];
+            case 'external':
+                return document.getElementById('fromAccountExternal').options[document.getElementById('fromAccountExternal').selectedIndex];
+            case 'international':
+                return document.getElementById('internationalFromAccount').options[document.getElementById('internationalFromAccount').selectedIndex];
+        }
+    }
+    
+    // OTP input handling
+    const otpInputs = document.querySelectorAll('.otp-input');
+    otpInputs.forEach((input, index) => {
+        input.addEventListener('input', function(e) {
+            if (this.value.length === 1) {
+                if (index < otpInputs.length - 1) {
+                    otpInputs[index + 1].focus();
                 }
-                document.getElementById('successArrival').textContent = arrivalTime;
-                
-                successModal.show();
-                
-                // Reset form and button
-                submitBtn.innerHTML = originalText;
-                submitBtn.disabled = false;
-                this.reset();
-                updateSummary();
-            }, 2000);
+            }
         });
         
-        function generateReceipt() {
-            const receiptContent = `
-                NEOVAULT BANK - TRANSFER RECEIPT
-                ================================
-                Date: ${new Date().toLocaleString()}
-                Transfer Type: ${document.getElementById('transferType').textContent}
-                From: ${document.getElementById('successFrom').textContent}
-                To: ${document.getElementById('successTo').textContent}
-                Amount: ${document.getElementById('successAmount').textContent}
-                Fee: $${transferFee.toFixed(2)}
-                Reference: ${document.getElementById('successReference').textContent}
-                Estimated Arrival: ${document.getElementById('successArrival').textContent}
-                
-                Thank you for banking with us!
-            `;
-            
-            const printWindow = window.open('', '_blank');
-            printWindow.document.write(`
-                <html>
-                    <head>
-                        <title>Transfer Receipt</title>
-                        <style>
-                            body { font-family: monospace; padding: 20px; }
-                            .receipt { max-width: 300px; margin: 0 auto; }
-                        </style>
-                    </head>
-                    <body>
-                        <div class="receipt">
-                            <pre>${receiptContent}</pre>
-                        </div>
-                        <script>
-                            window.print();
-                            setTimeout(() => window.close(), 1000);
-                        <\/script>
-                    </body>
-                </html>
-            `);
-            printWindow.document.close();
+        input.addEventListener('keydown', function(e) {
+            if (e.key === 'Backspace' && this.value.length === 0) {
+                if (index > 0) {
+                    otpInputs[index - 1].focus();
+                }
+            }
+        });
+    });
+    
+    // Form submission
+    transferForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        if (processingTransfer) return;
+        
+        const selectedFromAccount = getSelectedFromAccount();
+        const currentBalance = selectedFromAccount ? parseFloat(selectedFromAccount.getAttribute('data-balance')) : 0;
+        const transferAmount = parseFloat(amountInput.value) || 0;
+        const totalAmount = transferAmount + transferFee;
+        
+        // Validation
+        if (!selectedFromAccount || !selectedFromAccount.value) {
+            showNotification('Please select a source account', 'error');
+            return;
         }
         
-        // Initialize
-        updateTransferFee();
-        updateSummary();
+        if (transferAmount < 1) {
+            showNotification('Minimum transfer amount is ৳1.00', 'error');
+            return;
+        }
+        
+        if (currentBalance < totalAmount) {
+            showNotification('Insufficient funds for this transfer', 'error');
+            return;
+        }
+        
+        if (!securityConfirm.checked) {
+            showNotification('Please confirm the security check', 'error');
+            return;
+        }
+        
+        processingTransfer = true;
+        
+        // Show security verification for large amounts or external transfers
+        if (transferAmount > 50000 || currentType !== 'internal') {
+            const securityModal = new bootstrap.Modal(document.getElementById('securityModal'));
+            
+            // Start OTP timer
+            let timeLeft = 120;
+            const timerElement = document.getElementById('otpTimer');
+            const timerInterval = setInterval(() => {
+                timeLeft--;
+                const minutes = Math.floor(timeLeft / 60);
+                const seconds = timeLeft % 60;
+                timerElement.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    showNotification('OTP has expired', 'error');
+                    securityModal.hide();
+                    processingTransfer = false;
+                }
+            }, 1000);
+            
+            // Resend OTP
+            document.getElementById('resendOtp').addEventListener('click', function() {
+                timeLeft = 120;
+                showNotification('New OTP sent to your mobile', 'success');
+            });
+            
+            // Cancel transfer
+            document.getElementById('cancelTransfer').addEventListener('click', function() {
+                clearInterval(timerInterval);
+                securityModal.hide();
+                processingTransfer = false;
+            });
+            
+            // Verify OTP
+            document.getElementById('verifyOtp').addEventListener('click', function() {
+                const otp = Array.from(otpInputs).map(input => input.value).join('');
+                if (otp.length === 6) {
+                    clearInterval(timerInterval);
+                    securityModal.hide();
+                    processTransfer();
+                } else {
+                    showNotification('Please enter complete OTP', 'error');
+                }
+            });
+            
+            securityModal.show();
+        } else {
+            processTransfer();
+        }
     });
+    
+    function processTransfer() {
+        const processingModal = new bootstrap.Modal(document.getElementById('processingModal'));
+        const processingMessage = document.getElementById('processingMessage');
+        
+        // Set appropriate processing message
+        switch(currentType) {
+            case 'internal':
+                processingMessage.textContent = 'Processing internal transfer...';
+                break;
+            case 'external':
+                processingMessage.textContent = 'Processing external transfer...';
+                break;
+            case 'international':
+                processingMessage.textContent = 'Processing international transfer...';
+                break;
+        }
+        
+        processingModal.show();
+        
+        // Simulate API call
+        setTimeout(() => {
+            processingModal.hide();
+            
+            // Show success modal
+            const successModal = new bootstrap.Modal(document.getElementById('successModal'));
+            const successMessage = document.getElementById('successMessage');
+            const transactionId = 'TRF' + Date.now();
+            
+            document.getElementById('successAmount').textContent = `৳${amountInput.value}`;
+            document.getElementById('successFrom').textContent = document.getElementById('fromAccountSummary').textContent;
+            document.getElementById('successTo').textContent = document.getElementById('toAccountSummary').textContent;
+            document.getElementById('successReference').textContent = transactionId;
+            
+            // Set estimated arrival
+            let arrivalTime = 'Immediately';
+            if (currentType === 'external') {
+                const speed = document.querySelector('input[name="transferSpeed"]:checked').id;
+                if (speed === 'standard') arrivalTime = '1-2 business days';
+                else if (speed === 'express') arrivalTime = 'Same day';
+                else if (speed === 'instant') arrivalTime = 'Immediately';
+            } else if (currentType === 'international') {
+                arrivalTime = '3-5 business days';
+            }
+            document.getElementById('successArrival').textContent = arrivalTime;
+            
+            // Set success message
+            successMessage.textContent = `Transfer completed successfully! Funds will arrive ${arrivalTime.toLowerCase()}.`;
+            
+            // Update print button
+            document.getElementById('printTransferReceipt').setAttribute('data-transaction-id', transactionId);
+            document.getElementById('printTransferReceipt').setAttribute('data-amount', amountInput.value);
+            document.getElementById('printTransferReceipt').setAttribute('data-from', document.getElementById('fromAccountSummary').textContent);
+            document.getElementById('printTransferReceipt').setAttribute('data-to', document.getElementById('toAccountSummary').textContent);
+            
+            successModal.show();
+            
+            // Reset form
+            transferForm.reset();
+            otpInputs.forEach(input => input.value = '');
+            updateSummary();
+            processingTransfer = false;
+        }, 3000);
+    }
+    
+    // Print receipt functionality
+    document.getElementById('printTransferReceipt').addEventListener('click', function() {
+        const transactionData = {
+            id: this.getAttribute('data-transaction-id'),
+            type: 'Transfer',
+            amount: this.getAttribute('data-amount'),
+            date: new Date().toLocaleString(),
+            fromAccount: this.getAttribute('data-from'),
+            toAccount: this.getAttribute('data-to'),
+            description: document.getElementById('description').value || 'Funds Transfer',
+            fee: transferFee
+        };
+        
+        if (window.PrintUtils) {
+            window.PrintUtils.printTransactionReceipt(transactionData);
+        } else {
+            showNotification('Print functionality is not available', 'warning');
+        }
+    });
+    
+    // Initialize
+    updateTransferFee();
+    updateSummary();
+});
 </script>
 {% endblock %}

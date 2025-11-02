@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/dashboard-style.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    {% include 'partials/dashboard_sidebar.html' %}
+    
+    <div class="dashboard-main">
+        <div class="dashboard-content-inner">
+            {% block dashboard_content %}{% endblock %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/script.js' %}"></script>
+<script src="{% static 'js/dashboard-script.js' %}"></script>
+<script>
+    // Mobile menu toggle
+    document.addEventListener('DOMContentLoaded', function() {
+        const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+        const dashboardSidebar = document.querySelector('.dashboard-sidebar');
+        
+        if (window.innerWidth <= 768) {
+            if (mobileMenuToggle) {
+                mobileMenuToggle.style.display = 'block';
+            
+                mobileMenuToggle.addEventListener('click', function() {
+                    dashboardSidebar.classList.toggle('mobile-open');
+                });
+            }
+            
+            // Close sidebar when clicking outside
+            document.addEventListener('click', function(e) {
+                if (dashboardSidebar && !dashboardSidebar.contains(e.target) && mobileMenuToggle && !mobileMenuToggle.contains(e.target)) {
+                    dashboardSidebar.classList.remove('mobile-open');
+                }
+            });
+        }
+        
+        // Update mobile menu on resize
+        window.addEventListener('resize', function() {
+            if (window.innerWidth <= 768) {
+                if (mobileMenuToggle) {
+                    mobileMenuToggle.style.display = 'block';
+                }
+            } else {
+                if (mobileMenuToggle) {
+                    mobileMenuToggle.style.display = 'none';
+                }
+                if (dashboardSidebar) {
+                    dashboardSidebar.classList.remove('mobile-open');
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}

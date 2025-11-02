@@ -221,15 +221,7 @@
             console.log('Checking password strength...');
         }
         
-        // Form submission
-        const registerForm = document.getElementById('registerForm');
-        registerForm.addEventListener('submit', function(e) {
-            const submitBtn = this.querySelector('button[type="submit"]');
-            const originalText = submitBtn.innerHTML;
-            
-            submitBtn.innerHTML = '<div class="spinner-border spinner-border-sm me-2"></div> Creating Account...';
-            submitBtn.disabled = true;
-        });
+
     });
 </script>
 {% endblock %}

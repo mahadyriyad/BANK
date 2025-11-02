@@ -1,0 +1,1087 @@
+{% extends 'dashboard_base.html' %}
+{% load static %}
+
+{% block title %}Help & Support - NeoVault Bank{% endblock %}
+
+{% block dashboard_content %}
+<div class="page-header animate-slide-up">
+    <h1><i class="fas fa-question-circle me-2"></i>Help & Support</h1>
+    <p class="text-muted">Get assistance with your banking needs</p>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <!-- Search Help -->
+        <div class="operation-card mb-4 animate-fade-in">
+            <div class="search-help">
+                <h3 class="mb-4">🔍 How can we help you today?</h3>
+                <div class="input-group input-group-lg">
+                    <input type="text" class="form-control" placeholder="Search for help articles, guides, or contact information..." id="helpSearch">
+                    <button class="btn btn-primary" type="button" id="searchHelpBtn">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+                <div class="search-suggestions mt-3">
+                    <span class="badge bg-light text-dark me-2 mb-2">Account Balance</span>
+                    <span class="badge bg-light text-dark me-2 mb-2">Transfer Issues</span>
+                    <span class="badge bg-light text-dark me-2 mb-2">Card Blocked</span>
+                    <span class="badge bg-light text-dark me-2 mb-2">Login Problems</span>
+                    <span class="badge bg-light text-dark me-2 mb-2">Bill Payment</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- FAQ Section -->
+        <div class="operation-card mb-4 animate-fade-in">
+            <h3 class="mb-4">❓ Frequently Asked Questions</h3>
+            
+            <div class="accordion" id="faqAccordion">
+                <!-- FAQ Item 1 -->
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
+                            <i class="fas fa-user-plus me-2"></i>
+                            How do I open a new account?
+                        </button>
+                    </h2>
+                    <div id="faq1" class="accordion-collapse collapse show" data-bs-parent="#faqAccordion">
+                        <div class="accordion-body">
+                            <p>You can open a new account in several ways:</p>
+                            <ul>
+                                <li><strong>Online:</strong> Click on "Open Account" in your dashboard</li>
+                                <li><strong>Mobile App:</strong> Use our mobile banking app</li>
+                                <li><strong>Branch:</strong> Visit any of our 500+ branches nationwide</li>
+                            </ul>
+                            <p><strong>Documents required:</strong></p>
+                            <ul>
+                                <li>National ID Card/Passport</li>
+                                <li>Recent photograph</li>
+                                <li>Proof of address</li>
+                                <li>Tax Identification Number (if applicable)</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- FAQ Item 2 -->
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
+                            <i class="fas fa-key me-2"></i>
+                            What should I do if I forget my password?
+                        </button>
+                    </h2>
+                    <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                        <div class="accordion-body">
+                            <p>If you've forgotten your password:</p>
+                            <ol>
+                                <li>Click on the "Forgot Password" link on the login page</li>
+                                <li>Enter your registered email address</li>
+                                <li>Check your email for a password reset link</li>
+                                <li>Click the link and create a new strong password</li>
+                                <li>Log in with your new password</li>
+                            </ol>
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle me-2"></i>
+                                If you don't receive the email within 5 minutes, check your spam folder or contact our support team.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- FAQ Item 3 -->
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">
+                            <i class="fas fa-exchange-alt me-2"></i>
+                            How long do transfers take to process?
+                        </button>
+                    </h2>
+                    <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                        <div class="accordion-body">
+                            <p>Transfer processing times vary by type:</p>
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>Transfer Type</th>
+                                        <th>Processing Time</th>
+                                        <th>Fee</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Internal Transfers</td>
+                                        <td>Instant</td>
+                                        <td>Free</td>
+                                    </tr>
+                                    <tr>
+                                        <td>External Transfers (Standard)</td>
+                                        <td>1-2 business days</td>
+                                        <td>Free</td>
+                                    </tr>
+                                    <tr>
+                                        <td>External Transfers (Express)</td>
+                                        <td>Same day</td>
+                                        <td>৳50</td>
+                                    </tr>
+                                    <tr>
+                                        <td>International Transfers</td>
+                                        <td>3-5 business days</td>
+                                        <td>৳500 + currency conversion</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FAQ Item 4 -->
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq4">
+                            <i class="fas fa-credit-card me-2"></i>
+                            What should I do if my card is lost or stolen?
+                        </button>
+                    </h2>
+                    <div id="faq4" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                        <div class="accordion-body">
+                            <p>If your card is lost or stolen, take immediate action:</p>
+                            <ol>
+                                <li><strong>Block your card immediately:</strong> 
+                                    <ul>
+                                        <li>Through internet banking</li>
+                                        <li>Via our mobile app</li>
+                                        <li>Call our 24/7 helpline: 1-800-NEOVAULT</li>
+                                    </ul>
+                                </li>
+                                <li><strong>Report the incident:</strong> Contact our fraud department</li>
+                                <li><strong>Monitor your account:</strong> Check for unauthorized transactions</li>
+                                <li><strong>Request a replacement card:</strong> Free replacement within 3-5 business days</li>
+                            </ol>
+                            <div class="alert alert-warning">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                You are not liable for unauthorized transactions if reported within 24 hours.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FAQ Item 5 -->
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq5">
+                            <i class="fas fa-lock me-2"></i>
+                            How do I enable two-factor authentication?
+                        </button>
+                    </h2>
+                    <div id="faq5" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                        <div class="accordion-body">
+                            <p>To enable two-factor authentication (2FA):</p>
+                            <ol>
+                                <li>Go to your Profile Settings</li>
+                                <li>Click on "Security Settings"</li>
+                                <li>Select "Enable Two-Factor Authentication"</li>
+                                <li>Choose your preferred method:
+                                    <ul>
+                                        <li><strong>SMS:</strong> Receive codes via text message</li>
+                                        <li><strong>Authenticator App:</strong> Use Google Authenticator or similar</li>
+                                        <li><strong>Email:</strong> Receive codes via email</li>
+                                    </ul>
+                                </li>
+                                <li>Follow the setup instructions</li>
+                                <li>Test the authentication process</li>
+                            </ol>
+                            <p><strong>Recommended:</strong> Use an authenticator app for the highest level of security.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FAQ Item 6 -->
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq6">
+                            <i class="fas fa-file-invoice-dollar me-2"></i>
+                            How do I download my account statements?
+                        </button>
+                    </h2>
+                    <div id="faq6" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                        <div class="accordion-body">
+                            <p>You can download account statements in multiple formats:</p>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h6>📱 Online Banking</h6>
+                                    <ol>
+                                        <li>Go to your Accounts page</li>
+                                        <li>Select the account</li>
+                                        <li>Click "View Statement"</li>
+                                        <li>Choose date range</li>
+                                        <li>Download as PDF/CSV</li>
+                                    </ol>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6>📧 Email Request</h6>
+                                    <ul>
+                                        <li>Email: statements@neovault.com</li>
+                                        <li>Include your account number</li>
+                                        <li>Specify date range</li>
+                                        <li>Allow 24 hours for processing</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle me-2"></i>
+                                Statements are available for the past 7 years. Older statements may require a special request.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contact Support -->
+        <div class="operation-card animate-fade-in">
+            <h3 class="mb-4">📞 Contact Support</h3>
+            
+            <div class="row">
+                <div class="col-md-6 mb-4">
+                    <div class="support-option text-center">
+                        <div class="support-icon">
+                            <i class="fas fa-phone"></i>
+                        </div>
+                        <h5>Phone Support</h5>
+                        <p>24/7 Customer Service</p>
+                        <div class="support-contact">
+                            <strong>1-800-NEOVAULT</strong>
+                            <small class="text-muted d-block">(1-800-636-8285)</small>
+                        </div>
+                        <div class="support-hours">
+                            <small>Available 24/7</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 mb-4">
+                    <div class="support-option text-center">
+                        <div class="support-icon">
+                            <i class="fas fa-envelope"></i>
+                        </div>
+                        <h5>Email Support</h5>
+                        <p>Quick response guaranteed</p>
+                        <div class="support-contact">
+                            <strong>support@neovault.com</strong>
+                        </div>
+                        <div class="support-hours">
+                            <small>Response within 2 hours</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6 mb-4">
+                    <div class="support-option text-center">
+                        <div class="support-icon">
+                            <i class="fas fa-comments"></i>
+                        </div>
+                        <h5>Live Chat</h5>
+                        <p>Instant messaging support</p>
+                        <div class="support-contact">
+                            <strong>Available 24/7</strong>
+                        </div>
+                        <button class="btn btn-primary btn-sm mt-2" id="startLiveChat">
+                            Start Chat
+                        </button>
+                    </div>
+                </div>
+                <div class="col-md-6 mb-4">
+                    <div class="support-option text-center">
+                        <div class="support-icon">
+                            <i class="fas fa-map-marker-alt"></i>
+                        </div>
+                        <h5>Branch Visit</h5>
+                        <p>Visit our nearest branch</p>
+                        <div class="support-contact">
+                            <strong>500+ Locations</strong>
+                        </div>
+                        <button class="btn btn-outline-primary btn-sm mt-2" id="findBranch">
+                            Find Branch
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contact Form -->
+            <div class="contact-form mt-4">
+                <h5 class="mb-3">✉️ Send us a Message</h5>
+                <form id="supportForm">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Full Name</label>
+                            <input type="text" class="form-control" value="{{ user.get_full_name }}" readonly>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Email</label>
+                            <input type="email" class="form-control" value="{{ user.email }}" readonly>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Subject</label>
+                        <select class="form-select" id="supportSubject" required>
+                            <option value="">Select subject...</option>
+                            <option value="account">Account Issues</option>
+                            <option value="transfer">Transfer Problems</option>
+                            <option value="card">Card Services</option>
+                            <option value="technical">Technical Support</option>
+                            <option value="billing">Billing Questions</option>
+                            <option value="security">Security Concerns</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Message</label>
+                        <textarea class="form-control" rows="5" placeholder="Please describe your issue in detail..." required></textarea>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Priority</label>
+                        <div class="priority-options">
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="priority" id="priorityLow" value="low" checked>
+                                <label class="form-check-label" for="priorityLow">
+                                    <span class="priority-dot low"></span>
+                                    Low
+                                </label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="priority" id="priorityMedium" value="medium">
+                                <label class="form-check-label" for="priorityMedium">
+                                    <span class="priority-dot medium"></span>
+                                    Medium
+                                </label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="priority" id="priorityHigh" value="high">
+                                <label class="form-check-label" for="priorityHigh">
+                                    <span class="priority-dot high"></span>
+                                    High
+                                </label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="priority" id="priorityUrgent" value="urgent">
+                                <label class="form-check-label" for="priorityUrgent">
+                                    <span class="priority-dot urgent"></span>
+                                    Urgent
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Attachment (Optional)</label>
+                        <input type="file" class="form-control" id="supportAttachment">
+                        <div class="form-text">You can attach screenshots or documents related to your issue (Max: 5MB)</div>
+                    </div>
+                    
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-paper-plane me-2"></i>Send Message
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <!-- Quick Links -->
+        <div class="summary-card animate-fade-in">
+            <h4 class="mb-4">🚀 Quick Links</h4>
+            <div class="quick-links">
+                <a href="{% url 'dashboard' %}" class="quick-link-item">
+                    <i class="fas fa-tachometer-alt me-2"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="{% url 'transfer' %}" class="quick-link-item">
+                    <i class="fas fa-exchange-alt me-2"></i>
+                    <span>Make a Transfer</span>
+                </a>
+                <a href="{% url 'bills' %}" class="quick-link-item">
+                    <i class="fas fa-file-invoice-dollar me-2"></i>
+                    <span>Pay Bills</span>
+                </a>
+                <a href="{% url 'profile' %}" class="quick-link-item">
+                    <i class="fas fa-user-cog me-2"></i>
+                    <span>Account Settings</span>
+                </a>
+                <a href="{% url 'deposit' %}" class="quick-link-item">
+                    <i class="fas fa-money-bill-wave me-2"></i>
+                    <span>Deposit Money</span>
+                </a>
+                <a href="{% url 'withdraw' %}" class="quick-link-item">
+                    <i class="fas fa-hand-holding-usd me-2"></i>
+                    <span>Withdraw Money</span>
+                </a>
+            </div>
+        </div>
+        
+        <!-- Security Tips -->
+        <div class="tips-card animate-fade-in">
+            <h5><i class="fas fa-shield-alt me-2"></i>🛡️ Security Tips</h5>
+            <ul class="tips-list">
+                <li>Never share your password or PIN with anyone</li>
+                <li>Enable two-factor authentication for extra security</li>
+                <li>Log out after each banking session</li>
+                <li>Monitor your account regularly for suspicious activity</li>
+                <li>Use strong, unique passwords for all accounts</li>
+                <li>Be cautious of phishing emails and fake websites</li>
+                <li>Keep your contact information updated</li>
+            </ul>
+        </div>
+        
+        <!-- Emergency Contacts -->
+        <div class="recent-card animate-fade-in">
+            <h5>🚨 Emergency Contacts</h5>
+            <div class="emergency-contacts">
+                <div class="contact-item urgent">
+                    <div class="contact-info">
+                        <strong>Lost/Stolen Card</strong>
+                        <small>Immediate card blocking</small>
+                    </div>
+                    <div class="contact-number">
+                        <span>1-800-LOST-CARD</span>
+                        <small>(1-800-567-8227)</small>
+                    </div>
+                </div>
+                <div class="contact-item urgent">
+                    <div class="contact-info">
+                        <strong>Fraud Reporting</strong>
+                        <small>Suspicious activity</small>
+                    </div>
+                    <div class="contact-number">
+                        <span>1-800-FRAUD-ALERT</span>
+                        <small>(1-800-372-8353)</small>
+                    </div>
+                </div>
+                <div class="contact-item">
+                    <div class="contact-info">
+                        <strong>24/7 Support</strong>
+                        <small>General inquiries</small>
+                    </div>
+                    <div class="contact-number">
+                        <span>1-800-NEOVAULT</span>
+                        <small>(1-800-636-8285)</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- System Status -->
+        <div class="tips-card animate-fade-in">
+            <h5><i class="fas fa-server me-2"></i>📊 System Status</h5>
+            <div class="system-status">
+                <div class="status-item online">
+                    <i class="fas fa-circle"></i>
+                    <span>Online Banking</span>
+                    <small>Operational</small>
+                </div>
+                <div class="status-item online">
+                    <i class="fas fa-circle"></i>
+                    <span>Mobile App</span>
+                    <small>Operational</small>
+                </div>
+                <div class="status-item online">
+                    <i class="fas fa-circle"></i>
+                    <span>ATM Network</span>
+                    <small>Operational</small>
+                </div>
+                <div class="status-item maintenance">
+                    <i class="fas fa-circle"></i>
+                    <span>Payment Processing</span>
+                    <small>Maintenance</small>
+                </div>
+            </div>
+            <div class="maintenance-schedule mt-3">
+                <h6>🛠️ Scheduled Maintenance</h6>
+                <p class="text-muted small mb-1">Every Sunday: 2:00 AM - 4:00 AM</p>
+                <p class="text-muted small">Some services may be temporarily unavailable</p>
+            </div>
+        </div>
+
+        <!-- Download Resources -->
+        <div class="recent-card animate-fade-in">
+            <h5>📥 Download Resources</h5>
+            <div class="download-links">
+                <a href="#" class="download-item">
+                    <i class="fas fa-file-pdf me-2"></i>
+                    <span>User Manual</span>
+                    <small>PDF • 2.4 MB</small>
+                </a>
+                <a href="#" class="download-item">
+                    <i class="fas fa-file-pdf me-2"></i>
+                    <span>Fee Schedule</span>
+                    <small>PDF • 1.1 MB</small>
+                </a>
+                <a href="#" class="download-item">
+                    <i class="fas fa-mobile-alt me-2"></i>
+                    <span>Mobile App Guide</span>
+                    <small>PDF • 3.2 MB</small>
+                </a>
+                <a href="#" class="download-item">
+                    <i class="fas fa-shield-alt me-2"></i>
+                    <span>Security Handbook</span>
+                    <small>PDF • 1.8 MB</small>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Live Chat Modal -->
+<div class="modal fade" id="liveChatModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-comments me-2"></i>Live Chat Support
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="chat-container">
+                    <div class="chat-messages" id="chatMessages">
+                        <div class="message agent">
+                            <div class="message-avatar">
+                                <i class="fas fa-headset"></i>
+                            </div>
+                            <div class="message-content">
+                                <strong>Support Agent</strong>
+                                <p>Hello! Thank you for contacting NeoVault Bank support. How can I help you today?</p>
+                                <small>Just now</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="chat-input">
+                        <div class="input-group">
+                            <input type="text" class="form-control" placeholder="Type your message..." id="chatInput">
+                            <button class="btn btn-primary" type="button" id="sendChatMessage">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Branch Locator Modal -->
+<div class="modal fade" id="branchLocatorModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-map-marker-alt me-2"></i>Find a Branch
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label">Search Location</label>
+                            <input type="text" class="form-control" placeholder="Enter city, area, or zip code..." id="branchSearch">
+                        </div>
+                        
+                        <div class="branches-list">
+                            <div class="branch-item active">
+                                <h6>Gulshan Main Branch</h6>
+                                <p class="text-muted mb-1">Road #32, Gulshan-2, Dhaka 1212</p>
+                                <small class="text-muted">2.1 km away • Open until 5:00 PM</small>
+                                <div class="branch-features">
+                                    <span class="badge bg-light text-dark">ATM</span>
+                                    <span class="badge bg-light text-dark">24/7</span>
+                                    <span class="badge bg-light text-dark">Parking</span>
+                                </div>
+                            </div>
+                            
+                            <div class="branch-item">
+                                <h6>Banani Branch</h6>
+                                <p class="text-muted mb-1">Road #11, Banani, Dhaka 1213</p>
+                                <small class="text-muted">3.5 km away • Open until 5:00 PM</small>
+                                <div class="branch-features">
+                                    <span class="badge bg-light text-dark">ATM</span>
+                                    <span class="badge bg-light text-dark">Drive-thru</span>
+                                </div>
+                            </div>
+                            
+                            <div class="branch-item">
+                                <h6>Dhanmondi Branch</h6>
+                                <p class="text-muted mb-1">Road #8/A, Dhanmondi, Dhaka 1209</p>
+                                <small class="text-muted">5.2 km away • Open until 4:00 PM</small>
+                                <div class="branch-features">
+                                    <span class="badge bg-light text-dark">ATM</span>
+                                    <span class="badge bg-light text-dark">Business</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="branch-map">
+                            <div class="map-placeholder">
+                                <i class="fas fa-map fa-3x text-muted"></i>
+                                <p class="text-muted mt-2">Interactive map would be displayed here</p>
+                            </div>
+                        </div>
+                        
+                        <div class="branch-details mt-3">
+                            <h6>Selected Branch Details</h6>
+                            <div class="detail-item">
+                                <strong>Address:</strong>
+                                <span>Road #32, Gulshan-2, Dhaka 1212</span>
+                            </div>
+                            <div class="detail-item">
+                                <strong>Hours:</strong>
+                                <span>Sunday - Thursday: 9:00 AM - 5:00 PM</span>
+                            </div>
+                            <div class="detail-item">
+                                <strong>Phone:</strong>
+                                <span>+880 2 988 1234</span>
+                            </div>
+                            <div class="detail-item">
+                                <strong>Services:</strong>
+                                <span>Personal Banking, Business Banking, Loans</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Help search functionality
+    const helpSearch = document.getElementById('helpSearch');
+    const searchHelpBtn = document.getElementById('searchHelpBtn');
+    
+    searchHelpBtn.addEventListener('click', function() {
+        const query = helpSearch.value.trim();
+        if (query) {
+            showNotification(`Searching for: "${query}"`, 'info');
+            // Simulate search
+            setTimeout(() => {
+                showNotification(`Found 15 results for "${query}"`, 'success');
+            }, 1500);
+        }
+    });
+    
+    helpSearch.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            searchHelpBtn.click();
+        }
+    });
+    
+    // Search suggestions
+    const searchSuggestions = document.querySelectorAll('.search-suggestions .badge');
+    searchSuggestions.forEach(badge => {
+        badge.addEventListener('click', function() {
+            helpSearch.value = this.textContent;
+            searchHelpBtn.click();
+        });
+    });
+    
+    // Live chat
+    const startLiveChat = document.getElementById('startLiveChat');
+    const liveChatModal = new bootstrap.Modal(document.getElementById('liveChatModal'));
+    const chatInput = document.getElementById('chatInput');
+    const sendChatMessage = document.getElementById('sendChatMessage');
+    const chatMessages = document.getElementById('chatMessages');
+    
+    startLiveChat.addEventListener('click', function() {
+        liveChatModal.show();
+    });
+    
+    sendChatMessage.addEventListener('click', function() {
+        const message = chatInput.value.trim();
+        if (message) {
+            // Add user message
+            const userMessage = document.createElement('div');
+            userMessage.className = 'message user';
+            userMessage.innerHTML = `
+                <div class="message-avatar">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div class="message-content">
+                    <strong>You</strong>
+                    <p>${message}</p>
+                    <small>Just now</small>
+                </div>
+            `;
+            chatMessages.appendChild(userMessage);
+            
+            // Clear input
+            chatInput.value = '';
+            
+            // Scroll to bottom
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            
+            // Simulate agent response
+            setTimeout(() => {
+                const agentMessage = document.createElement('div');
+                agentMessage.className = 'message agent';
+                agentMessage.innerHTML = `
+                    <div class="message-avatar">
+                        <i class="fas fa-headset"></i>
+                    </div>
+                    <div class="message-content">
+                        <strong>Support Agent</strong>
+                        <p>Thank you for your message. I understand your concern and I'll be happy to help you with that. Could you please provide more details?</p>
+                        <small>Just now</small>
+                    </div>
+                `;
+                chatMessages.appendChild(agentMessage);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }, 2000);
+        }
+    });
+    
+    chatInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            sendChatMessage.click();
+        }
+    });
+    
+    // Branch locator
+    const findBranch = document.getElementById('findBranch');
+    const branchLocatorModal = new bootstrap.Modal(document.getElementById('branchLocatorModal'));
+    const branchItems = document.querySelectorAll('.branch-item');
+    
+    findBranch.addEventListener('click', function() {
+        branchLocatorModal.show();
+    });
+    
+    branchItems.forEach(item => {
+        item.addEventListener('click', function() {
+            branchItems.forEach(i => i.classList.remove('active'));
+            this.classList.add('active');
+        });
+    });
+    
+    // Support form submission
+    const supportForm = document.getElementById('supportForm');
+    supportForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const submitBtn = this.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+        
+        submitBtn.innerHTML = '<div class="spinner-border spinner-border-sm me-2"></div> Sending...';
+        submitBtn.disabled = true;
+        
+        setTimeout(() => {
+            showNotification('Your message has been sent successfully! We will respond within 2 hours.', 'success');
+            this.reset();
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+        }, 2000);
+    });
+    
+    // Download resources
+    const downloadItems = document.querySelectorAll('.download-item');
+    downloadItems.forEach(item => {
+        item.addEventListener('click', function(e) {
+            e.preventDefault();
+            const resourceName = this.querySelector('span').textContent;
+            showNotification(`Downloading ${resourceName}...`, 'info');
+            
+            setTimeout(() => {
+                showNotification(`${resourceName} downloaded successfully!`, 'success');
+            }, 1500);
+        });
+    });
+    
+    // FAQ search within page
+    const faqSearch = function(query) {
+        const faqItems = document.querySelectorAll('.accordion-item');
+        let found = false;
+        
+        faqItems.forEach(item => {
+            const text = item.textContent.toLowerCase();
+            if (text.includes(query.toLowerCase())) {
+                item.style.display = 'block';
+                const button = item.querySelector('.accordion-button');
+                if (button.classList.contains('collapsed')) {
+                    button.click();
+                }
+                found = true;
+            } else {
+                item.style.display = 'none';
+            }
+        });
+        
+        if (!found) {
+            showNotification('No FAQ items found matching your search', 'warning');
+        }
+    };
+    
+    // Real-time FAQ search
+    helpSearch.addEventListener('input', function() {
+        const query = this.value.trim();
+        if (query.length >= 3) {
+            faqSearch(query);
+        } else {
+            // Show all FAQs if search query is cleared or too short
+            document.querySelectorAll('.accordion-item').forEach(item => {
+                item.style.display = 'block';
+            });
+        }
+    });
+});
+</script>
+
+<style>
+.search-help {
+    text-align: center;
+}
+
+.search-suggestions .badge {
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.search-suggestions .badge:hover {
+    background: var(--primary-color) !important;
+    color: white !important;
+}
+
+.support-option {
+    background: var(--light-color);
+    padding: 30px 20px;
+    border-radius: 15px;
+    border: 2px solid transparent;
+    transition: all 0.3s ease;
+    height: 100%;
+}
+
+.support-option:hover {
+    border-color: var(--primary-color);
+    transform: translateY(-5px);
+}
+
+.support-icon {
+    font-size: 2.5rem;
+    color: var(--primary-color);
+    margin-bottom: 15px;
+}
+
+.support-contact {
+    margin: 15px 0;
+}
+
+.priority-options .priority-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 5px;
+}
+
+.priority-dot.low { background: var(--success-color); }
+.priority-dot.medium { background: var(--warning-color); }
+.priority-dot.high { background: var(--danger-color); }
+.priority-dot.urgent { background: #dc2626; animation: pulse 1.5s infinite; }
+
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1; }
+}
+
+.emergency-contacts .contact-item {
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 10px;
+    border-left: 4px solid var(--primary-color);
+}
+
+.emergency-contacts .contact-item.urgent {
+    border-left-color: var(--danger-color);
+    background: rgba(239, 68, 68, 0.05);
+}
+
+.system-status .status-item {
+    display: flex;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.system-status .status-item:last-child {
+    border-bottom: none;
+}
+
+.system-status .status-item i {
+    margin-right: 10px;
+}
+
+.system-status .status-item.online i { color: var(--success-color); }
+.system-status .status-item.maintenance i { color: var(--warning-color); }
+.system-status .status-item.offline i { color: var(--danger-color); }
+
+.download-links .download-item {
+    display: flex;
+    align-items: center;
+    padding: 12px;
+    border-radius: 8px;
+    text-decoration: none;
+    color: var(--text-color);
+    transition: all 0.3s ease;
+    border: 1px solid transparent;
+}
+
+.download-links .download-item:hover {
+    background: var(--light-color);
+    border-color: var(--primary-color);
+    text-decoration: none;
+    color: var(--text-color);
+}
+
+/* Chat Styles */
+.chat-container {
+    height: 400px;
+    display: flex;
+    flex-direction: column;
+}
+
+.chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 10px;
+    margin-bottom: 15px;
+}
+
+.message {
+    display: flex;
+    margin-bottom: 15px;
+}
+
+.message.user {
+    justify-content: flex-end;
+}
+
+.message.user .message-content {
+    background: var(--primary-color);
+    color: white;
+}
+
+.message.agent .message-content {
+    background: white;
+    border: 1px solid #dee2e6;
+}
+
+.message-content {
+    max-width: 70%;
+    padding: 12px 15px;
+    border-radius: 15px;
+    position: relative;
+}
+
+.message-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--light-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 10px;
+}
+
+.message.user .message-avatar {
+    order: 2;
+    margin-left: 10px;
+    margin-right: 0;
+}
+
+.message.agent .message-avatar {
+    order: 1;
+    margin-right: 10px;
+    margin-left: 0;
+}
+
+/* Branch Locator */
+.branches-list {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.branch-item {
+    padding: 15px;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.branch-item:hover,
+.branch-item.active {
+    border-color: var(--primary-color);
+    background: rgba(37, 99, 235, 0.05);
+}
+
+.branch-features .badge {
+    margin-right: 5px;
+    margin-top: 5px;
+}
+
+.branch-map {
+    height: 200px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.branch-details .detail-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.branch-details .detail-item:last-child {
+    border-bottom: none;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .support-option {
+        margin-bottom: 20px;
+    }
+    
+    .message-content {
+        max-width: 85%;
+    }
+    
+    .branch-map {
+        height: 150px;
+        margin-top: 20px;
+    }
+}
+</style>
+{% endblock %}{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Help & Support - NeoVault Bank{% endblock %}
+
+{% block content %}

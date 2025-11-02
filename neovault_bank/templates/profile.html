@@ -1,240 +1,383 @@
-{% extends 'base.html' %}
+{% extends 'dashboard_base.html' %}
 {% load static %}
 
 {% block title %}Profile Settings - NeoVault Bank{% endblock %}
 
-{% block content %}
-<div class="dashboard-container">
-    {% include 'partials/dashboard_sidebar.html' %}
-    
-    <div class="dashboard-main">
-        <div class="page-header">
-            <h1><i class="fas fa-user-cog me-2"></i>Profile Settings</h1>
-            <p class="text-muted">Manage your account information and preferences</p>
-        </div>
+{% block dashboard_content %}
+<div class="page-header animate-slide-up">
+    <h1><i class="fas fa-user-cog me-2"></i>Profile Settings</h1>
+    <p class="text-muted">Manage your account information and preferences</p>
+</div>
 
-        <div class="row">
-            <div class="col-lg-4">
-                <!-- Profile Card -->
-                <div class="profile-card text-center">
-                    <div class="profile-avatar">
-                        {% if user.profile_picture %}
-                        <img src="{{ user.profile_picture.url }}" alt="{{ user.username }}" id="profileImage">
-                        {% else %}
-                        <div class="avatar-placeholder" id="avatarPlaceholder">
-                            <i class="fas fa-user"></i>
-                        </div>
-                        {% endif %}
-                        <div class="avatar-overlay">
-                            <label for="profilePictureInput" class="avatar-upload-btn">
-                                <i class="fas fa-camera"></i>
-                            </label>
-                            <input type="file" id="profilePictureInput" accept="image/*" style="display: none;">
+<div class="row">
+    <div class="col-lg-4">
+        <!-- Profile Card -->
+        <div class="profile-card text-center animate-fade-in">
+            <div class="profile-avatar">
+                {% if user.profile_picture %}
+                <img src="{{ user.profile_picture.url }}" alt="{{ user.username }}" id="profileImage">
+                {% else %}
+                <div class="avatar-placeholder" id="avatarPlaceholder">
+                    <i class="fas fa-user"></i>
+                </div>
+                {% endif %}
+                <div class="avatar-overlay">
+                    <label for="profilePictureInput" class="avatar-upload-btn">
+                        <i class="fas fa-camera"></i>
+                    </label>
+                    <input type="file" id="profilePictureInput" accept="image/*" style="display: none;">
+                </div>
+            </div>
+            
+            <h3 class="mt-3">{{ user.get_full_name|default:user.username }}</h3>
+            <p class="text-muted">{{ user.email }}</p>
+            
+            <div class="profile-stats">
+                <div class="stat-item">
+                    <strong>{{ accounts.count }}</strong>
+                    <span>Accounts</span>
+                </div>
+                <div class="stat-item">
+                    <strong>{{ user.date_joined|date:"Y" }}</strong>
+                    <span>Member Since</span>
+                </div>
+                <div class="stat-item">
+                    <strong>{{ verification_level }}</strong>
+                    <span>Verification</span>
+                </div>
+            </div>
+            
+            <div class="profile-badges mt-3">
+                <span class="badge bg-success">
+                    <i class="fas fa-check-circle me-1"></i>Verified
+                </span>
+                <span class="badge bg-primary">
+                    <i class="fas fa-shield-alt me-1"></i>Protected
+                </span>
+                <span class="badge bg-info">
+                    <i class="fas fa-star me-1"></i>Premium
+                </span>
+            </div>
+        </div>
+        
+        <!-- Security Status -->
+        <div class="summary-card mt-4 animate-fade-in">
+            <h5 class="mb-3">🔒 Security Status</h5>
+            <div class="security-items">
+                <div class="security-item completed">
+                    <i class="fas fa-check-circle"></i>
+                    <span>Email Verified</span>
+                </div>
+                <div class="security-item completed">
+                    <i class="fas fa-check-circle"></i>
+                    <span>Phone Verified</span>
+                </div>
+                <div class="security-item {% if user.has_2fa %}completed{% else %}pending{% endif %}">
+                    <i class="fas {% if user.has_2fa %}fa-check-circle{% else %}fa-times-circle{% endif %}"></i>
+                    <span>2FA Enabled</span>
+                </div>
+                <div class="security-item completed">
+                    <i class="fas fa-check-circle"></i>
+                    <span>Strong Password</span>
+                </div>
+                <div class="security-item {% if user.has_biometric %}completed{% else %}pending{% endif %}">
+                    <i class="fas {% if user.has_biometric %}fa-check-circle{% else %}fa-fingerprint{% endif %}"></i>
+                    <span>Biometric Login</span>
+                </div>
+            </div>
+            <button class="btn btn-outline-primary w-100 mt-3" id="securitySettingsBtn">
+                <i class="fas fa-shield-alt me-2"></i>Security Settings
+            </button>
+        </div>
+        
+        <!-- Quick Actions -->
+        <div class="tips-card mt-4 animate-fade-in">
+            <h5><i class="fas fa-bolt me-2"></i>⚡ Quick Actions</h5>
+            <div class="quick-actions-list">
+                <button class="btn btn-outline-primary w-100 mb-2" id="downloadDataBtn">
+                    <i class="fas fa-download me-2"></i>Download Data
+                </button>
+                <button class="btn btn-outline-primary w-100 mb-2" id="exportStatementsBtn">
+                    <i class="fas fa-file-export me-2"></i>Export Statements
+                </button>
+                <button class="btn btn-outline-primary w-100" id="privacySettingsBtn">
+                    <i class="fas fa-eye-slash me-2"></i>Privacy Settings
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-8">
+        <!-- Personal Information -->
+        <div class="operation-card animate-fade-in">
+            <h3 class="mb-4">👤 Personal Information</h3>
+            
+            <form id="personalInfoForm">
+                {% csrf_token %}
+                
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="firstName" class="form-label">First Name</label>
+                        <input type="text" class="form-control" id="firstName" 
+                               value="{{ user.first_name }}" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="lastName" class="form-label">Last Name</label>
+                        <input type="text" class="form-control" id="lastName" 
+                               value="{{ user.last_name }}" required>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="email" class="form-label">Email Address</label>
+                        <input type="email" class="form-control" id="email" 
+                               value="{{ user.email }}" required>
+                        <div class="form-text">
+                            <i class="fas {% if user.email_verified %}fa-check-circle text-success{% else %}fa-times-circle text-warning{% endif %} me-1"></i>
+                            {% if user.email_verified %}Verified{% else %}Not verified{% endif %}
                         </div>
                     </div>
-                    
-                    <h3 class="mt-3">{{ user.get_full_name|default:user.username }}</h3>
-                    <p class="text-muted">{{ user.email }}</p>
-                    
-                    <div class="profile-stats">
-                        <div class="stat-item">
-                            <strong>{{ accounts.count }}</strong>
-                            <span>Accounts</span>
+                    <div class="col-md-6 mb-3">
+                        <label for="phone" class="form-label">Phone Number</label>
+                        <div class="input-group">
+                            <span class="input-group-text">+880</span>
+                            <input type="tel" class="form-control" id="phone" 
+                                   value="{{ user.phone|default:'1XXXXXXXXXX' }}">
                         </div>
-                        <div class="stat-item">
-                            <strong>{{ user.date_joined|date:"Y" }}</strong>
-                            <span>Member Since</span>
-                        </div>
-                        <div class="stat-item">
-                            <strong>{{ verification_level }}</strong>
-                            <span>Verification</span>
+                        <div class="form-text">
+                            <i class="fas {% if user.phone_verified %}fa-check-circle text-success{% else %}fa-times-circle text-warning{% endif %} me-1"></i>
+                            {% if user.phone_verified %}Verified{% else %}Not verified{% endif %}
                         </div>
                     </div>
                 </div>
                 
-                <!-- Security Status -->
-                <div class="summary-card mt-4">
-                    <h5 class="mb-3">Security Status</h5>
-                    <div class="security-items">
-                        <div class="security-item completed">
-                            <i class="fas fa-check-circle"></i>
-                            <span>Email Verified</span>
-                        </div>
-                        <div class="security-item completed">
-                            <i class="fas fa-check-circle"></i>
-                            <span>Phone Verified</span>
-                        </div>
-                        <div class="security-item {% if user.has_2fa %}completed{% else %}pending{% endif %}">
-                            <i class="fas {% if user.has_2fa %}fa-check-circle{% else %}fa-times-circle{% endif %}"></i>
-                            <span>2FA Enabled</span>
-                        </div>
-                        <div class="security-item completed">
-                            <i class="fas fa-check-circle"></i>
-                            <span>Strong Password</span>
-                        </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="dateOfBirth" class="form-label">Date of Birth</label>
+                        <input type="date" class="form-control" id="dateOfBirth" 
+                               value="{{ user.date_of_birth|date:'Y-m-d' }}">
                     </div>
-                    <button class="btn btn-outline-primary w-100 mt-3" id="securitySettingsBtn">
-                        <i class="fas fa-shield-alt me-2"></i>Security Settings
+                    <div class="col-md-6 mb-3">
+                        <label for="gender" class="form-label">Gender</label>
+                        <select class="form-select" id="gender">
+                            <option value="">Select gender...</option>
+                            <option value="male" {% if user.gender == 'male' %}selected{% endif %}>Male</option>
+                            <option value="female" {% if user.gender == 'female' %}selected{% endif %}>Female</option>
+                            <option value="other" {% if user.gender == 'other' %}selected{% endif %}>Other</option>
+                            <option value="prefer_not_to_say" {% if user.gender == 'prefer_not_to_say' %}selected{% endif %}>Prefer not to say</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="address" class="form-label">Address</label>
+                    <textarea class="form-control" id="address" rows="3">{{ user.address|default:'' }}</textarea>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label for="city" class="form-label">City</label>
+                        <input type="text" class="form-control" id="city" value="{{ user.city|default:'' }}">
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="state" class="form-label">State/Division</label>
+                        <input type="text" class="form-control" id="state" value="{{ user.state|default:'' }}">
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="zipCode" class="form-label">ZIP Code</label>
+                        <input type="text" class="form-control" id="zipCode" value="{{ user.zip_code|default:'' }}">
+                    </div>
+                </div>
+                
+                <div class="d-flex justify-content-between">
+                    <button type="button" class="btn btn-secondary" id="resetPersonalInfo">
+                        <i class="fas fa-undo me-2"></i>Reset
                     </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-2"></i>Save Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Account Preferences -->
+        <div class="operation-card mt-4 animate-fade-in">
+            <h3 class="mb-4">⚙️ Account Preferences</h3>
+            
+            <div class="preferences-list">
+                <div class="preference-item">
+                    <div class="preference-info">
+                        <h6>📧 Email Notifications</h6>
+                        <p class="text-muted mb-0">Receive email alerts for transactions and security updates</p>
+                    </div>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="emailNotifications" checked>
+                    </div>
+                </div>
+                
+                <div class="preference-item">
+                    <div class="preference-info">
+                        <h6>📱 SMS Notifications</h6>
+                        <p class="text-muted mb-0">Get text message alerts for important account activities</p>
+                    </div>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="smsNotifications">
+                    </div>
+                </div>
+                
+                <div class="preference-item">
+                    <div class="preference-info">
+                        <h6>📄 Monthly Statements</h6>
+                        <p class="text-muted mb-0">Receive monthly account statements via email</p>
+                    </div>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="monthlyStatements" checked>
+                    </div>
+                </div>
+                
+                <div class="preference-item">
+                    <div class="preference-info">
+                        <h6>🎯 Marketing Communications</h6>
+                        <p class="text-muted mb-0">Receive offers and updates about new banking products</p>
+                    </div>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="marketingEmails">
+                    </div>
+                </div>
+                
+                <div class="preference-item">
+                    <div class="preference-info">
+                        <h6>🌐 Language</h6>
+                        <p class="text-muted mb-0">Select your preferred language</p>
+                    </div>
+                    <select class="form-select" style="width: 150px;">
+                        <option value="en" selected>English</option>
+                        <option value="bn">Bangla</option>
+                        <option value="es">Spanish</option>
+                        <option value="fr">French</option>
+                    </select>
+                </div>
+                
+                <div class="preference-item">
+                    <div class="preference-info">
+                        <h6>💵 Currency</h6>
+                        <p class="text-muted mb-0">Default currency for transactions</p>
+                    </div>
+                    <select class="form-select" style="width: 150px;">
+                        <option value="BDT" selected>BDT - Bangladeshi Taka</option>
+                        <option value="USD">USD - US Dollar</option>
+                        <option value="EUR">EUR - Euro</option>
+                        <option value="GBP">GBP - British Pound</option>
+                    </select>
                 </div>
             </div>
             
-            <div class="col-lg-8">
-                <!-- Personal Information -->
-                <div class="operation-card">
-                    <h3 class="mb-4">Personal Information</h3>
-                    
-                    <form id="personalInfoForm">
-                        {% csrf_token %}
-                        
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="firstName" class="form-label">First Name</label>
-                                <input type="text" class="form-control" id="firstName" 
-                                       value="{{ user.first_name }}" required>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="lastName" class="form-label">Last Name</label>
-                                <input type="text" class="form-control" id="lastName" 
-                                       value="{{ user.last_name }}" required>
-                            </div>
-                        </div>
-                        
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="email" class="form-label">Email Address</label>
-                                <input type="email" class="form-control" id="email" 
-                                       value="{{ user.email }}" required>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="phone" class="form-label">Phone Number</label>
-                                <input type="tel" class="form-control" id="phone" 
-                                       value="{{ user.phone }}">
-                            </div>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label for="dateOfBirth" class="form-label">Date of Birth</label>
-                            <input type="date" class="form-control" id="dateOfBirth" 
-                                   value="{{ user.date_of_birth|date:'Y-m-d' }}">
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label for="address" class="form-label">Address</label>
-                            <textarea class="form-control" id="address" rows="3">{{ user.address }}</textarea>
-                        </div>
-                        
-                        <div class="d-flex justify-content-between">
-                            <button type="button" class="btn btn-secondary" id="resetPersonalInfo">
-                                <i class="fas fa-undo me-2"></i>Reset
-                            </button>
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-save me-2"></i>Save Changes
-                            </button>
-                        </div>
-                    </form>
-                </div>
+            <button class="btn btn-primary mt-3" id="savePreferences">
+                <i class="fas fa-save me-2"></i>Save Preferences
+            </button>
+        </div>
 
-                <!-- Account Preferences -->
-                <div class="operation-card mt-4">
-                    <h3 class="mb-4">Account Preferences</h3>
-                    
-                    <div class="preferences-list">
-                        <div class="preference-item">
-                            <div class="preference-info">
-                                <h6>Email Notifications</h6>
-                                <p class="text-muted mb-0">Receive email alerts for transactions and security updates</p>
-                            </div>
-                            <div class="form-check form-switch">
-                                <input class="form-check-input" type="checkbox" id="emailNotifications" checked>
-                            </div>
-                        </div>
-                        
-                        <div class="preference-item">
-                            <div class="preference-info">
-                                <h6>SMS Notifications</h6>
-                                <p class="text-muted mb-0">Get text message alerts for important account activities</p>
-                            </div>
-                            <div class="form-check form-switch">
-                                <input class="form-check-input" type="checkbox" id="smsNotifications">
-                            </div>
-                        </div>
-                        
-                        <div class="preference-item">
-                            <div class="preference-info">
-                                <h6>Monthly Statements</h6>
-                                <p class="text-muted mb-0">Receive monthly account statements via email</p>
-                            </div>
-                            <div class="form-check form-switch">
-                                <input class="form-check-input" type="checkbox" id="monthlyStatements" checked>
-                            </div>
-                        </div>
-                        
-                        <div class="preference-item">
-                            <div class="preference-info">
-                                <h6>Marketing Communications</h6>
-                                <p class="text-muted mb-0">Receive offers and updates about new banking products</p>
-                            </div>
-                            <div class="form-check form-switch">
-                                <input class="form-check-input" type="checkbox" id="marketingEmails">
-                            </div>
-                        </div>
+        <!-- Security Settings -->
+        <div class="operation-card mt-4 animate-fade-in">
+            <h3 class="mb-4">🛡️ Security Settings</h3>
+            
+            <div class="security-settings">
+                <div class="security-setting">
+                    <div class="setting-info">
+                        <h6>Two-Factor Authentication</h6>
+                        <p class="text-muted mb-0">Add an extra layer of security to your account</p>
+                        <small class="text-success" id="2faStatus">
+                            <i class="fas {% if user.has_2fa %}fa-check-circle{% else %}fa-times-circle{% endif %} me-1"></i>
+                            {% if user.has_2fa %}Enabled{% else %}Disabled{% endif %}
+                        </small>
                     </div>
-                    
-                    <button class="btn btn-primary mt-3" id="savePreferences">
-                        <i class="fas fa-save me-2"></i>Save Preferences
+                    <button class="btn btn-outline-primary" id="enable2FA">
+                        {% if user.has_2fa %}
+                        <i class="fas fa-lock me-2"></i>Manage 2FA
+                        {% else %}
+                        <i class="fas fa-lock-open me-2"></i>Enable 2FA
+                        {% endif %}
                     </button>
                 </div>
-
-                <!-- Security Settings -->
-                <div class="operation-card mt-4">
-                    <h3 class="mb-4">Security Settings</h3>
-                    
-                    <div class="security-settings">
-                        <div class="security-setting">
-                            <div class="setting-info">
-                                <h6>Two-Factor Authentication</h6>
-                                <p class="text-muted mb-0">Add an extra layer of security to your account</p>
-                            </div>
-                            <button class="btn btn-outline-primary" id="enable2FA">
-                                {% if user.has_2fa %}
-                                <i class="fas fa-lock me-2"></i>Manage 2FA
-                                {% else %}
-                                <i class="fas fa-lock-open me-2"></i>Enable 2FA
-                                {% endif %}
-                            </button>
-                        </div>
-                        
-                        <div class="security-setting">
-                            <div class="setting-info">
-                                <h6>Change Password</h6>
-                                <p class="text-muted mb-0">Update your account password regularly</p>
-                            </div>
-                            <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#changePasswordModal">
-                                <i class="fas fa-key me-2"></i>Change Password
-                            </button>
-                        </div>
-                        
-                        <div class="security-setting">
-                            <div class="setting-info">
-                                <h6>Login Activity</h6>
-                                <p class="text-muted mb-0">Review recent login attempts and sessions</p>
-                            </div>
-                            <button class="btn btn-outline-primary" id="viewLoginActivity">
-                                <i class="fas fa-history me-2"></i>View Activity
-                            </button>
-                        </div>
-                        
-                        <div class="security-setting">
-                            <div class="setting-info">
-                                <h6>Connected Devices</h6>
-                                <p class="text-muted mb-0">Manage devices that can access your account</p>
-                            </div>
-                            <button class="btn btn-outline-primary" id="manageDevices">
-                                <i class="fas fa-laptop me-2"></i>Manage Devices
-                            </button>
-                        </div>
+                
+                <div class="security-setting">
+                    <div class="setting-info">
+                        <h6>Change Password</h6>
+                        <p class="text-muted mb-0">Update your account password regularly</p>
+                        <small class="text-muted">Last changed: {{ user.last_password_change|date:"M d, Y"|default:"Never" }}</small>
                     </div>
+                    <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#changePasswordModal">
+                        <i class="fas fa-key me-2"></i>Change Password
+                    </button>
+                </div>
+                
+                <div class="security-setting">
+                    <div class="setting-info">
+                        <h6>Login Activity</h6>
+                        <p class="text-muted mb-0">Review recent login attempts and sessions</p>
+                        <small class="text-muted">Last login: {{ user.last_login|date:"M d, Y H:i"|default:"Never" }}</small>
+                    </div>
+                    <button class="btn btn-outline-primary" id="viewLoginActivity">
+                        <i class="fas fa-history me-2"></i>View Activity
+                    </button>
+                </div>
+                
+                <div class="security-setting">
+                    <div class="setting-info">
+                        <h6>Connected Devices</h6>
+                        <p class="text-muted mb-0">Manage devices that can access your account</p>
+                        <small class="text-muted">{{ connected_devices.count }} devices connected</small>
+                    </div>
+                    <button class="btn btn-outline-primary" id="manageDevices">
+                        <i class="fas fa-laptop me-2"></i>Manage Devices
+                    </button>
+                </div>
+                
+                <div class="security-setting">
+                    <div class="setting-info">
+                        <h6>Biometric Login</h6>
+                        <p class="text-muted mb-0">Use fingerprint or face recognition for login</p>
+                        <small class="text-{% if user.has_biometric %}success{% else %}warning{% endif %}" id="biometricStatus">
+                            <i class="fas {% if user.has_biometric %}fa-check-circle{% else %}fa-times-circle{% endif %} me-1"></i>
+                            {% if user.has_biometric %}Enabled{% else %}Available{% endif %}
+                        </small>
+                    </div>
+                    <button class="btn btn-outline-primary" id="setupBiometric">
+                        <i class="fas fa-fingerprint me-2"></i>{% if user.has_biometric %}Manage{% else %}Setup{% endif %}
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Danger Zone -->
+        <div class="operation-card mt-4 animate-fade-in">
+            <h3 class="mb-4 text-danger">⚠️ Danger Zone</h3>
+            
+            <div class="alert alert-warning">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                These actions are irreversible. Please proceed with caution.
+            </div>
+            
+            <div class="danger-actions">
+                <div class="danger-action">
+                    <div class="action-info">
+                        <h6>Close Account</h6>
+                        <p class="text-muted mb-0">Permanently close your NeoVault Bank account</p>
+                    </div>
+                    <button class="btn btn-outline-danger" id="closeAccountBtn">
+                        <i class="fas fa-times-circle me-2"></i>Close Account
+                    </button>
+                </div>
+                
+                <div class="danger-action">
+                    <div class="action-info">
+                        <h6>Delete Personal Data</h6>
+                        <p class="text-muted mb-0">Request deletion of all your personal data</p>
+                    </div>
+                    <button class="btn btn-outline-danger" id="deleteDataBtn">
+                        <i class="fas fa-trash me-2"></i>Delete Data
+                    </button>
                 </div>
             </div>
         </div>
@@ -246,7 +389,7 @@
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Change Password</h5>
+                <h5 class="modal-title">🔑 Change Password</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
@@ -259,7 +402,7 @@
                     <div class="mb-3">
                         <label for="newPassword" class="form-label">New Password</label>
                         <input type="password" class="form-control" id="newPassword" required>
-                        <div class="form-text">Password must be at least 8 characters long</div>
+                        <div class="form-text">Password must be at least 8 characters long with uppercase, lowercase, and numbers</div>
                     </div>
                     
                     <div class="mb-3">
@@ -268,6 +411,7 @@
                     </div>
                     
                     <div class="password-strength mb-3">
+                        <label class="form-label">Password Strength</label>
                         <div class="strength-bar">
                             <div class="strength-level" id="passwordStrength"></div>
                         </div>
@@ -288,7 +432,7 @@
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Two-Factor Authentication</h5>
+                <h5 class="modal-title">🔒 Two-Factor Authentication</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body text-center">
@@ -303,15 +447,14 @@
                 </p>
                 
                 <div class="qr-code mb-4">
-                    <!-- QR Code would be generated here -->
                     <div class="qr-placeholder">
                         <i class="fas fa-qrcode fa-4x text-muted"></i>
-                        <p class="mt-2 text-muted">QR Code for Authenticator App</p>
+                        <p class="mt-2 text-muted">Scan this QR code with your authenticator app</p>
                     </div>
                 </div>
                 
                 <div class="setup-key mb-4">
-                    <label class="form-label">Setup Key</label>
+                    <label class="form-label">Manual Setup Key</label>
                     <div class="input-group">
                         <input type="text" class="form-control" value="NVBA-2FA-{{ user.id }}-SECRET" readonly>
                         <button class="btn btn-outline-secondary" type="button" id="copySetupKey">
@@ -323,7 +466,7 @@
                 <div class="verification-code mb-4">
                     <label for="verificationCode" class="form-label">Enter Verification Code</label>
                     <input type="text" class="form-control text-center" id="verificationCode" 
-                           placeholder="000000" maxlength="6">
+                           placeholder="000000" maxlength="6" pattern="[0-9]{6}">
                 </div>
             </div>
             <div class="modal-footer">
@@ -333,357 +476,390 @@
         </div>
     </div>
 </div>
-{% endblock %}
 
-{% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/dashboard-style.css' %}">
-<style>
-    .profile-card {
-        background: var(--card-bg);
-        padding: 30px;
-        border-radius: 15px;
-        box-shadow: 0 5px 15px var(--shadow-color);
-    }
-    
-    .profile-avatar {
-        position: relative;
-        width: 120px;
-        height: 120px;
-        margin: 0 auto;
-        border-radius: 50%;
-        overflow: hidden;
-        border: 4px solid var(--primary-color);
-    }
-    
-    .profile-avatar img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-    }
-    
-    .avatar-placeholder {
-        width: 100%;
-        height: 100%;
-        background: var(--light-color);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 2rem;
-        color: var(--primary-color);
-    }
-    
-    .avatar-overlay {
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(0,0,0,0.5);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        opacity: 0;
-        transition: opacity 0.3s ease;
-    }
-    
-    .profile-avatar:hover .avatar-overlay {
-        opacity: 1;
-    }
-    
-    .avatar-upload-btn {
-        color: white;
-        font-size: 1.2rem;
-        cursor: pointer;
-        padding: 10px;
-        border-radius: 50%;
-        background: var(--primary-color);
-        width: 40px;
-        height: 40px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-    
-    .profile-stats {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 15px;
-        margin-top: 20px;
-        padding-top: 20px;
-        border-top: 1px solid #eee;
-    }
-    
-    .stat-item {
-        text-align: center;
-    }
-    
-    .stat-item strong {
-        display: block;
-        font-size: 1.2rem;
-        color: var(--primary-color);
-    }
-    
-    .stat-item span {
-        font-size: 0.8rem;
-        color: var(--text-color);
-        opacity: 0.7;
-    }
-    
-    .security-items {
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-    }
-    
-    .security-item {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        padding: 10px;
-        border-radius: 8px;
-        background: var(--light-color);
-    }
-    
-    .security-item.completed {
-        border-left: 3px solid var(--success-color);
-    }
-    
-    .security-item.pending {
-        border-left: 3px solid var(--warning-color);
-    }
-    
-    .security-item i {
-        font-size: 1.1rem;
-    }
-    
-    .security-item.completed i {
-        color: var(--success-color);
-    }
-    
-    .security-item.pending i {
-        color: var(--warning-color);
-    }
-    
-    .preferences-list, .security-settings {
-        display: flex;
-        flex-direction: column;
-        gap: 20px;
-    }
-    
-    .preference-item, .security-setting {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 15px;
-        background: var(--light-color);
-        border-radius: 10px;
-    }
-    
-    .preference-info h6, .setting-info h6 {
-        margin-bottom: 5px;
-        color: var(--primary-color);
-    }
-    
-    .form-switch .form-check-input {
-        width: 3em;
-        height: 1.5em;
-    }
-    
-    .password-strength {
-        margin-top: 10px;
-    }
-    
-    .strength-bar {
-        height: 5px;
-        background: #e9ecef;
-        border-radius: 3px;
-        overflow: hidden;
-        margin-bottom: 5px;
-    }
-    
-    .strength-level {
-        height: 100%;
-        width: 0%;
-        transition: all 0.3s ease;
-        border-radius: 3px;
-    }
-    
-    .qr-placeholder {
-        padding: 30px;
-        background: var(--light-color);
-        border-radius: 10px;
-        border: 2px dashed #dee2e6;
-    }
-</style>
+<!-- Login Activity Modal -->
+<div class="modal fade" id="loginActivityModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">📊 Login Activity</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="login-sessions">
+                    <div class="session-item current">
+                        <div class="session-info">
+                            <h6>Current Session</h6>
+                            <small class="text-success">Active now</small>
+                            <p class="mb-0 text-muted">Chrome • Windows • Dhaka, Bangladesh</p>
+                        </div>
+                        <div class="session-time">
+                            <small>Since: {{ current_time|date:"M d, Y H:i" }}</small>
+                        </div>
+                    </div>
+                    
+                    <div class="session-item">
+                        <div class="session-info">
+                            <h6>Previous Session</h6>
+                            <small class="text-muted">2 hours ago</small>
+                            <p class="mb-0 text-muted">Mobile App • iOS • Dhaka, Bangladesh</p>
+                        </div>
+                        <button class="btn btn-sm btn-outline-danger">Report</button>
+                    </div>
+                    
+                    <div class="session-item">
+                        <div class="session-info">
+                            <h6>Web Session</h6>
+                            <small class="text-muted">1 day ago</small>
+                            <p class="mb-0 text-muted">Safari • macOS • Dhaka, Bangladesh</p>
+                        </div>
+                        <button class="btn btn-sm btn-outline-danger">Report</button>
+                    </div>
+                </div>
+                
+                <div class="alert alert-info mt-3">
+                    <i class="fas fa-info-circle me-2"></i>
+                    If you see any suspicious activity, please change your password immediately and contact support.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Close Account Modal -->
+<div class="modal fade" id="closeAccountModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-danger">⚠️ Close Account</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    This action cannot be undone. Please read carefully before proceeding.
+                </div>
+                
+                <p><strong>Before closing your account:</strong></p>
+                <ul class="text-muted">
+                    <li>Ensure all accounts have zero balance</li>
+                    <li>Cancel any pending transactions</li>
+                    <li>Download your transaction history</li>
+                    <li>Update any linked services</li>
+                </ul>
+                
+                <div class="form-check mb-3">
+                    <input class="form-check-input" type="checkbox" id="confirmClose1">
+                    <label class="form-check-label" for="confirmClose1">
+                        I understand this action is permanent
+                    </label>
+                </div>
+                
+                <div class="form-check mb-3">
+                    <input class="form-check-input" type="checkbox" id="confirmClose2">
+                    <label class="form-check-label" for="confirmClose2">
+                        I have downloaded my transaction history
+                    </label>
+                </div>
+                
+                <div class="form-check mb-3">
+                    <input class="form-check-input" type="checkbox" id="confirmClose3">
+                    <label class="form-check-label" for="confirmClose3">
+                        All my accounts have zero balance
+                    </label>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="closeReason" class="form-label">Reason for closing account</label>
+                    <select class="form-select" id="closeReason">
+                        <option value="">Select reason...</option>
+                        <option value="service">Found better service</option>
+                        <option value="fees">High fees</option>
+                        <option value="moving">Moving abroad</option>
+                        <option value="other">Other reason</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmCloseAccount" disabled>Close Account Permanently</button>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Profile picture upload
-        const profilePictureInput = document.getElementById('profilePictureInput');
-        const profileImage = document.getElementById('profileImage');
-        const avatarPlaceholder = document.getElementById('avatarPlaceholder');
-        
-        profilePictureInput.addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    if (profileImage) {
-                        profileImage.src = e.target.result;
-                    } else {
-                        avatarPlaceholder.innerHTML = `<img src="${e.target.result}" alt="Profile" style="width: 100%; height: 100%; object-fit: cover;">`;
-                    }
-                };
-                reader.readAsDataURL(file);
+document.addEventListener('DOMContentLoaded', function() {
+    // Profile picture upload
+    const profilePictureInput = document.getElementById('profilePictureInput');
+    const profileImage = document.getElementById('profileImage');
+    const avatarPlaceholder = document.getElementById('avatarPlaceholder');
+    
+    profilePictureInput.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                if (profileImage) {
+                    profileImage.src = e.target.result;
+                } else {
+                    avatarPlaceholder.innerHTML = `<img src="${e.target.result}" alt="Profile" style="width: 100%; height: 100%; object-fit: cover;">`;
+                }
                 showNotification('Profile picture updated successfully!', 'success');
-            }
-        });
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+    
+    // Personal information form
+    const personalInfoForm = document.getElementById('personalInfoForm');
+    const resetPersonalInfoBtn = document.getElementById('resetPersonalInfo');
+    
+    personalInfoForm.addEventListener('submit', function(e) {
+        e.preventDefault();
         
-        // Personal information form
-        const personalInfoForm = document.getElementById('personalInfoForm');
-        const resetPersonalInfoBtn = document.getElementById('resetPersonalInfo');
+        const submitBtn = this.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
         
-        personalInfoForm.addEventListener('submit', function(e) {
-            e.preventDefault();
+        submitBtn.innerHTML = '<div class="spinner-border spinner-border-sm me-2"></div> Saving...';
+        submitBtn.disabled = true;
+        
+        setTimeout(() => {
+            showNotification('Personal information updated successfully!', 'success');
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+        }, 1500);
+    });
+    
+    resetPersonalInfoBtn.addEventListener('click', function() {
+        personalInfoForm.reset();
+        showNotification('Form reset to original values', 'info');
+    });
+    
+    // Save preferences
+    document.getElementById('savePreferences').addEventListener('click', function() {
+        const originalText = this.innerHTML;
+        this.innerHTML = '<div class="spinner-border spinner-border-sm me-2"></div> Saving...';
+        this.disabled = true;
+        
+        setTimeout(() => {
+            showNotification('Preferences saved successfully!', 'success');
+            this.innerHTML = originalText;
+            this.disabled = false;
+        }, 1000);
+    });
+    
+    // 2FA setup
+    const enable2FABtn = document.getElementById('enable2FA');
+    const twoFAModal = new bootstrap.Modal(document.getElementById('twoFAModal'));
+    const copySetupKeyBtn = document.getElementById('copySetupKey');
+    const verify2FABtn = document.getElementById('verify2FA');
+    
+    enable2FABtn.addEventListener('click', function() {
+        twoFAModal.show();
+    });
+    
+    copySetupKeyBtn.addEventListener('click', function() {
+        const setupKey = this.closest('.input-group').querySelector('input');
+        setupKey.select();
+        document.execCommand('copy');
+        showNotification('Setup key copied to clipboard!', 'success');
+    });
+    
+    verify2FABtn.addEventListener('click', function() {
+        const verificationCode = document.getElementById('verificationCode').value;
+        
+        if (verificationCode.length !== 6) {
+            showNotification('Please enter a 6-digit verification code', 'error');
+            return;
+        }
+        
+        const originalText = this.innerHTML;
+        this.innerHTML = '<div class="spinner-border spinner-border-sm me-2"></div> Verifying...';
+        this.disabled = true;
+        
+        setTimeout(() => {
+            showNotification('Two-factor authentication enabled successfully!', 'success');
+            twoFAModal.hide();
+            this.innerHTML = originalText;
+            this.disabled = false;
             
-            const submitBtn = this.querySelector('button[type="submit"]');
-            const originalText = submitBtn.innerHTML;
+            // Update UI
+            enable2FABtn.innerHTML = '<i class="fas fa-lock me-2"></i>Manage 2FA';
+            document.getElementById('2faStatus').innerHTML = '<i class="fas fa-check-circle me-1"></i>Enabled';
+            document.getElementById('2faStatus').className = 'text-success';
             
-            submitBtn.innerHTML = '<div class="spinner-border spinner-border-sm me-2"></div> Saving...';
-            submitBtn.disabled = true;
-            
-            setTimeout(() => {
-                showNotification('Personal information updated successfully!', 'success');
-                submitBtn.innerHTML = originalText;
-                submitBtn.disabled = false;
-            }, 1500);
-        });
+            // Update security status
+            const securityItem = document.querySelector('.security-item:nth-child(3)');
+            securityItem.querySelector('i').className = 'fas fa-check-circle';
+            securityItem.className = 'security-item completed';
+        }, 1500);
+    });
+    
+    // Change password form
+    const changePasswordForm = document.getElementById('changePasswordForm');
+    const newPasswordInput = document.getElementById('newPassword');
+    const confirmPasswordInput = document.getElementById('confirmPassword');
+    const passwordStrength = document.getElementById('passwordStrength');
+    const passwordFeedback = document.getElementById('passwordFeedback');
+    
+    newPasswordInput.addEventListener('input', function() {
+        const password = this.value;
+        let strength = 0;
+        let feedback = '';
+        let color = '#dc3545';
         
-        resetPersonalInfoBtn.addEventListener('click', function() {
-            personalInfoForm.reset();
-        });
+        // Length check
+        if (password.length >= 8) strength += 25;
+        // Uppercase check
+        if (/[A-Z]/.test(password)) strength += 25;
+        // Lowercase check
+        if (/[a-z]/.test(password)) strength += 25;
+        // Number check
+        if (/[0-9]/.test(password)) strength += 25;
+        // Special character check
+        if (/[^A-Za-z0-9]/.test(password)) strength += 25;
         
-        // Save preferences
-        document.getElementById('savePreferences').addEventListener('click', function() {
-            const originalText = this.innerHTML;
-            this.innerHTML = '<div class="spinner-border spinner-border-sm me-2"></div> Saving...';
-            this.disabled = true;
-            
-            setTimeout(() => {
-                showNotification('Preferences saved successfully!', 'success');
-                this.innerHTML = originalText;
-                this.disabled = false;
-            }, 1000);
-        });
+        // Cap at 100
+        strength = Math.min(strength, 100);
         
-        // 2FA setup
-        const enable2FABtn = document.getElementById('enable2FA');
-        const twoFAModal = new bootstrap.Modal(document.getElementById('twoFAModal'));
-        const copySetupKeyBtn = document.getElementById('copySetupKey');
-        const verify2FABtn = document.getElementById('verify2FA');
+        if (strength < 25) {
+            feedback = 'Very Weak';
+            color = '#dc3545';
+        } else if (strength < 50) {
+            feedback = 'Weak';
+            color = '#fd7e14';
+        } else if (strength < 75) {
+            feedback = 'Good';
+            color = '#ffc107';
+        } else {
+            feedback = 'Strong';
+            color = '#28a745';
+        }
         
-        enable2FABtn.addEventListener('click', function() {
-            twoFAModal.show();
-        });
+        passwordStrength.style.width = strength + '%';
+        passwordStrength.style.background = color;
+        passwordFeedback.textContent = feedback;
+        passwordFeedback.style.color = color;
+    });
+    
+    changePasswordForm.addEventListener('submit', function(e) {
+        e.preventDefault();
         
-        copySetupKeyBtn.addEventListener('click', function() {
-            const setupKey = this.closest('.input-group').querySelector('input');
-            setupKey.select();
-            document.execCommand('copy');
-            showNotification('Setup key copied to clipboard!', 'success');
-        });
+        const newPassword = newPasswordInput.value;
+        const confirmPassword = confirmPasswordInput.value;
         
-        verify2FABtn.addEventListener('click', function() {
-            const originalText = this.innerHTML;
-            this.innerHTML = '<div class="spinner-border spinner-border-sm me-2"></div> Verifying...';
-            this.disabled = true;
-            
-            setTimeout(() => {
-                showNotification('Two-factor authentication enabled successfully!', 'success');
-                twoFAModal.hide();
-                this.innerHTML = originalText;
-                this.disabled = false;
-                enable2FABtn.innerHTML = '<i class="fas fa-lock me-2"></i>Manage 2FA';
-            }, 1500);
-        });
+        if (newPassword !== confirmPassword) {
+            showNotification('Passwords do not match!', 'danger');
+            return;
+        }
         
-        // Change password form
-        const changePasswordForm = document.getElementById('changePasswordForm');
-        const newPasswordInput = document.getElementById('newPassword');
-        const passwordStrength = document.getElementById('passwordStrength');
-        const passwordFeedback = document.getElementById('passwordFeedback');
+        if (newPassword.length < 8) {
+            showNotification('Password must be at least 8 characters long', 'danger');
+            return;
+        }
         
-        newPasswordInput.addEventListener('input', function() {
-            const password = this.value;
-            let strength = 0;
-            let feedback = '';
-            let color = '#dc3545';
-            
-            if (password.length >= 8) strength += 25;
-            if (/[A-Z]/.test(password)) strength += 25;
-            if (/[0-9]/.test(password)) strength += 25;
-            if (/[^A-Za-z0-9]/.test(password)) strength += 25;
-            
-            if (strength < 25) {
-                feedback = 'Very Weak';
-                color = '#dc3545';
-            } else if (strength < 50) {
-                feedback = 'Weak';
-                color = '#fd7e14';
-            } else if (strength < 75) {
-                feedback = 'Good';
-                color = '#ffc107';
-            } else {
-                feedback = 'Strong';
-                color = '#28a745';
-            }
-            
-            passwordStrength.style.width = strength + '%';
-            passwordStrength.style.background = color;
-            passwordFeedback.textContent = feedback;
-            passwordFeedback.style.color = color;
-        });
+        const submitBtn = this.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
         
-        changePasswordForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const newPassword = document.getElementById('newPassword').value;
-            const confirmPassword = document.getElementById('confirmPassword').value;
-            
-            if (newPassword !== confirmPassword) {
-                showNotification('Passwords do not match!', 'danger');
-                return;
-            }
-            
-            const submitBtn = this.querySelector('button[type="submit"]');
-            const originalText = submitBtn.innerHTML;
-            
-            submitBtn.innerHTML = '<div class="spinner-border spinner-border-sm me-2"></div> Updating...';
-            submitBtn.disabled = true;
-            
-            setTimeout(() => {
-                showNotification('Password updated successfully!', 'success');
-                bootstrap.Modal.getInstance(document.getElementById('changePasswordModal')).hide();
-                this.reset();
-                submitBtn.innerHTML = originalText;
-                submitBtn.disabled = false;
-            }, 1500);
-        });
+        submitBtn.innerHTML = '<div class="spinner-border spinner-border-sm me-2"></div> Updating...';
+        submitBtn.disabled = true;
         
-        // Security settings buttons
-        document.getElementById('securitySettingsBtn').addEventListener('click', function() {
-            document.querySelector('.security-settings').scrollIntoView({ behavior: 'smooth' });
-        });
-        
-        document.getElementById('viewLoginActivity').addEventListener('click', function() {
-            showNotification('Login activity feature would be implemented here', 'info');
-        });
-        
-        document.getElementById('manageDevices').addEventListener('click', function() {
-            showNotification('Device management feature would be implemented here', 'info');
+        setTimeout(() => {
+            showNotification('Password updated successfully!', 'success');
+            bootstrap.Modal.getInstance(document.getElementById('changePasswordModal')).hide();
+            this.reset();
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+        }, 1500);
+    });
+    
+    // Security settings buttons
+    document.getElementById('securitySettingsBtn').addEventListener('click', function() {
+        document.querySelector('.security-settings').scrollIntoView({ behavior: 'smooth' });
+    });
+    
+    document.getElementById('viewLoginActivity').addEventListener('click', function() {
+        const loginActivityModal = new bootstrap.Modal(document.getElementById('loginActivityModal'));
+        loginActivityModal.show();
+    });
+    
+    document.getElementById('manageDevices').addEventListener('click', function() {
+        showNotification('Device management feature would be implemented here', 'info');
+    });
+    
+    document.getElementById('setupBiometric').addEventListener('click', function() {
+        showNotification('Biometric setup would be implemented here', 'info');
+    });
+    
+    // Quick actions
+    document.getElementById('downloadDataBtn').addEventListener('click', function() {
+        showNotification('Preparing your data download...', 'info');
+        setTimeout(() => {
+            showNotification('Data download ready!', 'success');
+        }, 2000);
+    });
+    
+    document.getElementById('exportStatementsBtn').addEventListener('click', function() {
+        if (window.PrintUtils) {
+            window.PrintUtils.exportToCSV([
+                { date: '2024-01-15', description: 'Salary Deposit', type: 'Deposit', amount: '৳30,000.00', balance: '৳35,000.00', category: 'Income' },
+                { date: '2024-01-18', description: 'Utility Bill', type: 'Withdrawal', amount: '৳4,500.00', balance: '৳30,500.00', category: 'Bills' },
+                { date: '2024-01-20', description: 'Shopping', type: 'Withdrawal', amount: '৳2,000.00', balance: '৳28,500.00', category: 'Shopping' }
+            ], 'bank_statements.csv');
+        } else {
+            showNotification('Export functionality is not available', 'warning');
+        }
+    });
+    
+    document.getElementById('privacySettingsBtn').addEventListener('click', function() {
+        showNotification('Privacy settings would open here', 'info');
+    });
+    
+    // Danger zone actions
+    document.getElementById('closeAccountBtn').addEventListener('click', function() {
+        const closeAccountModal = new bootstrap.Modal(document.getElementById('closeAccountModal'));
+        closeAccountModal.show();
+    });
+    
+    document.getElementById('deleteDataBtn').addEventListener('click', function() {
+        if (confirm('Are you sure you want to delete all your personal data? This action cannot be undone.')) {
+            showNotification('Data deletion request submitted. Our team will contact you shortly.', 'warning');
+        }
+    });
+    
+    // Close account confirmation
+    const closeCheckboxes = document.querySelectorAll('#confirmClose1, #confirmClose2, #confirmClose3');
+    const confirmCloseBtn = document.getElementById('confirmCloseAccount');
+    
+    closeCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            const allChecked = Array.from(closeCheckboxes).every(cb => cb.checked);
+            const reasonSelected = document.getElementById('closeReason').value !== '';
+            confirmCloseBtn.disabled = !(allChecked && reasonSelected);
         });
     });
+    
+    document.getElementById('closeReason').addEventListener('change', function() {
+        const allChecked = Array.from(closeCheckboxes).every(cb => cb.checked);
+        const reasonSelected = this.value !== '';
+        confirmCloseBtn.disabled = !(allChecked && reasonSelected);
+    });
+    
+    confirmCloseBtn.addEventListener('click', function() {
+        const originalText = this.innerHTML;
+        this.innerHTML = '<div class="spinner-border spinner-border-sm me-2"></div> Processing...';
+        this.disabled = true;
+        
+        setTimeout(() => {
+            showNotification('Account closure request submitted. Our team will contact you for verification.', 'warning');
+            bootstrap.Modal.getInstance(document.getElementById('closeAccountModal')).hide();
+            this.innerHTML = originalText;
+            this.disabled = true;
+        }, 2000);
+    });
+});
 </script>
 {% endblock %}

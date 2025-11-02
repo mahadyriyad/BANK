@@ -58,17 +58,53 @@ def custom_login(request):
         form = AuthenticationForm()
     return render(request, 'registration/login.html', {'form': form})
 
+
+from django.db.models import Sum
+from .models import Account, Transaction, Bill, SavingsGoal, Employee, GalleryImage, CreditCard
+
 @login_required
 def dashboard(request):
-    return render(request, 'dashboard.html')
+    accounts = Account.objects.filter(user=request.user, is_active=True)
+    total_balance = accounts.aggregate(Sum('balance'))['balance__sum'] or 0.00
+    
+    transactions = Transaction.objects.filter(account__user=request.user).order_by('-timestamp')[:10]
+    
+    credit_cards = CreditCard.objects.filter(user=request.user, is_active=True)
+    
+    bills = Bill.objects.filter(user=request.user, is_paid=False)
+    
+    savings_goals = SavingsGoal.objects.filter(user=request.user)
+
+    context = {
+        'accounts': accounts,
+        'total_balance': total_balance,
+        'transactions': transactions,
+        'credit_cards': credit_cards,
+        'bills': bills,
+        'savings_goals': savings_goals,
+    }
+    return render(request, 'dashboard.html', context)
+
 
 @login_required
 def deposit(request):
-    return render(request, 'deposit.html')
+    user_accounts = Account.objects.filter(user=request.user, is_active=True)
+    recent_deposits = Transaction.objects.filter(
+        account__in=user_accounts, 
+        transaction_type='deposit'
+    ).order_by('-timestamp')[:5]
+    context = {'user_accounts': user_accounts, 'recent_deposits': recent_deposits}
+    return render(request, 'deposit.html', context)
 
 @login_required
 def withdraw(request):
-    return render(request, 'withdraw.html')
+    user_accounts = Account.objects.filter(user=request.user, is_active=True)
+    recent_withdrawals = Transaction.objects.filter(
+        account__in=user_accounts, 
+        transaction_type='withdrawal'
+    ).order_by('-timestamp')[:5]
+    context = {'user_accounts': user_accounts, 'recent_withdrawals': recent_withdrawals}
+    return render(request, 'withdraw.html', context)
 
 @login_required
 def transfer(request):
