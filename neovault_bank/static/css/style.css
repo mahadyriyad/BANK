@@ -1171,11 +1171,13 @@ body {
 
 /* ===== FOOTER STYLES ===== */
 footer {
-    background: linear-gradient(135deg, var(--dark-color) 0%, #2c3e50 100%);
-    color: white;
+    background-color: #000; /* pure black background */
+    color: #fff; /* white text */
     padding: 60px 0 30px;
     margin-top: 80px;
+    font-weight: bold;
 }
+
 
 /* ===== CHATBOT STYLES ===== */
 .chatbot-btn {

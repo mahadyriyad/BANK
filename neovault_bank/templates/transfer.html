@@ -459,6 +459,7 @@
 {% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    const typeOptions = document.querySelectorAll('.type-option');
     const transferForm = document.getElementById('transferForm');
     
     if (transferForm) {
@@ -530,6 +531,21 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // Transfer type selection
+    typeOptions.forEach(option => {
+        option.addEventListener('click', function() {
+            // Update active state for type options
+            typeOptions.forEach(opt => opt.classList.remove('active'));
+            this.classList.add('active');
+            
+            // Show corresponding transfer details
+            const currentType = this.getAttribute('data-type');
+            document.querySelectorAll('.transfer-details').forEach(detail => {
+                detail.classList.remove('active');
+            });
+            document.getElementById(`${currentType}-details`).classList.add('active');
+        });
+    });
     // Utility functions (same as above)
     function getCookie(name) {
         let cookieValue = null;
@@ -568,4 +584,77 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 </script>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .type-options {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 1rem;
+    }
+
+    .type-option {
+        padding: 1.25rem 0.75rem;
+        border: 2px solid #e9ecef;
+        border-radius: 12px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background-color: #fff;
+    }
+
+    .type-option i {
+        font-size: 2rem;
+        margin-bottom: 0.75rem;
+        display: block;
+        color: #6c757d;
+        transition: color 0.3s ease;
+    }
+
+    .type-option span {
+        font-weight: 600;
+        font-size: 0.9rem;
+        color: #495057;
+    }
+
+    .type-option small {
+        font-size: 0.8rem;
+        color: #6c757d;
+        margin-top: 0.25rem;
+    }
+
+    .type-option:hover {
+        border-color: #adb5bd;
+        background-color: #f8f9fa;
+        transform: translateY(-3px);
+    }
+
+    .type-option.active {
+        border-color: var(--primary-color, #2563eb);
+        background-color: rgba(37, 99, 235, 0.05);
+        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.1);
+        transform: translateY(-3px);
+    }
+
+    .type-option.active i,
+    .type-option.active span {
+        color: var(--primary-color, #2563eb);
+    }
+
+    .transfer-details {
+        display: none;
+        animation: fadeIn 0.5s;
+    }
+    .transfer-details.active { display: block; }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>
 {% endblock %}

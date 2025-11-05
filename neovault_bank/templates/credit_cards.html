@@ -600,6 +600,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const cardId = document.getElementById('paymentCardSelect').value;
             const amount = document.getElementById('paymentAmount').value;
             const accountId = document.getElementById('paymentAccount').value;
+            const accountId = document.getElementById('paymentAccountSelect').value;
 
             const submitBtn = this.querySelector('button[type="submit"]');
             const originalText = submitBtn.innerHTML;
@@ -608,6 +609,12 @@ document.addEventListener('DOMContentLoaded', function() {
             submitBtn.disabled = true;
 
             try {
+                if (!cardId || !amount || !accountId) {
+                    showNotification('Please fill out all payment fields.', 'danger');
+                    submitBtn.innerHTML = originalText;
+                    submitBtn.disabled = false;
+                    return;
+                }
                 const success = await handleTransaction(`/credit_card_payment/${cardId}/`, {
                     account_id: accountId,
                     amount: amount
@@ -717,5 +724,112 @@ function showNotification(message, type = 'info') {
         }
     }, 5000);
 }
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Card options in apply modal
+    const cardOptions = document.querySelectorAll('.card-option');
+    cardOptions.forEach(option => {
+        option.addEventListener('click', function() {
+            cardOptions.forEach(opt => opt.classList.remove('active'));
+            this.classList.add('active');
+        });
+    });
+
+    // Apply for card form submission
+    const applyCardForm = document.getElementById('applyCardForm');
+    if (applyCardForm) {
+        applyCardForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<div class="spinner-border spinner-border-sm me-2"></div> Submitting...';
+            submitBtn.disabled = true;
+
+            setTimeout(() => {
+                showNotification('Application submitted successfully! We will review it shortly.', 'success');
+                bootstrap.Modal.getInstance(document.getElementById('applyCardModal')).hide();
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+                this.reset();
+            }, 2000);
+        });
+    }
+
+    // Make payment modal payment date toggle
+    const paymentDateSelect = document.getElementById('paymentDate');
+    const scheduledDateDiv = document.getElementById('scheduledDate');
+    if (paymentDateSelect) {
+        paymentDateSelect.addEventListener('change', function() {
+            if (this.value === 'schedule') {
+                scheduledDateDiv.style.display = 'block';
+            } else {
+                scheduledDateDiv.style.display = 'none';
+            }
+        });
+    }
+
+    // Auto-pay modal fixed amount toggle
+    const autoPayTypeSelect = document.getElementById('autoPayType');
+    const fixedAmountDiv = document.getElementById('fixedAmount');
+    if (autoPayTypeSelect) {
+        autoPayTypeSelect.addEventListener('change', function() {
+            if (this.value === 'fixed') {
+                fixedAmountDiv.style.display = 'block';
+            } else {
+                fixedAmountDiv.style.display = 'none';
+            }
+        });
+    }
+
+    // Auto-pay form submission
+    const autoPayForm = document.getElementById('autoPayForm');
+    if (autoPayForm) {
+        autoPayForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<div class="spinner-border spinner-border-sm me-2"></div> Activating...';
+            submitBtn.disabled = true;
+
+            setTimeout(() => {
+                showNotification('Auto-Pay has been activated successfully!', 'success');
+                bootstrap.Modal.getInstance(document.getElementById('autoPayModal')).hide();
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+                this.reset();
+            }, 2000);
+        });
+    }
+
+    // Quick Actions
+    document.getElementById('limitIncreaseBtn')?.addEventListener('click', () => showNotification('Limit increase request has been submitted.', 'info'));
+    document.getElementById('viewAllTransactions')?.addEventListener('click', () => showNotification('Loading all transactions...', 'info'));
+    document.getElementById('downloadStatement')?.addEventListener('click', () => showNotification('Your statement is being generated for download.', 'info'));
+    document.getElementById('reportLostCard')?.addEventListener('click', () => {
+        if (confirm('Are you sure you want to report your card as lost? This will block it immediately.')) {
+            showNotification('Your card has been reported as lost and is now blocked.', 'warning');
+        }
+    });
+    document.getElementById('viewCreditReport')?.addEventListener('click', () => showNotification('Loading your full credit report...', 'info'));
+    document.getElementById('viewRewards')?.addEventListener('click', () => showNotification('Redirecting to your rewards dashboard...', 'info'));
+
+    // Setup Auto-Pay button
+    const setAutoPayBtn = document.getElementById('setAutoPay');
+    if (setAutoPayBtn) {
+        setAutoPayBtn.addEventListener('click', function() {
+            const autoPayModal = new bootstrap.Modal(document.getElementById('autoPayModal'));
+            autoPayModal.show();
+        });
+    }
+
+    // Card Details button
+    const cardDetailsBtns = document.querySelectorAll('.card-details-btn');
+    cardDetailsBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            showNotification('This feature is coming soon!', 'info');
+        });
+    });
+});
 </script>
 {% endblock %}
